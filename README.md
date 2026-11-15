@@ -6,6 +6,8 @@ A real-time 2D martial-arts (wuxia) fighting game that runs inside an Excel shee
 
 Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑니다. 코드는 하나이고, 실행할 때 어느 쪽인지 스스로 구분합니다. / Runs on both Windows Excel and Excel for Mac (Microsoft 365 / 2019 or later). One code base; it detects the platform at run time.
 
+![Pixel Murim title screen](docs/preview/title.png)
+
 ## 시작하기 / Getting started
 
 처음 한 번만 하면 됩니다. 자세한 안내: [docs/SETUP_KO.md](docs/SETUP_KO.md) / One-time setup. Step-by-step guide (Korean): [docs/SETUP_KO.md](docs/SETUP_KO.md)
