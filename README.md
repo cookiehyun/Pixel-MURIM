@@ -36,7 +36,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 
 | 메뉴 | 모드 | 내용 |
 |---|---|---|
-| SINGLE PLAYER | ARCADE | 캐릭터와 난이도를 고르고 나머지 5명과 차례로 싸운 뒤 최종 보스 천마와 대결. 이기면 캐릭터별 엔딩 |
+| SINGLE PLAYER | ARCADE | 캐릭터와 난이도를 고르고 나머지 5명, 내 분신, 최종 보스 천마와 차례로 대결(7판). 이기면 캐릭터별 엔딩 |
 | SINGLE PLAYER | VS CPU | 2명씩 팀을 짜서 CPU 팀과 싸웁니다. C 키로 교체 |
 | SINGLE PLAYER | TRAINING | 시간 제한 없음. 콤보가 끝나면 체력이 다시 차고, 내공과 게이지는 항상 가득 |
 | MULTIPLAYER | VERSUS | 키보드 하나로 1P와 2P가 1대1로 대결 |
@@ -44,9 +44,15 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | MULTIPLAYER | KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
 
 ### 아케이드
-- 상대 5명은 매번 순서가 섞입니다. 4번째 상대부터 CPU가 한 단계 강해지고, 보스는 항상 HARD입니다.
+- 상대 5명은 매번 순서가 섞입니다. 그다음 6번째는 **내 분신**(같은 캐릭터, 다른 색)입니다. 4번째 상대부터 CPU가 한 단계 강해지고, 보스는 항상 HARD입니다.
+- 아케이드를 한 번 깨면 **천마를 고를 수 있게 됩니다** (선택 화면 7번째 칸). 기록은 `data/save.txt`에 저장됩니다. 플레이어용 천마는 체력 1000이고, 천마로 아케이드를 하면 마지막 상대는 분신 천마(보스)입니다.
+- 선택 화면 8번째 칸 **?** 는 랜덤입니다.
 - 지면 CONTINUE? 화면이 뜹니다. 9초 안에 A를 누르면 같은 상대와 다시 싸우고, S를 누르거나 시간이 지나면 게임 오버입니다.
 - 천마는 체력 1400에 흑림 계열 기술을 더 강하게 씁니다(마공탄, 순간이동, 궁극기 천마무황).
+
+### 선택 화면 능력치
+- POW 한 방, SPD 이동 속도, RNG 사거리(장풍 포함), HP 체력, TEC 기술(공격이 빨리 나가고 빨리 회복하는지, 맞는 판정이 작은지, 돌진·승룡·순간이동 같은 기술).
+- 모두 실제 데이터에서 계산한 값입니다. 3이 평균이고, 1이나 5는 평균과 차이가 큰 경우입니다. 데이터를 바꾸면 `python tools/calc_stats.py`로 다시 계산합니다.
 
 ### VS CPU
 - 내 팀 2명을 고른 다음 CPU 팀 2명을 고릅니다.
@@ -149,7 +155,7 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 
 | Menu | Mode | What it is |
 |---|---|---|
-| SINGLE PLAYER | ARCADE | Pick a fighter and a level, beat the other five, then face the final boss Cheonma. Each fighter has an ending |
+| SINGLE PLAYER | ARCADE | Pick a fighter and a level, then beat the other five, your own shadow and the final boss Cheonma (7 fights). Each fighter has an ending |
 | SINGLE PLAYER | VS CPU | Two-fighter teams against a CPU team. Press C to switch |
 | SINGLE PLAYER | TRAINING | No timer. Health refills after a combo; inner energy and super gauge stay full |
 | MULTIPLAYER | VERSUS | 1P vs 2P on one keyboard |
@@ -157,9 +163,15 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 | MULTIPLAYER | KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
 
 ### Arcade
-- The five opponents come in a random order. From the fourth one the CPU gets one level harder; the boss is always HARD.
+- The five opponents come in a random order, then your **shadow** (the same fighter in other colors). From the fourth fight the CPU gets one level harder; the boss is always HARD.
+- Clearing arcade once **unlocks Cheonma** (7th slot on the select screen), saved in `data/save.txt`. Playable Cheonma has 1000 HP; as Cheonma, the last fight is a shadow Cheonma boss.
+- The 8th slot **?** picks a random fighter.
 - Lose and you get CONTINUE?. Press A within 9 seconds to retry the same fight; press S or let it run out and it's game over.
 - Cheonma has 1400 HP and a stronger version of Heukrim's moves (demon orb, teleport, super Cheonma Muhwang).
+
+### Select screen stats
+- POW damage, SPD movement, RNG reach (projectiles count), HP health, TEC technique (fast startup and recovery, small hurtbox, rush / uppercut / teleport moves).
+- All computed from the real data: 3 is average, 1 or 5 means a large difference. After changing data, rerun `python tools/calc_stats.py`.
 
 ### VS CPU
 - Pick your two fighters, then the CPU's two.

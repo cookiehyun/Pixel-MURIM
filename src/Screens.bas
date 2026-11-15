@@ -12,7 +12,7 @@ Private Const BOX_W As Long = 15                  ' portrait box 15 x 20, one ev
 Private rPrefix(0 To ROSTER - 1) As String
 Private rName(0 To ROSTER - 1) As String
 Private rStyle(0 To ROSTER - 1) As String
-Private rStat(0 To ROSTER - 1, 0 To 3) As Long     ' power, speed, range, health (1-5, from the move data and tuning)
+Private rStat(0 To ROSTER - 1, 0 To 4) As Long     ' power, speed, range, health, technique (1-5): tools/calc_stats.py
 Private rHeadX(0 To ROSTER - 1) As Long           ' head centre in idle_0, relative to the anchor
 Private rHeadY(0 To ROSTER - 1) As Long           ' (from docs/<name>_points.txt) - centres the portrait
 
@@ -29,19 +29,19 @@ Private cGold As Long, cDim As Long, cP1 As Long, cP2 As Long
 
 Public Sub Init()
     rPrefix(0) = "danwoo": rName(0) = "DANWOO": rStyle(0) = "BALANCED"
-    rStat(0, 0) = 3: rStat(0, 1) = 4: rStat(0, 2) = 4: rStat(0, 3) = 4: rHeadX(0) = 2: rHeadY(0) = -30
+    rStat(0, 0) = 3: rStat(0, 1) = 4: rStat(0, 2) = 3: rStat(0, 3) = 3: rStat(0, 4) = 4: rHeadX(0) = 2: rHeadY(0) = -30
     rPrefix(1) = "cheolsan": rName(1) = "CHEOLSAN": rStyle(1) = "GRAPPLER"
-    rStat(1, 0) = 5: rStat(1, 1) = 1: rStat(1, 2) = 2: rStat(1, 3) = 5: rHeadX(1) = 4: rHeadY(1) = -35
+    rStat(1, 0) = 5: rStat(1, 1) = 1: rStat(1, 2) = 2: rStat(1, 3) = 5: rStat(1, 4) = 1: rHeadX(1) = 4: rHeadY(1) = -35
     rPrefix(2) = "muyeong": rName(2) = "MUYEONG": rStyle(2) = "SWORDSMAN"
-    rStat(2, 0) = 2: rStat(2, 1) = 3: rStat(2, 2) = 5: rStat(2, 3) = 3: rHeadX(2) = 2: rHeadY(2) = -31
+    rStat(2, 0) = 2: rStat(2, 1) = 3: rStat(2, 2) = 5: rStat(2, 3) = 2: rStat(2, 4) = 3: rHeadX(2) = 2: rHeadY(2) = -31
     rPrefix(3) = "seolhwa": rName(3) = "SEOLHWA": rStyle(3) = "SPEED KICKER"
-    rStat(3, 0) = 1: rStat(3, 1) = 5: rStat(3, 2) = 2: rStat(3, 3) = 2: rHeadX(3) = 1: rHeadY(3) = -30
+    rStat(3, 0) = 1: rStat(3, 1) = 4: rStat(3, 2) = 1: rStat(3, 3) = 1: rStat(3, 4) = 5: rHeadX(3) = 1: rHeadY(3) = -30
     rPrefix(4) = "heukrim": rName(4) = "HEUKRIM": rStyle(4) = "ZONER"
-    rStat(4, 0) = 3: rStat(4, 1) = 5: rStat(4, 2) = 4: rStat(4, 3) = 4: rHeadX(4) = 4: rHeadY(4) = -32
+    rStat(4, 0) = 3: rStat(4, 1) = 4: rStat(4, 2) = 4: rStat(4, 3) = 3: rStat(4, 4) = 2: rHeadX(4) = 4: rHeadY(4) = -32
     rPrefix(5) = "hongryeon": rName(5) = "HONGRYEON": rStyle(5) = "FAN DANCER"
-    rStat(5, 0) = 2: rStat(5, 1) = 4: rStat(5, 2) = 4: rStat(5, 3) = 3: rHeadX(5) = 1: rHeadY(5) = -30
+    rStat(5, 0) = 2: rStat(5, 1) = 4: rStat(5, 2) = 4: rStat(5, 3) = 3: rStat(5, 4) = 5: rHeadX(5) = 1: rHeadY(5) = -30
     rPrefix(6) = "cheonma": rName(6) = "CHEONMA": rStyle(6) = "HEAVENLY DEMON"
-    rStat(6, 0) = 4: rStat(6, 1) = 3: rStat(6, 2) = 4: rStat(6, 3) = 4: rHeadX(6) = 4: rHeadY(6) = -35
+    rStat(6, 0) = 5: rStat(6, 1) = 3: rStat(6, 2) = 4: rStat(6, 3) = 3: rStat(6, 4) = 1: rHeadX(6) = 4: rHeadY(6) = -35
     rPrefix(7) = "": rName(7) = "RANDOM": rStyle(7) = ""
     cGold = RGB(240, 190, 80)
     cDim = RGB(130, 120, 150)
@@ -374,12 +374,13 @@ Public Sub SelectRender()
     ElseIf IsRandom(hover) Then
         PixelFont.DrawBig rName(hover), cx, 13, RGB(255, 240, 210), 1
     Else
-        PixelFont.DrawBig rName(hover), cx, 13, RGB(255, 240, 210), 1
-        PixelFont.DrawText rStyle(hover), cx, 21, cDim, 1, 1
-        StatRow "POW", rStat(hover, 0), 27
-        StatRow "SPD", rStat(hover, 1), 33
-        StatRow "RNG", rStat(hover, 2), 39
-        StatRow "HP", rStat(hover, 3), 45
+        PixelFont.DrawBig rName(hover), cx, 12, RGB(255, 240, 210), 1
+        PixelFont.DrawText rStyle(hover), cx, 19, cDim, 1, 1
+        StatRow "POW", rStat(hover, 0), 25
+        StatRow "SPD", rStat(hover, 1), 30
+        StatRow "RNG", rStat(hover, 2), 35
+        StatRow "HP", rStat(hover, 3), 40
+        StatRow "TEC", rStat(hover, 4), 45
     End If
 
     ' portrait grid
