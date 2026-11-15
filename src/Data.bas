@@ -377,7 +377,8 @@ Private Function DataPath(ByVal fileName As String) As String
     If Len(BaseDir) > 0 Then
         DataPath = BaseDir & fileName
     Else
-        DataPath = ThisWorkbook.Path & "\" & DATA_DIR & "\" & fileName
+        WinApi.GrantFolderAccess ThisWorkbook.Path & Application.PathSeparator & DATA_DIR
+        DataPath = ThisWorkbook.Path & Application.PathSeparator & DATA_DIR & Application.PathSeparator & fileName
     End If
 End Function
 

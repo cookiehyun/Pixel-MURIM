@@ -1,10 +1,27 @@
 Attribute VB_Name = "KeyInput"
 Option Explicit
 
-' Real-time keyboard input via GetAsyncKeyState.
-' Poll() once per logic tick, then query IsDown / IsPressed.
+' Real-time keyboard input. Poll() once per logic tick, then query IsDown / IsPressed.
+'   Windows: GetAsyncKeyState (user32).
+'   Mac:     CGEventSourceKeyState (CoreGraphics). Keys are still stored as Windows virtual-key
+'            codes everywhere (key config file, KeyName); MacCode() translates them.
+'            Mac has no "tapped since last call" bit, so the game loop calls Sample() while it
+'            waits between ticks to catch short taps.
 
-#If VBA7 Then
+#If Mac Then
+Private Declare PtrSafe Function CGEventSourceKeyState Lib "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices" (ByVal stateID As Long, ByVal keyCode As Integer) As Long
+Private Declare PtrSafe Function objc_getClass Lib "/usr/lib/libobjc.dylib" (ByVal className As String) As LongPtr
+Private Declare PtrSafe Function sel_registerName Lib "/usr/lib/libobjc.dylib" (ByVal selName As String) As LongPtr
+Private Declare PtrSafe Function objc_msgSend Lib "/usr/lib/libobjc.dylib" (ByVal obj As LongPtr, ByVal sel As LongPtr) As LongPtr
+Private mNSApp As LongPtr
+Private mSelActive As LongPtr
+Private mLatch(0 To 32) As Boolean     ' 0 To BTN_COUNT - 1: key seen down by Sample() since the last Poll()
+Private mMac1(0 To 255) As Long        ' Windows VK -> Mac key code (MacCode, cached)
+Private mMac2(0 To 255) As Long
+Private mMacReady As Boolean
+' Mac only: set to False if Excel ever crashes when the game starts (skips the "is Excel in front" check)
+Public Const MAC_FOCUS_CHECK As Boolean = True
+#ElseIf VBA7 Then
 Private Declare PtrSafe Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As Integer
 Private Declare PtrSafe Function GetForegroundWindow Lib "user32" () As LongPtr
 Private Declare PtrSafe Function GetWindowThreadProcessId Lib "user32" (ByVal hwnd As LongPtr, ByRef lpdwProcessId As Long) As Long
@@ -65,13 +82,21 @@ Public Sub Init()
     mVK(BTN_DBG_BOX) = &H70   ' F1
     mVK(BTN_TAG) = &H43       ' C
     ' multiplayer sets (BTN_M1 / BTN_M2) are filled by KeyConfig.Load
-    mPid = GetCurrentProcessId()
+    #If Mac Then
+        mPid = 0
+    #Else
+        mPid = GetCurrentProcessId()
+    #End If
     mHadFocus = True
     mFocusLost = False
 
     Dim i As Long
     For i = 0 To BTN_COUNT - 1
-        GetAsyncKeyState mVK(i)   ' flush stale "pressed since last call" bits
+        #If Mac Then
+            mLatch(i) = False
+        #Else
+            GetAsyncKeyState mVK(i)   ' flush stale "pressed since last call" bits
+        #End If
         mCur(i) = False
         mPrev(i) = False
     Next i
@@ -89,7 +114,7 @@ End Function
 Public Function ScanKey() As Long
     Dim vk As Long, dn As Boolean
     For vk = 8 To 254
-        dn = ((GetAsyncKeyState(vk) And &H8000) <> 0)
+        dn = VKDown(vk)
         If dn And Not mScanPrev(vk) And ScanKey = 0 And AppHasFocus() Then ScanKey = vk
         mScanPrev(vk) = dn
     Next vk
@@ -114,13 +139,105 @@ Public Sub Poll()
     For i = 0 To BTN_COUNT - 1
         mPrev(i) = mCur(i)
         If focused Then
-            s = GetAsyncKeyState(mVK(i))
-            ' high bit = held now, low bit = tapped since last call (catches taps shorter than a tick)
-            mCur(i) = ((s And &H8000) <> 0) Or ((s And 1) <> 0)
+            #If Mac Then
+                mCur(i) = VKDown(mVK(i)) Or mLatch(i)
+                mLatch(i) = False
+            #Else
+                s = GetAsyncKeyState(mVK(i))
+                ' high bit = held now, low bit = tapped since last call (catches taps shorter than a tick)
+                mCur(i) = ((s And &H8000) <> 0) Or ((s And 1) <> 0)
+            #End If
         Else
             mCur(i) = False
         End If
     Next i
+End Sub
+
+' Called by the game loop while it waits for the next tick. Mac only (Windows keeps its own
+' "tapped" bit): remembers keys that are down now so a tap shorter than a tick is not lost.
+Public Sub Sample()
+    #If Mac Then
+        Dim i As Long
+        For i = 0 To BTN_COUNT - 1
+            If Not mLatch(i) Then mLatch(i) = VKDown(mVK(i))
+        Next i
+    #End If
+End Sub
+
+' Is this Windows virtual key held right now? (whole keyboard, focus not checked)
+Private Function VKDown(ByVal vk As Long) As Boolean
+    #If Mac Then
+        Dim c1 As Long, c2 As Long, k As Long
+        If Not mMacReady Then
+            For k = 0 To 255
+                MacCode k, mMac1(k), mMac2(k)
+            Next k
+            mMacReady = True
+        End If
+        If vk < 0 Or vk > 255 Then Exit Function
+        c1 = mMac1(vk): c2 = mMac2(vk)
+        If c1 >= 0 Then VKDown = ((CGEventSourceKeyState(0, c1) And &HFF) <> 0)
+        If Not VKDown And c2 >= 0 Then VKDown = ((CGEventSourceKeyState(0, c2) And &HFF) <> 0)
+    #Else
+        VKDown = ((GetAsyncKeyState(vk) And &H8000) <> 0)
+    #End If
+End Function
+
+' Windows virtual key -> Mac key code(s) (kVK_*). c2 is the second key for left/right modifiers.
+' -1 = no Mac key.
+Public Sub MacCode(ByVal vk As Long, ByRef c1 As Long, ByRef c2 As Long)
+    c1 = -1: c2 = -1
+    Select Case vk
+    Case &H41 To &H5A        ' A..Z
+        c1 = CLng(Split("0 11 8 2 14 3 5 4 34 38 40 37 46 45 31 35 12 15 1 17 32 9 13 7 16 6")(vk - &H41))
+    Case &H30 To &H39        ' 0..9
+        c1 = CLng(Split("29 18 19 20 21 23 22 26 28 25")(vk - &H30))
+    Case &H60 To &H69        ' numpad 0..9
+        c1 = CLng(Split("82 83 84 85 86 87 88 89 91 92")(vk - &H60))
+    Case &H70 To &H7B        ' F1..F12
+        c1 = CLng(Split("122 120 99 118 96 97 98 100 101 109 103 111")(vk - &H70))
+    Case &H25: c1 = 123      ' left
+    Case &H27: c1 = 124      ' right
+    Case &H28: c1 = 125      ' down
+    Case &H26: c1 = 126      ' up
+    Case &H8: c1 = 51        ' backspace
+    Case &H9: c1 = 48        ' tab
+    Case &HD: c1 = 36        ' return
+    Case &H1B: c1 = 53       ' esc
+    Case &H20: c1 = 49       ' space
+    Case &H14: c1 = 57       ' caps lock
+    Case &H21: c1 = 116      ' page up
+    Case &H22: c1 = 121      ' page down
+    Case &H23: c1 = 119      ' end
+    Case &H24: c1 = 115      ' home
+    Case &H2E: c1 = 117      ' forward delete
+    Case &H10: c1 = 56: c2 = 60    ' shift (either)
+    Case &HA0: c1 = 56
+    Case &HA1: c1 = 60
+    Case &H11: c1 = 59: c2 = 62    ' control (either)
+    Case &HA2: c1 = 59
+    Case &HA3: c1 = 62
+    Case &H12: c1 = 58: c2 = 61    ' option = alt (either)
+    Case &HA4: c1 = 58
+    Case &HA5: c1 = 61
+    Case &H5B, &H5C: c1 = 55: c2 = 54   ' Windows key = command
+    Case &HBA: c1 = 41       ' ;
+    Case &HBB: c1 = 24       ' =
+    Case &HBC: c1 = 43       ' ,
+    Case &HBD: c1 = 27       ' -
+    Case &HBE: c1 = 47       ' .
+    Case &HBF: c1 = 44       ' /
+    Case &HC0: c1 = 50       ' `
+    Case &HDB: c1 = 33       ' [
+    Case &HDC: c1 = 42       ' \
+    Case &HDD: c1 = 30       ' ]
+    Case &HDE: c1 = 39       ' '
+    Case &H6A: c1 = 67       ' numpad *
+    Case &H6B: c1 = 69       ' numpad +
+    Case &H6D: c1 = 78       ' numpad -
+    Case &H6E: c1 = 65       ' numpad .
+    Case &H6F: c1 = 75       ' numpad /
+    End Select
 End Sub
 
 ' True on the one tick another window took the foreground (used for auto-pause).
@@ -145,6 +262,22 @@ End Function
 ' when Windows reports no foreground window for a moment (while switching), or when the
 ' window title says Excel (some setups report another process id for Excel's own window).
 Private Function AppHasFocus() As Boolean
+    #If Mac Then
+        ' [NSApp isActive]: is Excel the frontmost app?
+        If Not MAC_FOCUS_CHECK Then
+            AppHasFocus = True
+            Exit Function
+        End If
+        If mNSApp = 0 Then
+            mNSApp = objc_msgSend(objc_getClass("NSApplication"), sel_registerName("sharedApplication"))
+            mSelActive = sel_registerName("isActive")
+        End If
+        If mNSApp = 0 Or mSelActive = 0 Then
+            AppHasFocus = True
+        Else
+            AppHasFocus = ((objc_msgSend(mNSApp, mSelActive) And &HFF) <> 0)
+        End If
+    #Else
     Dim pid As Long, t As String
     #If VBA7 Then
         Dim fg As LongPtr
@@ -163,12 +296,17 @@ Private Function AppHasFocus() As Boolean
     End If
     t = ForegroundTitle()
     AppHasFocus = (InStr(1, t, "Excel", vbTextCompare) > 0) Or (InStr(1, t, ThisWorkbook.Name, vbTextCompare) > 0)
+    #End If
 End Function
 
 ' Title of the window in front (shown in the status bar while the game waits for Excel).
 Public Function ForegroundTitle() As String
+    #If Mac Then
+        ForegroundTitle = "another app"
+    #Else
     Dim buf As String, n As Long
     buf = String$(256, vbNullChar)
     n = GetWindowText(GetForegroundWindow(), buf, 255)
     If n > 0 Then ForegroundTitle = Left$(buf, n)
+    #End If
 End Function

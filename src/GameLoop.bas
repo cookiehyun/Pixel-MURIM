@@ -89,7 +89,7 @@ Public Sub StartGame()
 
         ' sleep until the next tick is due (accurate thanks to timeBeginPeriod 1)
         waitMs = Int((DT - acc - (WinApi.NowSec() - nowT)) * 1000) - 1
-        If waitMs > 0 Then WinApi.SleepMs waitMs
+        If waitMs > 0 Then WaitMs waitMs
     Loop
 
     EndSession
@@ -159,12 +159,27 @@ Public Sub RestoreExcel()
     EndSession
 End Sub
 
+' Sleep until the next tick. On a Mac, keep sampling the keyboard meanwhile so short taps
+' are not lost (Windows remembers taps by itself).
+Private Sub WaitMs(ByVal ms As Long)
+    #If Mac Then
+        Dim t0 As Double
+        t0 = WinApi.NowSec()
+        Do
+            KeyInput.Sample
+            WinApi.SleepMs 3
+        Loop While (WinApi.NowSec() - t0) * 1000 < ms
+    #Else
+        WinApi.SleepMs ms
+    #End If
+End Sub
+
 Private Sub BeginSession()
     Application.EnableCancelKey = xlErrorHandler
     Application.EnableEvents = False
     Application.Calculation = xlCalculationManual
-    Application.Interactive = False      ' block keystrokes from editing cells; GetAsyncKeyState still sees them
-    On Error Resume Next
+    On Error Resume Next                 ' not every setting exists in every Excel (Mac)
+    Application.Interactive = False      ' block keystrokes from editing cells; the key polling still sees them
     mAnim = True
     mAnim = CallByName(Application, "EnableAnimations", VbGet)   ' late bound: not in every Excel version
     CallByName Application, "EnableAnimations", VbLet, False    ' no animated cell / scroll effects

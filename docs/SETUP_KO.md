@@ -1,64 +1,74 @@
-# 새 엑셀 파일로 처음부터 세팅하기
+# 새 엑셀 파일로 처음부터 세팅하기 (Windows / Mac 공통)
 
-경로 예시: `C:\Python\26-2\기계학습\excel-murim` (본인 경로로 바꿔서 읽기)
+Windows와 Mac 모두 같은 ZIP, 같은 코드를 씁니다. 다른 건 메뉴 위치뿐이라, 단계마다 **[Win]** / **[Mac]** 으로 나눠 적었습니다.
+Mac은 Microsoft 365 또는 Excel 2019 이후 버전이 필요합니다.
 
-## 0. 준비
+## 0. 받기
 1. 열려 있는 엑셀 창을 **모두 닫는다**.
-2. PowerShell을 열고 최신 코드를 받는다.
-   ```
-   cd "C:\Python\26-2\기계학습\excel-murim"
-   git pull
-   ```
-3. 탐색기로 `excel-murim` 폴더를 열어 확인한다.
-   - `src` 폴더: `.bas` 파일 **15개** (Combat, CpuAI, Data, DevTools, FX, Fighter, Gallery, Game, GameLoop, Hud, KeyInput, PixelFont, Projectile, Renderer, WinApi)
-   - `data` 폴더: `cheolsan.txt`, `danwoo.txt`, `fx.txt`, `moves.txt`, `stage_sanmun.txt`
-   - 예전에 만든 `.xlsm` 파일(`통합 문서1.xlsm` 등)은 지우거나 다른 폴더로 옮긴다.
+2. GitHub 저장소 페이지에서 **Code → Download ZIP** → 압축을 푼다.
+   (git을 쓴다면 `git clone https://github.com/cookiehyun/excel-murim.git`)
+3. 압축 푼 폴더(`excel-murim-main` 등)를 열어 확인한다.
+   - `src` 폴더: `.bas` 파일들 (DevTools, GameLoop, KeyInput, WinApi ...)
+   - `data` 폴더: 캐릭터·무대 `.txt` 파일들
+4. 폴더 위치
+   - **[Win]** OneDrive 동기화 폴더는 피한다. 예: `C:\Games\excel-murim`
+   - **[Mac]** iCloud로 동기화되는 "문서"·"데스크탑"은 피한다. 예: 홈 폴더 바로 아래 `~/excel-murim`
 
-## 1. 엑셀 보안 설정 (PC당 한 번)
-1. 엑셀 실행 → **빈 통합 문서**.
-2. **파일 → 옵션 → 보안 센터 → [보안 센터 설정...]**
-3. 왼쪽 **매크로 설정**:
-   - "알림이 포함된 VBA 매크로 사용 안 함" 선택 (기본값)
-   - 아래쪽 **"VBA 프로젝트 개체 모델에 안전하게 액세스할 수 있음"** 체크 ← `ImportSrc`에 필요
-4. (선택) 왼쪽 **신뢰할 수 있는 위치 → [새 위치 추가...]** → `excel-murim` 폴더 선택 → 확인.
-   이렇게 하면 열 때마다 "콘텐츠 사용"을 누르지 않아도 된다.
-5. **확인 → 확인**.
+## 1. 엑셀 보안 설정 (컴퓨터당 한 번)
+- **[Win]** 파일 → 옵션 → 보안 센터 → [보안 센터 설정...] → 매크로 설정
+  - "알림이 포함된 VBA 매크로 사용 안 함" (기본값)
+  - **"VBA 프로젝트 개체 모델에 안전하게 액세스할 수 있음"** 체크 ← `ImportSrc`에 필요
+  - (선택) 신뢰할 수 있는 위치에 게임 폴더를 추가하면 "콘텐츠 사용"을 매번 안 눌러도 된다.
+- **[Mac]** 메뉴 막대 **Excel → 설정(환경설정) → 보안**
+  - 매크로: "알림과 함께 모든 매크로 사용 안 함" 또는 "모든 매크로 사용"
+  - **"VBA 프로젝트 개체 모델에 대한 액세스 신뢰"** 체크 ← `ImportSrc`에 필요
 
 ## 2. 새 워크북 만들고 저장
-1. 1단계에서 연 빈 통합 문서에서 **F12** (다른 이름으로 저장).
-2. 위치: **`excel-murim` 폴더 바로 안** (`src`, `data` 폴더가 보이는 곳. `src` 안이 아님).
-3. 파일 이름: `ExcelMurim`
-4. 파일 형식: **Excel 매크로 사용 통합 문서 (\*.xlsm)** ← 반드시. `.xlsx`면 코드가 저장되지 않는다.
-5. **저장**. 탐색기에서 `excel-murim\ExcelMurim.xlsm` 이 `src`, `data`와 나란히 있는지 확인.
+1. 빈 통합 문서를 만든다.
+2. 다른 이름으로 저장 (**[Win]** F12, **[Mac]** ⌘⇧S).
+3. 위치: **게임 폴더 바로 안** (`src`, `data` 폴더가 보이는 곳. `src` 안이 아님).
+4. 이름 `ExcelMurim`, 형식 **Excel 매크로 사용 통합 문서 (.xlsm)** ← 반드시. `.xlsx`면 코드가 저장되지 않는다.
 
 ## 3. DevTools 가져오기 (워크북당 한 번)
-1. 엑셀에서 **Alt+F11** → VBA 편집기.
-2. **Ctrl+R** → 왼쪽에 프로젝트 탐색기. `VBAProject (ExcelMurim.xlsm)` 이 보여야 한다.
-3. 프로젝트 탐색기에서 `VBAProject (ExcelMurim.xlsm)`을 한 번 클릭해 선택.
-4. 메뉴 **파일 → 파일 가져오기...** → `excel-murim\src\DevTools.bas` → 열기.
-5. `VBAProject (ExcelMurim.xlsm)` 아래 **모듈** 폴더에 `DevTools`가 생겼는지 확인.
+1. VBA 편집기 열기: **[Win]** Alt+F11, **[Mac]** 도구 → 매크로 → Visual Basic Editor (⌥F11 / fn+⌥F11)
+2. 프로젝트 창에서 `VBAProject (ExcelMurim.xlsm)`을 한 번 클릭해 선택.
+3. **파일 → 파일 가져오기...** → `src/DevTools.bas`
+4. `모듈` 폴더에 `DevTools`가 생겼는지 확인.
 
 ## 4. 나머지 모듈 가져오기
-1. 엑셀 창으로 돌아가 **Alt+F8** (매크로).
-2. 목록에서 **`ImportSrc`** 선택 → **실행**.
-3. "15 file(s) imported from ...\src\" 메시지 → 확인.
-4. VBA 편집기 프로젝트 탐색기의 **모듈** 폴더에 15개 모듈이 있는지 확인.
+1. 엑셀 창으로 돌아가 매크로 창 열기: **[Win]** Alt+F8, **[Mac]** 도구 → 매크로 → 매크로... (⌥F8 / fn+⌥F8)
+2. **`ImportSrc`** 선택 → 실행.
+3. **[Mac]** "파일 액세스 허용" 창이 뜨면 `src` 폴더를 **선택 / 허용**한다. (한 번 허용하면 기억함)
+4. "N file(s) imported from ..." 메시지 → 확인.
+5. "VBA 프로젝트에 액세스할 수 없습니다" 같은 메시지가 뜨면 1단계 보안 설정을 다시 확인한다.
 
 ## 5. 컴파일 확인
 1. VBA 편집기 메뉴 **디버그 → VBAProject 컴파일**.
-2. 아무 창도 안 뜨면 성공. (메뉴가 회색이 되면 이미 컴파일된 상태)
-3. 오류가 나면 **메시지 창 + 표시된 줄**이 보이게 스크린샷을 찍어 보낸다.
-4. 엑셀로 돌아가 **Ctrl+S** 저장.
+2. 아무 창도 안 뜨면 성공.
+3. 오류가 나면 **메시지 창 + 노란색으로 표시된 줄**이 보이게 스크린샷을 찍어 보낸다.
+4. 엑셀로 돌아가 저장 (**[Win]** Ctrl+S, **[Mac]** ⌘S).
 
 ## 6. 실행
-1. 엑셀 시트를 한 번 클릭해 엑셀 창이 선택된 상태로 만든다. (다른 창이 앞에 있으면 키 입력을 무시한다)
-2. **Alt+F8 → `StartGame` → 실행**.
-3. 첫 화면을 칠하는 데 1~2초 걸린다. 메뉴가 나오면 ↑↓ 항목, ←→ 값, **A** 시작, **Esc** 종료.
-4. 상태 표시줄(엑셀 맨 아래)에 FPS 등이 표시된다.
-5. 엑셀이 입력을 안 받게 되면: Alt+F11 → **Ctrl+G** (직접 실행 창) → `GameLoop.RestoreExcel` 입력 → Enter.
+1. 엑셀 시트를 한 번 클릭해 엑셀이 맨 앞에 있게 한다. (다른 앱이 앞에 있으면 게임이 키 입력을 무시하고 일시정지한다)
+2. 매크로 창 → **`StartGame`** → 실행.
+3. **[Mac]** 처음 실행할 때 `data` 폴더 "파일 액세스 허용" 창이 뜨면 허용한다.
+4. 메뉴가 나오면 ↑↓ 이동, **A** 결정, **S** 뒤로, **Esc** 일시정지/종료.
+5. 엑셀 맨 아래 상태 표시줄에 FPS 등이 나온다.
+
+## Mac에서 문제가 생기면
+| 증상 | 해결 |
+|---|---|
+| 화면은 나오는데 키가 하나도 안 먹음 | 시스템 설정 → 개인정보 보호 및 보안 → **입력 모니터링** → Microsoft Excel 켜기 (목록에 없으면 + 로 추가) → 엑셀 완전히 종료 후 다시 실행 |
+| `StartGame` 하자마자 엑셀이 꺼짐 | VBA 편집기 → `KeyInput` 모듈 위쪽 `MAC_FOCUS_CHECK`를 `False`로 바꾸고 저장. 다른 앱이 앞에 있을 때 자동 일시정지만 꺼진다. (`ImportSrc`를 다시 하면 원래대로 돌아가니, 그때는 다시 바꾼다) 그리고 알려주면 고친다 |
+| "File not found" 오류 | 워크북이 `src`, `data` 옆에 저장됐는지 확인. 파일 액세스 허용 창에서 거부했다면 엑셀을 다시 켜고 허용 |
+| 게임이 많이 느림 | 매크로 창 → `RenderBenchmark` 실행 결과를 스크린샷으로 보낸다 |
+| F1 등 기능 키가 안 먹음 | Mac 노트북은 fn 키와 같이 누른다 |
+
+## 엑셀이 입력을 안 받게 되면
+VBA 편집기 → 직접 실행 창 (**[Win]** Ctrl+G, **[Mac]** ⌃⌘G) → `GameLoop.RestoreExcel` 입력 → Enter.
 
 ## 이후 업데이트 받을 때
-1. 엑셀은 열어 둔 채로 PowerShell에서 `git pull`.
-2. 엑셀에서 **Alt+F8 → `ImportSrc`** (src에서 사라진 옛 모듈도 자동으로 지워진다).
-3. **디버그 → VBAProject 컴파일** → Ctrl+S → `StartGame`.
-4. `DevTools.bas` 자체가 바뀐 경우에만 3단계를 다시 한다 (그때는 따로 알려줌).
+1. 새 ZIP을 받아 압축을 풀고, 안의 `src`, `data` 폴더를 게임 폴더에 **덮어쓴다**. (`ExcelMurim.xlsm`은 그대로 둔다. git을 쓰면 `git pull`)
+2. 엑셀에서 매크로 창 → **`ImportSrc`** (src에서 사라진 옛 모듈도 자동으로 지워진다).
+3. **디버그 → VBAProject 컴파일** → 저장 → `StartGame`.
+4. `DevTools.bas` 자체가 바뀐 경우에만 3단계를 다시 한다. 먼저 VBA 편집기에서 기존 `DevTools` 모듈을 우클릭 → 제거한 뒤 가져온다.

@@ -4,19 +4,26 @@
 
 A real-time 2D martial-arts (wuxia) fighting game that runs inside an Excel sheet. Every cell is one pixel, and the whole game is written in VBA. Six fighters plus a final boss, with arcade, tag-team and two-player versus modes.
 
-Windows 엑셀(.xlsm) 전용입니다. 맥 엑셀에서는 돌아가지 않습니다. / Windows Excel (.xlsm) only. It does not run on Excel for Mac.
+Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑니다. 코드는 하나이고, 실행할 때 어느 쪽인지 스스로 구분합니다. / Runs on both Windows Excel and Excel for Mac (Microsoft 365 / 2019 or later). One code base; it detects the platform at run time.
 
 ## 시작하기 / Getting started
 
-| 한국어 | English |
-|---|---|
-| 처음 한 번만 하면 됩니다. 자세한 안내는 [docs/SETUP_KO.md](docs/SETUP_KO.md) | One-time setup. Step-by-step guide (Korean): [docs/SETUP_KO.md](docs/SETUP_KO.md) |
-| 1. 엑셀에서 새 통합 문서를 만들어 `excel-murim` 폴더 안에 `ExcelMurim.xlsm`으로 저장. OneDrive 동기화 폴더는 피하세요. | 1. Create a new workbook and save it as `ExcelMurim.xlsm` inside the `excel-murim` folder. Avoid OneDrive-synced folders. |
-| 2. 파일 > 옵션 > 보안 센터 > 보안 센터 설정 > 매크로 설정에서 "VBA 프로젝트 개체 모델에 안전하게 액세스할 수 있음" 켜기 | 2. File > Options > Trust Center > Trust Center Settings > Macro Settings: turn on "Trust access to the VBA project object model". |
-| 3. Alt+F11 → 파일 > 파일 가져오기 → `src/DevTools.bas` | 3. Alt+F11 → File > Import File → `src/DevTools.bas` |
-| 4. Alt+F8 → `DevTools.ImportSrc` 실행 (나머지 모듈을 불러옴) | 4. Alt+F8 → run `DevTools.ImportSrc` (imports the other modules) |
-| 업데이트: `git pull` → `ImportSrc` → VBE에서 디버그 > VBAProject 컴파일 | Updating: `git pull` → `ImportSrc` → in the VBE, Debug > Compile VBAProject |
-| 실행: Alt+F8 → `StartGame` | Play: Alt+F8 → `StartGame` |
+처음 한 번만 하면 됩니다. 자세한 안내: [docs/SETUP_KO.md](docs/SETUP_KO.md) / One-time setup. Step-by-step guide (Korean): [docs/SETUP_KO.md](docs/SETUP_KO.md)
+
+| | Windows | Mac |
+|---|---|---|
+| 1. 받기 / Download | GitHub **Code → Download ZIP** → 압축 풀기 (또는 `git clone`) | 같음 / same |
+| 2. 보안 설정 / Security | 파일 > 옵션 > 보안 센터 > 보안 센터 설정 > 매크로 설정: **VBA 프로젝트 개체 모델에 안전하게 액세스할 수 있음** 켜기 | Excel > 설정(환경설정) > 보안: **VBA 프로젝트 개체 모델에 대한 액세스 신뢰** 켜기 |
+| 3. 저장 / Save | 새 통합 문서 → 압축 푼 폴더 안(`src`, `data` 옆)에 `ExcelMurim.xlsm` (Excel 매크로 사용 통합 문서). OneDrive 폴더는 피하기 | 같음. 단 iCloud로 동기화되는 문서·데스크탑 폴더는 피하고 홈 폴더 등에 두기 |
+| 4. DevTools | Alt+F11 → 파일 > 파일 가져오기 → `src/DevTools.bas` | 도구 > 매크로 > Visual Basic Editor → 파일 > 파일 가져오기 → `src/DevTools.bas` |
+| 5. 모듈 불러오기 / Import | Alt+F8 → `ImportSrc` | 도구 > 매크로 > 매크로... → `ImportSrc`. 폴더 접근 허용 창이 뜨면 **선택/허용** |
+| 6. 컴파일 / Compile | VBE: 디버그 > VBAProject 컴파일 → 저장 | 같음 / same |
+| 실행 / Play | Alt+F8 → `StartGame` | 도구 > 매크로 > 매크로... → `StartGame`. 처음에 `data` 폴더 접근 허용 창이 뜨면 허용 |
+| 업데이트 / Update | 새 ZIP을 같은 폴더에 덮어쓰기 (또는 `git pull`) → `ImportSrc` → 컴파일 | 같음 / same |
+
+- **Mac에서 키가 안 먹을 때 / Mac: keys do nothing**: 시스템 설정 > 개인정보 보호 및 보안 > **입력 모니터링**에 Microsoft Excel을 추가하고 엑셀을 다시 켭니다. / System Settings > Privacy & Security > **Input Monitoring** → add Microsoft Excel, then restart Excel.
+- **Mac에서 게임 시작 시 엑셀이 꺼질 때 / Mac: Excel quits when the game starts**: VBE에서 `KeyInput` 모듈 위쪽의 `MAC_FOCUS_CHECK`를 `False`로 바꿉니다 (다른 앱이 앞에 있을 때 자동 일시정지만 꺼짐). / set `MAC_FOCUS_CHECK` at the top of `KeyInput` to `False` (only turns off auto-pause when another app is in front).
+- **Mac 노트북 / Mac laptops**: F1 같은 기능 키는 fn과 같이 누릅니다. / press fn with function keys such as F1.
 
 <details>
 <summary><b>한국어 (게임 설명)</b></summary>
@@ -251,7 +258,7 @@ Balance is tuned with CPU-vs-CPU matches; overall win rates are currently 44-60%
 <summary>한국어</summary>
 
 ### 문제가 생겼을 때
-- 엑셀이 입력을 받지 않으면 VBE 직접 실행 창(Ctrl+G)에 `GameLoop.RestoreExcel`을 입력합니다.
+- 엑셀이 입력을 받지 않으면 VBE 직접 실행 창(Windows Ctrl+G, Mac ⌃⌘G)에 `GameLoop.RestoreExcel`을 입력합니다.
 - 상태 표시줄에 FPS, 틱 수, 프레임당 칠한 횟수, 렌더 시간이 나옵니다.
 
 ### 디버그 키 (TRAINING에서만)
@@ -278,7 +285,7 @@ excel-murim/
   src/                VBA 모듈 (.bas)
     GameLoop.bas      고정 타임스텝 루프, 엑셀 설정/복구
     Game.bas          상태 전환, 한 틱 진행과 그리기, 일시정지 메뉴
-    KeyInput.bas      키 입력 (GetAsyncKeyState), 창 포커스 확인
+    KeyInput.bas      키 입력 (Windows GetAsyncKeyState / Mac CGEventSourceKeyState), 창 포커스 확인
     KeyConfig.bas     2인 키 설정 화면, data/keys.txt 저장
     Renderer.bas      셀 픽셀 버퍼, 스프라이트, 바뀐 부분만 사각형으로 묶어 칠하기
     Data.bas          data/*.txt 읽기
@@ -293,7 +300,7 @@ excel-murim/
     FX.bas            타격 이펙트
     Hud.bas           체력·내공·게이지 바
     PixelFont.bas     픽셀 폰트
-    WinApi.bas        Sleep, 정밀 타이머 (엑셀 전용)
+    WinApi.bas        Sleep, 정밀 타이머, Mac 파일 접근 허용 (Windows API / Mac libc)
     Gallery.bas       스프라이트 모아보기
     DevTools.bas      src와 워크북 동기화 (ImportSrc / ExportSrc)
   data/               실행 중에 읽는 데이터
@@ -344,7 +351,7 @@ python3 tools/lint_vba.py                           # 호환 검사
 <summary>English</summary>
 
 ### If something goes wrong
-- If Excel stops taking input, type `GameLoop.RestoreExcel` in the VBE Immediate window (Ctrl+G).
+- If Excel stops taking input, type `GameLoop.RestoreExcel` in the VBE Immediate window (Windows Ctrl+G, Mac ⌃⌘G).
 - The status bar shows FPS, ticks per second, paint calls per frame and render time.
 
 ### Debug keys (TRAINING only)
@@ -371,7 +378,7 @@ excel-murim/
   src/                VBA modules (.bas)
     GameLoop.bas      fixed-timestep loop, Excel session setup/restore
     Game.bas          game state, one tick and one frame, pause menu
-    KeyInput.bas      keyboard (GetAsyncKeyState), window focus check
+    KeyInput.bas      keyboard (Windows GetAsyncKeyState / Mac CGEventSourceKeyState), window focus check
     KeyConfig.bas     two-player key settings, data/keys.txt
     Renderer.bas      cell pixel buffer, sprites, repaint only changed areas as merged rectangles
     Data.bas          reads data/*.txt
@@ -386,7 +393,7 @@ excel-murim/
     FX.bas            hit effects
     Hud.bas           health, inner energy and super bars
     PixelFont.bas     pixel fonts
-    WinApi.bas        Sleep, high-resolution timer (Excel only)
+    WinApi.bas        sleep, high-resolution timer, Mac file access (Windows API / Mac libc)
     Gallery.bas       sprite sheet viewer
     DevTools.bas      sync src with the workbook (ImportSrc / ExportSrc)
   data/               data read at run time
