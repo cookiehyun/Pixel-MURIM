@@ -60,6 +60,9 @@ Private Const BACK_WALK As Double = 0.75     ' back-walk speed factor
 Private Const GUARD_RANGE As Double = 60     ' hold back within this distance of an attack -> guard
 Private Const DOWN_LIE_TICKS As Long = 16
 Private Const GETUP_TICKS As Long = 4
+Private Const ROLL_TICKS As Long = 8       ' wake-up roll: invulnerable, then the normal get-up
+Private Const ROLL_SPEED As Double = 3.5   ' px / tick (8 ticks = 28 px)
+Private Const WAKE_THROW_INV As Long = 6   ' after getting up: cannot be thrown for this many ticks
 Private Const DUMMY_INTERVAL As Long = 30
 Private Const BUF_TICKS As Long = 5
 Private Const MAX_CHAIN As Long = 3
@@ -90,7 +93,9 @@ Public Type TFighter
     airAttacked As Boolean
     stun As Long             ' remaining hit/block stun, or landing lag
     stunTotal As Long
-    downPhase As Long        ' 0 airborne, 1 lying, 2 getting up
+    downPhase As Long        ' 0 airborne, 1 lying, 2 getting up, 3 rolling
+    rollDir As Long          ' wake-up roll direction on screen (+1 right, -1 left)
+    wakeInv As Long          ' ticks left of throw invulnerability after getting up
     flash As Long            ' ticks left of white hit flash
     bufAtk As Long           ' buffered attack slot (-1 = none)
     bufAge As Long
@@ -130,6 +135,10 @@ Public Type TFighter
     sCHit As Long
     sDown0 As Long
     sDown1 As Long
+    sRoll0 As Long           ' wake-up roll, 4 frames (a quarter turn each)
+    sRoll1 As Long
+    sRoll2 As Long
+    sRoll3 As Long
     sDash As Long
     sBDash As Long
     sPunchA As Long          ' super grab sequence poses
@@ -273,6 +282,10 @@ Private Sub Setup(ByVal i As Long, ByVal prefix As String, ByVal x As Double, By
         .sCHit = Data.SpriteId(prefix & ".chit")
         .sDown0 = Data.SpriteId(prefix & ".down_0")
         .sDown1 = Data.SpriteId(prefix & ".down_1")
+        .sRoll0 = Data.SpriteId(prefix & ".roll_0")
+        .sRoll1 = Data.SpriteId(prefix & ".roll_1")
+        .sRoll2 = Data.SpriteId(prefix & ".roll_2")
+        .sRoll3 = Data.SpriteId(prefix & ".roll_3")
         .sDash = Data.SpriteId(prefix & ".dash")
         .sBDash = Data.SpriteId(prefix & ".bdash")
         .sPunchA = Data.SpriteId(prefix & ".lp_1")
@@ -320,6 +333,8 @@ Public Sub CopyFighter(dst As TFighter, src As TFighter)
     dst.stun = src.stun
     dst.stunTotal = src.stunTotal
     dst.downPhase = src.downPhase
+    dst.rollDir = src.rollDir
+    dst.wakeInv = src.wakeInv
     dst.flash = src.flash
     dst.bufAtk = src.bufAtk
     dst.bufAge = src.bufAge
@@ -358,6 +373,10 @@ Public Sub CopyFighter(dst As TFighter, src As TFighter)
     dst.sCHit = src.sCHit
     dst.sDown0 = src.sDown0
     dst.sDown1 = src.sDown1
+    dst.sRoll0 = src.sRoll0
+    dst.sRoll1 = src.sRoll1
+    dst.sRoll2 = src.sRoll2
+    dst.sRoll3 = src.sRoll3
     dst.sDash = src.sDash
     dst.sBDash = src.sBDash
     dst.sPunchA = src.sPunchA
@@ -402,6 +421,8 @@ Private Sub ResetOne(ByVal i As Long)
         .redCap = .maxHealth
         .trailDelay = 0
         .stun = 0
+        .wakeInv = 0
+        .rollDir = 0
         .flash = 0
         .bufAtk = -1
         .bufDash = 0
@@ -632,6 +653,7 @@ Private Sub UpdateFighter(ByVal i As Long)
             If .naegong > NAEGONG_MAX Then .naegong = NAEGONG_MAX
         End If
         If .ngFlash > 0 Then .ngFlash = .ngFlash - 1
+        If .wakeInv > 0 Then .wakeInv = .wakeInv - 1
         If .slide <> 0 Then
             .x = .x + .slide
             .slide = .slide * 0.6
@@ -705,12 +727,28 @@ Private Sub UpdateFighter(ByVal i As Long)
                     .stTick = 0
                 End If
             Case 1
-                If .stTick >= DOWN_LIE_TICKS And .health > 0 Then        ' KO'd fighters stay down
+                If .health > 0 Then                                      ' KO'd fighters stay down
+                    atk = TakeAttack(i)
+                    If atk >= 0 And (fwd Or back) Then                   ' forward / back + any attack button = roll
+                        .downPhase = 3
+                        .stTick = 0
+                        If fwd Then .rollDir = .facing Else .rollDir = -.facing
+                    ElseIf .stTick >= DOWN_LIE_TICKS Then
+                        .downPhase = 2
+                        .stTick = 0
+                    End If
+                End If
+            Case 3
+                .x = .x + .rollDir * ROLL_SPEED
+                If .stTick >= ROLL_TICKS Then
                     .downPhase = 2
                     .stTick = 0
                 End If
             Case Else
-                If .stTick >= GETUP_TICKS Then SetState i, ST_IDLE
+                If .stTick >= GETUP_TICKS Then
+                    SetState i, ST_IDLE
+                    .wakeInv = WAKE_THROW_INV
+                End If
             End Select
 
         Case ST_THROW
@@ -914,6 +952,7 @@ End Function
 
 Private Function CanBeGrabbed(ByVal o As Long) As Boolean
     If Not F(o).onGround Then Exit Function
+    If F(o).wakeInv > 0 Then Exit Function                   ' just got up: no throw loops
     Select Case F(o).state
     Case ST_IDLE, ST_WALK, ST_CROUCH, ST_DASH, ST_LAND
         CanBeGrabbed = True
@@ -1362,7 +1401,7 @@ Private Sub DrawGhosts(ByVal i As Long)
 End Sub
 
 Private Function CurrentSprite(ByVal i As Long) As Long
-    Dim t As Long
+    Dim t As Long, k As Long
     With F(i)
         t = .stTick
         If mPose(i) >= 0 And .onGround And (.state = ST_IDLE Or .state = ST_WALK Or .state = ST_CROUCH) Then
@@ -1445,6 +1484,14 @@ Private Function CurrentSprite(ByVal i As Long) As Long
             Select Case .downPhase
             Case 0: CurrentSprite = .sDown0
             Case 1: CurrentSprite = .sDown1
+            Case 3                                          ' roll: turn forward (or backward) a quarter every 2 ticks
+                If .rollDir = .facing Then k = (t \ 2) Mod 4 Else k = (4 - (t \ 2) Mod 4) Mod 4
+                Select Case k
+                Case 0: CurrentSprite = .sRoll0
+                Case 1: CurrentSprite = .sRoll1
+                Case 2: CurrentSprite = .sRoll2
+                Case Else: CurrentSprite = .sRoll3
+                End Select
             Case Else: CurrentSprite = .sCrouch
             End Select
         Case Else
