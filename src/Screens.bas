@@ -41,7 +41,7 @@ Public Sub Init()
     rPrefix(5) = "hongryeon": rName(5) = "HONGRYEON": rStyle(5) = "FAN DANCER"
     rStat(5, 0) = 2: rStat(5, 1) = 4: rStat(5, 2) = 4: rStat(5, 3) = 3: rStat(5, 4) = 5: rHeadX(5) = 1: rHeadY(5) = -30
     rPrefix(6) = "cheonma": rName(6) = "CHEONMA": rStyle(6) = "HEAVENLY DEMON"
-    rStat(6, 0) = 5: rStat(6, 1) = 3: rStat(6, 2) = 4: rStat(6, 3) = 3: rStat(6, 4) = 1: rHeadX(6) = 4: rHeadY(6) = -35
+    rStat(6, 0) = 5: rStat(6, 1) = 3: rStat(6, 2) = 2: rStat(6, 3) = 3: rStat(6, 4) = 1: rHeadX(6) = 4: rHeadY(6) = -35
     rPrefix(7) = "": rName(7) = "RANDOM": rStyle(7) = ""
     cGold = RGB(240, 190, 80)
     cDim = RGB(130, 120, 150)

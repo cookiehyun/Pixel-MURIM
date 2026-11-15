@@ -651,8 +651,8 @@ MOVE_ANIMS = {
         ("sp2_pre", 2, ["rush_0", "rush_2"]),
     ],
     "cheonma": [
-        ("sp1_pre", 2, ["sp_a", "sp_0"]),
-        ("sp2_pre", 2, ["rush_0", "rush_2"]),
+        ("sp1_pre", 2, ["palm_0"]),
+        ("super_pre", 2, ["sp_a", "sp_a", "palm_0"]),
     ],
     "hongryeon": [
         ("hp_pre", 2, ["hp_0", "hp_a"]),
@@ -1083,6 +1083,9 @@ CHEONMA_OVERRIDES.update({
     "hp_1": P(lean=20, lf=(42, 0), lb=(-42, -36), af=(90, 88), ab=(86, 85), open_hand=True, trail=("palm", 6)),
     "intro": P(lean=-2, lf=(16, 2), lb=(-16, -4), af=(60, 150), ab=(60, 150), open_hand=True),     # arms folded
     "win": P(lean=-12, lf=(22, 2), lb=(-22, -6), af=(160, 150), ab=(150, 140), open_hand=True),   # arms raised, laughing
+    # demon palm (sp1): both palms drawn back low, then a lunging double palm
+    "palm_0": P(lean=-10, lf=(30, 5), lb=(-30, -20), af=(-35, 80), ab=(-45, 90), open_hand=True),
+    "palm_1": P(lean=30, lf=(58, 5), lb=(-55, -45), af=(92, 90), ab=(86, 92), open_hand=True, trail=("palm", 6)),
 })
 
 SCALE_KEYS = ("thigh", "shin", "torso", "upper", "fore", "head_r", "w_thigh", "w_shin", "w_upper",
