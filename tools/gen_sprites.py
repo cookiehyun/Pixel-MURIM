@@ -288,6 +288,11 @@ BASE_POSES = {
     "chit": P(lean=-12, lf=CROUCH_F, lb=CROUCH_B, af=(10, 60), ab=(-20, 30)),
     "down_0": P(lean=0, lf=(40, 20), lb=(10, -20), af=(160, 150), ab=(130, 170), ground="air", rot=-55),
     "down_1": P(lean=0, lf=(5, 0), lb=(-5, -5), af=(170, 175), ab=(150, 160), ground="bbox", rot=-90),
+    # wake-up roll: a tucked ball turned a quarter per frame (forward roll plays 0-3, back roll 3-0)
+    "roll_0": P(lean=55, lf=(120, -30), lb=(100, -60), af=(95, 160), ab=(80, 150), ground="bbox", rot=0),
+    "roll_1": P(lean=55, lf=(120, -30), lb=(100, -60), af=(95, 160), ab=(80, 150), ground="bbox", rot=90),
+    "roll_2": P(lean=55, lf=(120, -30), lb=(100, -60), af=(95, 160), ab=(80, 150), ground="bbox", rot=180),
+    "roll_3": P(lean=55, lf=(120, -30), lb=(100, -60), af=(95, 160), ab=(80, 150), ground="bbox", rot=270),
     "throw_0": P(lean=15, af=(80, 85), ab=(75, 80), open_hand=True),
     "throw_1": P(lean=-28, lf=(-10, 0), lb=(-40, -20), af=(160, 175), ab=(150, 170), open_hand=True),
     "dash": P(lean=28, lf=(60, -5), lb=(-45, -60), af=(70, 120), ab=(-35, 50)),

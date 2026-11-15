@@ -16,6 +16,7 @@ Private Const QMAX As Long = 8
 ' difficulty parameters
 Private pReact As Long, pMistake As Double, pBlock As Double, pAntiAir As Double
 Private pCombo As Double, pTech As Double, pAggr As Double, pSpecial As Double, pPunish As Double
+Private pRoll As Double, pReversal As Double
 Private mLevel As Long
 
 ' per-CPU state (index = fighter controlled by the CPU)
@@ -24,6 +25,7 @@ Private sLow(0 To 1, 0 To SNAPS - 1) As Boolean
 Private sOver(0 To 1, 0 To SNAPS - 1) As Boolean
 Private sAir(0 To 1, 0 To SNAPS - 1) As Boolean     ' opponent jumping in
 Private sRecov(0 To 1, 0 To SNAPS - 1) As Boolean   ' opponent in recovery (punishable)
+Private sMv(0 To 1, 0 To SNAPS - 1) As Long         ' opponent's attack (move id + 1000 * chain), -1 = none
 Private sPos(0 To 1) As Long
 
 Private qDir(0 To 1, 0 To QMAX - 1) As Long
@@ -37,6 +39,9 @@ Private mPlanTicks(0 To 1) As Long
 Private mGuardDecided(0 To 1) As Boolean
 Private mGuardOn(0 To 1) As Boolean
 Private mGuardLow(0 To 1) As Boolean
+Private mGuardMv(0 To 1) As Long          ' the attack the guard decision was made for
+Private mDownDecided(0 To 1) As Boolean   ' knocked down: roll / reversal chosen
+Private mWakeDecided(0 To 1) As Boolean
 Private mAADecided(0 To 1) As Boolean
 Private mPunishDecided(0 To 1) As Boolean
 Private mComboDecided(0 To 1) As Boolean
@@ -50,13 +55,13 @@ Public Sub Init(ByVal level As Long, Optional ByVal seed As Long = 0)
     Select Case level
     Case LV_EASY
         pReact = 7: pMistake = 0.35: pBlock = 0.25: pAntiAir = 0.1: pCombo = 0.15
-        pTech = 0: pAggr = 0.35: pSpecial = 0.25: pPunish = 0.2
+        pTech = 0: pAggr = 0.35: pSpecial = 0.25: pPunish = 0.2: pRoll = 0.1: pReversal = 0
     Case LV_HARD
         pReact = 2: pMistake = 0.04: pBlock = 0.9: pAntiAir = 0.85: pCombo = 0.9
-        pTech = 0.7: pAggr = 0.75: pSpecial = 0.8: pPunish = 0.9
+        pTech = 0.85: pAggr = 0.75: pSpecial = 0.8: pPunish = 0.9: pRoll = 0.55: pReversal = 0.35
     Case Else
         pReact = 4: pMistake = 0.15: pBlock = 0.6: pAntiAir = 0.45: pCombo = 0.55
-        pTech = 0.3: pAggr = 0.55: pSpecial = 0.5: pPunish = 0.55
+        pTech = 0.3: pAggr = 0.55: pSpecial = 0.5: pPunish = 0.55: pRoll = 0.3: pReversal = 0.1
     End Select
     If seed <> 0 Then
         Rnd -1
@@ -66,8 +71,10 @@ Public Sub Init(ByVal level As Long, Optional ByVal seed As Long = 0)
     End If
     For i = 0 To 1
         qLen(i) = 0: qPos(i) = 0: mPlanTicks(i) = 0: mIdleLock(i) = 0
+        mGuardMv(i) = -1: mDownDecided(i) = False: mWakeDecided(i) = False
         For k = 0 To SNAPS - 1
             sAtk(i, k) = False: sLow(i, k) = False: sOver(i, k) = False: sAir(i, k) = False: sRecov(i, k) = False
+            sMv(i, k) = -1
         Next k
     Next i
 End Sub
@@ -90,9 +97,10 @@ Public Sub Observe(ByVal i As Long)
     p = sPos(i)
     With Fighter.F(o)
         sAtk(i, p) = Fighter.Threatened(i)
-        sLow(i, p) = False: sOver(i, p) = False
+        sLow(i, p) = False: sOver(i, p) = False: sMv(i, p) = -1
         If .state = ST_ATTACK Then
             mv = .mv
+            sMv(i, p) = mv + 1000 * .chain
             sLow(i, p) = (Data.MvLevel(mv) = LV_LOW)
             sOver(i, p) = (Data.MvLevel(mv) = LV_OVERHEAD)
         End If
@@ -190,6 +198,7 @@ Public Sub Think(ByVal i As Long)
         If .state <> ST_THROWN Then mTechDecided(i) = False
         If .state <> ST_ATTACK Then mComboDecided(i) = False
         If .state <> ST_JUMP Then mAirDecided(i) = False
+        If .state <> ST_DOWN Then mDownDecided(i) = False: mWakeDecided(i) = False
 
         Select Case .state
         Case ST_THROWN
@@ -239,8 +248,36 @@ Public Sub Think(ByVal i As Long)
                 End If
             End If
 
-        Case ST_DOWN, ST_HIT, ST_LAND
-            ' hold guard when getting back up next to the opponent
+        Case ST_DOWN
+            If .downPhase = 1 And Not mDownDecided(i) And .stTick >= 1 Then
+                ' lying: roll away from (or through) a waiting opponent
+                mDownDecided(i) = True
+                If dist < 50 And Rnd < pRoll Then
+                    If Abs(.x - SCREEN_W / 2) > 70 And ((.x < SCREEN_W / 2) = (.facing > 0)) Then
+                        d = 6                                 ' back to the wall: roll forward, under / past them
+                    ElseIf Rnd < 0.6 Then
+                        d = 4
+                    Else
+                        d = 6
+                    End If
+                    Fighter.FeedInput i, d, B_LP, B_LP
+                    Exit Sub
+                End If
+            ElseIf .downPhase = 2 And Not mWakeDecided(i) Then
+                ' getting up next to the opponent: invincible reversal (input now, comes out on the first free tick)
+                mWakeDecided(i) = True
+                If dist < 34 And Rnd < pReversal Then
+                    s = FindSpecial(i, MT_RISE)
+                    If s >= 0 Then
+                        QSpecial i, s, False
+                        Think i
+                        Exit Sub
+                    End If
+                End If
+            End If
+            If .downPhase = 2 And dist < 40 And Rnd < pBlock Then d = 4    ' hold guard as it stands up
+
+        Case ST_HIT, ST_LAND
             If dist < 40 And Rnd < pBlock Then d = 4
 
         Case ST_IDLE, ST_WALK, ST_CROUCH, ST_GUARD
@@ -261,8 +298,9 @@ Private Function Neutral(ByVal i As Long, ByVal o As Long, ByVal v As Long, ByVa
 
     ' 1. defend against an attack / projectile it has "seen"
     If sAtk(i, v) Then
-        If Not mGuardDecided(i) Then
+        If Not mGuardDecided(i) Or sMv(i, v) <> mGuardMv(i) Then     ' decide again for every new attack in a string
             mGuardDecided(i) = True
+            mGuardMv(i) = sMv(i, v)
             mGuardOn(i) = (Rnd < pBlock)
             If mLevel = LV_HARD Then
                 mGuardLow(i) = sLow(i, v)
