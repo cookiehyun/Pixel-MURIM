@@ -1,16 +1,19 @@
 Attribute VB_Name = "Arcade"
 Option Explicit
 
-' Arcade mode: the player's fighter takes on the other five in random order,
-' then the final boss. Lose a match -> CONTINUE? countdown (retry the same fight).
-' Clear all six -> character ending.
+' Arcade mode: the player's fighter takes on the other five in random order, then its own
+' shadow (mirror match, alternate colors), then the final boss Cheonma.
+' Lose a match -> CONTINUE? countdown (retry the same fight).
+' Clear all seven -> character ending, and Cheonma becomes playable (saved in data/save.txt).
+' Playing as Cheonma: the six fighters, then the shadow Cheonma as the boss.
 '   LADDER   : next opponent preview (A or wait)
 '   CONTINUE : 9..0 countdown, A = retry, S / timeout = GAME OVER
 '   ENDING   : ending text, A = title
 
-Private Const FIGHTS As Long = 6
+Private Const FIGHTS As Long = 7
 Private Const BOSS_PREFIX As String = "cheonma"
 Private Const BOSS_NAME As String = "CHEONMA"
+Private Const SAVE_FILE As String = "save.txt"
 
 Private mOrder(0 To FIGHTS - 1) As String
 Private mName(0 To FIGHTS - 1) As String
@@ -24,6 +27,9 @@ Private mT As Long
 Private mGameOver As Boolean
 
 Private cGold As Long, cDim As Long, cP1 As Long, cP2 As Long
+Private mUnlockRead As Boolean
+Private mUnlocked As Boolean
+Private mJustUnlocked As Boolean
 
 Public Sub Begin(ByVal player As String)
     Dim k As Long, n As Long, j As Long, t As String, pool() As String
@@ -46,14 +52,26 @@ Public Sub Begin(ByVal player As String)
         j = Int(Rnd * (k + 1))
         t = pool(k): pool(k) = pool(j): pool(j) = t
     Next k
+    If player = BOSS_PREFIX Then
+        For k = 0 To FIGHTS - 2                           ' all six fighters, then the shadow boss
+            mOrder(k) = pool(k Mod n)
+            mName(k) = Screens.RosterName(Screens.RosterIndex(mOrder(k)))
+        Next k
+    Else
+        For k = 0 To FIGHTS - 3                           ' the other five ...
+            mOrder(k) = pool(k Mod n)
+            mName(k) = Screens.RosterName(Screens.RosterIndex(mOrder(k)))
+        Next k
+        mOrder(FIGHTS - 2) = player                       ' ... then your own shadow
+        mName(FIGHTS - 2) = "SHADOW"
+    End If
     For k = 0 To FIGHTS - 2
-        mOrder(k) = pool(k Mod n)
-        mName(k) = Screens.RosterName(Screens.RosterIndex(mOrder(k)))
         mStage(k) = k Mod Data.StageCount
     Next k
     mOrder(FIGHTS - 1) = BOSS_PREFIX
     mName(FIGHTS - 1) = BOSS_NAME
     mStage(FIGHTS - 1) = Data.StageCount - 1
+    mJustUnlocked = False
     mIdx = 0
     mContinues = 0
     ShowLadder
@@ -95,6 +113,10 @@ Public Sub MatchOver(ByVal won As Boolean)
     If won Then
         mIdx = mIdx + 1
         If mIdx >= FIGHTS Then
+            If Not BossUnlocked Then
+                SaveUnlock
+                mJustUnlocked = True
+            End If
             Game.GameState = GS_ENDING
         Else
             ShowLadder
@@ -103,6 +125,36 @@ Public Sub MatchOver(ByVal won As Boolean)
         mGameOver = False
         Game.GameState = GS_CONTINUE
     End If
+End Sub
+
+' Has the player cleared arcade once (Cheonma playable)? Read from data/save.txt once.
+Public Function BossUnlocked() As Boolean
+    Dim lines As Variant, k As Long
+    If Not mUnlockRead Then
+        mUnlockRead = True
+        On Error Resume Next
+        lines = Data.ReadFileLines(SAVE_FILE)
+        If Err.Number = 0 Then
+            For k = LBound(lines) To UBound(lines)
+                If Trim$(lines(k)) = "cheonma=1" Then mUnlocked = True
+            Next k
+        End If
+        Err.Clear
+        On Error GoTo 0
+    End If
+    BossUnlocked = mUnlocked
+End Function
+
+Private Sub SaveUnlock()
+    Dim f As Integer
+    mUnlocked = True
+    mUnlockRead = True
+    On Error Resume Next                                  ' a read-only folder must not break the ending
+    f = FreeFile
+    Open Data.FilePath(SAVE_FILE) For Output As #f
+    Print #f, "cheonma=1"
+    Close #f
+    On Error GoTo 0
 End Sub
 
 Private Function CountdownSecs() As Long
@@ -159,34 +211,35 @@ Private Sub LadderRender()
     PixelFont.DrawText "1P", 3, 13, cP1
     PixelFont.DrawText "CPU", SCREEN_W - 3, 13, cP2, 1, 2
     Screens.DrawBigView mPlayer, 32, False, 0, 63
-    Screens.DrawBigView mOrder(mIdx), 160, True, 129, SCREEN_W - 1
+    Screens.DrawBigView mOrder(mIdx), 160, True, 129, SCREEN_W - 1, (mOrder(mIdx) = mPlayer)
     PixelFont.DrawBig "VS", cx, 13, RGB(255, 240, 210), 2
     PixelFont.DrawBig mName(mIdx), cx, 31, IIf(mIdx = FIGHTS - 1, RGB(255, 90, 70), RGB(255, 240, 210)), 1
 
     blink = ((Screens.MenuTick \ 5) Mod 2 = 0)
-    For k = 0 To FIGHTS - 1
-        x = 65 + (k Mod 3) * 21
-        y = 46 + (k \ 3) * 22
-        If k = FIGHTS - 1 And mIdx < FIGHTS - 1 Then
-            Renderer.FillRect x, y, 20, 20, RGB(40, 12, 16)              ' boss stays hidden
-            PixelFont.DrawBig "?", x + 10, y + 3, RGB(150, 50, 50), 2
-        ElseIf Screens.RosterIndex(mOrder(k)) >= 0 Then
-            Screens.DrawPortraitAt Screens.RosterIndex(mOrder(k)), x, y
+    For k = 0 To FIGHTS - 1                                                ' 4 on top, 3 (centred) below
+        If k < 4 Then
+            x = 64 + k * 16: y = 46
         Else
-            Screens.DrawPortraitOf mOrder(k), 4, -35, x, y                     ' boss (head point from docs/cheonma_points.txt)
+            x = 72 + (k - 4) * 16: y = 68
+        End If
+        If k = FIGHTS - 1 And mIdx < FIGHTS - 1 Then
+            Renderer.FillRect x, y, 15, 20, RGB(40, 12, 16)              ' boss stays hidden
+            PixelFont.DrawBig "?", x + 8, y + 3, RGB(150, 50, 50), 2
+        Else
+            Screens.DrawPortraitAt Screens.RosterIndex(mOrder(k)), x, y, 15, (mOrder(k) = mPlayer)   ' shadow: other colors
         End If
         If k < mIdx Then                                                    ' beaten: red cross
-            For c = 2 To 17
-                Renderer.FillRect x + c, y + c, 2, 1, RGB(220, 40, 40)
-                Renderer.FillRect x + 19 - c - 1, y + c, 2, 1, RGB(220, 40, 40)
+            For c = 2 To 16
+                Renderer.FillRect x + (c - 2) * 12 \ 14 + 1, y + c, 2, 1, RGB(220, 40, 40)
+                Renderer.FillRect x + 12 - (c - 2) * 12 \ 14, y + c, 2, 1, RGB(220, 40, 40)
             Next c
         End If
         If k = mIdx Then
             If blink Then c = cP2 Else c = RGB(120, 40, 40)
-            Renderer.DrawRectOutline x - 1, y - 1, 22, 22, c
-            Renderer.DrawRectOutline x, y, 20, 20, c
+            Renderer.DrawRectOutline x - 1, y - 1, 17, 22, c
+            Renderer.DrawRectOutline x, y, 15, 20, c
         Else
-            Renderer.DrawRectOutline x, y, 20, 20, RGB(70, 60, 90)
+            Renderer.DrawRectOutline x, y, 15, 20, RGB(70, 60, 90)
         End If
     Next k
     PixelFont.DrawText "A = FIGHT", cx, 93, RGB(110, 100, 130), 1, 1
@@ -225,6 +278,8 @@ Private Function EndingLine(ByVal prefix As String, ByVal n As Long) As String
         t = Array("SNOW FELL ON THE PEAK AS", "SEOLHWA LANDED HER LAST KICK.", "NO ONE IN MURIM COULD", "CATCH HER SHADOW AGAIN.")
     Case "heukrim"
         t = Array("HEUKRIM TOOK THE DEMON ART", "FOR HIMSELF. THE BLACK", "FOREST HAS A NEW MASTER", "AND IT IS VERY QUIET.")
+    Case "cheonma"
+        t = Array("THE HEAVENLY DEMON STRUCK", "DOWN HIS OWN SHADOW. NO ONE", "IS LEFT TO CHALLENGE HIM.", "MURIM BOWS TO ONE MASTER.")
     Case "hongryeon"
         t = Array("THE RED LOTUS BLOOMED OVER", "THE WATERFALL. HONGRYEON", "CLOSED HER FANS AND SMILED.", "THE DANCE WAS OVER.")
     Case Else
@@ -248,7 +303,11 @@ Private Sub EndingRender()
     Next k
     If shown > 4 Then
         PixelFont.DrawText "CONTINUES " & mContinues, 128, 72, cDim, 1, 1
-        PixelFont.DrawBig "THE END", 128, 80, cGold, 1
+        If mJustUnlocked And (mT \ 8) Mod 2 = 0 Then
+            PixelFont.DrawText "NEW FIGHTER: CHEONMA", 128, 82, RGB(255, 90, 70), 1, 1
+        ElseIf Not mJustUnlocked Then
+            PixelFont.DrawBig "THE END", 128, 80, cGold, 1
+        End If
     End If
     If mT >= 40 Then PixelFont.DrawText "A = TITLE", 128, 93, RGB(110, 100, 130), 1, 1
 End Sub

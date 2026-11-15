@@ -214,8 +214,12 @@ Private Sub SetupCharacter(ByVal i As Long, ByVal prefix As String, ByVal x As D
         Setup i, prefix, x, 2.1, 3.3, -4.4, 1.7, 6, 1000, 31, 22
     Case "hongryeon"
         Setup i, prefix, x, 2#, 3.2, -4.6, 1.8, 5, 960, 29, 20
-    Case "cheonma"                                       ' boss: bigger, tougher
-        Setup i, prefix, x, 1.9, 3#, -4.3, 1.6, 7, 1400, 32, 23
+    Case "cheonma"
+        If i = 1 And Game.GameMode = MODE_ARCADE And Arcade.IsBossFight Then    ' arcade boss: tougher
+            Setup i, prefix, x, 1.9, 3#, -4.3, 1.6, 7, 1400, 32, 23
+        Else                                             ' unlocked, player-selectable version
+            Setup i, prefix, x, 1.9, 3#, -4.3, 1.6, 7, 1000, 32, 23
+        End If
     Case Else
         Setup i, "danwoo", x, 2#, 3.2, -4.5, 1.8, 6, 1000, 30, 21
     End Select
@@ -1455,7 +1459,9 @@ Private Sub DrawOne(ByVal i As Long)
     tint = -1
     If F(i).flash > 0 Then tint = RGB(255, 255, 255)
     With F(i)
-        Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5), Int(.footY + 0.5), (.facing < 0), tint
+        ' mirror match: the right-side copy of the same fighter wears alternate colors
+        Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5), Int(.footY + 0.5), (.facing < 0), tint, _
+                            (i = 1 And F(0).prefix = F(1).prefix)
     End With
 End Sub
 

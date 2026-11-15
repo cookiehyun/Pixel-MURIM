@@ -3,8 +3,12 @@ Option Explicit
 
 ' Front-end screens: title, character select (then level / stage select).
 
-Private Const ROSTER As Long = 6
-Private Const GRID_COLS As Long = 3
+Private Const ROSTER As Long = 8                  ' select grid slots: 6 fighters, Cheonma (unlocked by clearing arcade), RANDOM
+Private Const BASE_ROSTER As Long = 6             ' the six regular fighters (arcade opponents)
+Private Const SLOT_CHEONMA As Long = 6
+Private Const SLOT_RANDOM As Long = 7
+Private Const GRID_COLS As Long = 4
+Private Const BOX_W As Long = 15                  ' portrait box 15 x 20, one every 16 px
 Private rPrefix(0 To ROSTER - 1) As String
 Private rName(0 To ROSTER - 1) As String
 Private rStyle(0 To ROSTER - 1) As String
@@ -36,6 +40,9 @@ Public Sub Init()
     rStat(4, 0) = 3: rStat(4, 1) = 5: rStat(4, 2) = 4: rStat(4, 3) = 4: rHeadX(4) = 4: rHeadY(4) = -32
     rPrefix(5) = "hongryeon": rName(5) = "HONGRYEON": rStyle(5) = "FAN DANCER"
     rStat(5, 0) = 2: rStat(5, 1) = 4: rStat(5, 2) = 4: rStat(5, 3) = 3: rHeadX(5) = 1: rHeadY(5) = -30
+    rPrefix(6) = "cheonma": rName(6) = "CHEONMA": rStyle(6) = "HEAVENLY DEMON"
+    rStat(6, 0) = 4: rStat(6, 1) = 3: rStat(6, 2) = 4: rStat(6, 3) = 4: rHeadX(6) = 4: rHeadY(6) = -35
+    rPrefix(7) = "": rName(7) = "RANDOM": rStyle(7) = ""
     cGold = RGB(240, 190, 80)
     cDim = RGB(130, 120, 150)
     cP1 = RGB(90, 170, 255)
@@ -43,7 +50,7 @@ Public Sub Init()
 End Sub
 
 Public Property Get RosterSize() As Long
-    RosterSize = ROSTER
+    RosterSize = BASE_ROSTER
 End Property
 
 Public Function RosterPrefix(ByVal k As Long) As String
@@ -62,21 +69,24 @@ Public Function RosterIndex(ByVal prefix As String) As Long
     Next k
 End Function
 
-' Head-and-shoulders portrait of roster slot k in a 20x20 box at (x, y).
-Public Sub DrawPortraitAt(ByVal k As Long, ByVal x As Long, ByVal y As Long)
-    DrawPortraitOf rPrefix(k), rHeadX(k), rHeadY(k), x, y
+' Head-and-shoulders portrait of roster slot k in a w x 20 box at (x, y).
+Public Sub DrawPortraitAt(ByVal k As Long, ByVal x As Long, ByVal y As Long, Optional ByVal w As Long = 20, _
+                          Optional ByVal alt As Boolean = False)
+    DrawPortraitOf rPrefix(k), rHeadX(k), rHeadY(k), x, y, w, alt
 End Sub
 
 ' Same for any character; (headX, headY) = head centre in idle_0 relative to the anchor.
-Public Sub DrawPortraitOf(ByVal prefix As String, ByVal headX As Long, ByVal headY As Long, ByVal x As Long, ByVal y As Long)
+Public Sub DrawPortraitOf(ByVal prefix As String, ByVal headX As Long, ByVal headY As Long, ByVal x As Long, ByVal y As Long, _
+                          Optional ByVal w As Long = 20, Optional ByVal alt As Boolean = False)
     Dim id As Long
-    Renderer.FillRect x, y, 20, 20, RGB(26, 22, 36)
+    Renderer.FillRect x, y, w, 20, RGB(26, 22, 36)
     id = Data.SpriteId(prefix & ".idle_0")
-    Renderer.DrawSpriteScaled id, x + 10 - headX * 2, y + 9 - headY * 2, False, 2, x + 1, y + 1, x + 18, y + 18
+    Renderer.DrawSpriteScaled id, x + w \ 2 - headX * 2, y + 9 - headY * 2, False, 2, x + 1, y + 1, x + w - 2, y + 18, -1, alt
 End Sub
 
 ' Full-body x2 view of a character, body centred on x, feet at y = 96.
-Public Sub DrawBigView(ByVal prefix As String, ByVal x As Long, ByVal flip As Boolean, ByVal clipL As Long, ByVal clipR As Long)
+Public Sub DrawBigView(ByVal prefix As String, ByVal x As Long, ByVal flip As Boolean, ByVal clipL As Long, ByVal clipR As Long, _
+                       Optional ByVal alt As Boolean = False)
     Dim id As Long, ref As Long
     ref = Data.SpriteId(prefix & ".idle_0")
     If flip Then
@@ -85,7 +95,7 @@ Public Sub DrawBigView(ByVal prefix As String, ByVal x As Long, ByVal flip As Bo
         x = x - (Data.SprW(ref) - Data.SprAX(ref) * 2)
     End If
     id = Data.AnimFrame(Data.AnimId(prefix & ".idle"), mMenuTick)
-    Renderer.DrawSpriteScaled id, x, 96, flip, 2, clipL, 10, clipR, 99
+    Renderer.DrawSpriteScaled id, x, 96, flip, 2, clipL, 10, clipR, 99, -1, alt
 End Sub
 
 Public Sub TickMenu()
@@ -97,7 +107,20 @@ Public Property Get MenuTick() As Long
 End Property
 
 Private Function Locked(ByVal k As Long) As Boolean
-    Locked = (Len(rPrefix(k)) = 0)
+    If k = SLOT_CHEONMA Then Locked = Not Arcade.BossUnlocked
+End Function
+
+Private Function IsRandom(ByVal k As Long) As Boolean
+    IsRandom = (k = SLOT_RANDOM)
+End Function
+
+' RANDOM slot: any fighter that can be picked.
+Private Function RandomPick() As Long
+    Dim n As Long
+    n = BASE_ROSTER
+    If Not Locked(SLOT_CHEONMA) Then n = n + 1
+    Randomize
+    RandomPick = Int(Rnd * n)
 End Function
 
 ' ---------------------------------------------------------------- title screen
@@ -244,9 +267,10 @@ Public Sub SelectTick()
     If KeyInput.IsPressed(BTN_UP) Or KeyInput.IsPressed(BTN_DOWN) Then k = (k + GRID_COLS) Mod ROSTER
     mSel(mPhase) = k
     If KeyInput.IsPressed(BTN_LP) And Not Locked(k) Then
+        If IsRandom(k) Then k = RandomPick()
         mPick(mPhase) = k
         If mPhase = 0 And Game.GameMode = MODE_ARCADE Then
-            mPick(1) = (k + 1) Mod ROSTER
+            mPick(1) = (k + 1) Mod BASE_ROSTER
             SelectDone
         ElseIf mPhase < LastPhase() Then
             mPhase = mPhase + 1
@@ -282,7 +306,7 @@ Private Sub LaunchMatch()
 End Sub
 
 Private Function BoxX(ByVal k As Long) As Long
-    BoxX = 65 + (k Mod GRID_COLS) * 21
+    BoxX = 64 + (k Mod GRID_COLS) * (BOX_W + 1)
 End Function
 
 Private Function BoxY(ByVal k As Long) As Long
@@ -338,17 +362,25 @@ Public Sub SelectRender()
         PixelFont.DrawBig "?", 160, 48, RGB(70, 40, 50), 3
     Else
         BigView mPick(0), 32, False, 0, 63
-        BigView mSel(1), 160, True, 129, SCREEN_W - 1
+        BigView mSel(1), 160, True, 129, SCREEN_W - 1, (mSel(1) = mPick(0))
     End If
 
     ' info for the slot under the cursor
     hover = mSel(mPhase)
-    PixelFont.DrawBig rName(hover), cx, 13, RGB(255, 240, 210), 1
-    PixelFont.DrawText rStyle(hover), cx, 21, cDim, 1, 1
-    StatRow "POW", rStat(hover, 0), 27
-    StatRow "SPD", rStat(hover, 1), 33
-    StatRow "RNG", rStat(hover, 2), 39
-    StatRow "HP", rStat(hover, 3), 45
+    If Locked(hover) Then
+        PixelFont.DrawBig "???", cx, 13, RGB(255, 240, 210), 1
+        PixelFont.DrawText "CLEAR ARCADE", cx, 27, cDim, 1, 1
+        PixelFont.DrawText "TO UNLOCK", cx, 34, cDim, 1, 1
+    ElseIf IsRandom(hover) Then
+        PixelFont.DrawBig rName(hover), cx, 13, RGB(255, 240, 210), 1
+    Else
+        PixelFont.DrawBig rName(hover), cx, 13, RGB(255, 240, 210), 1
+        PixelFont.DrawText rStyle(hover), cx, 21, cDim, 1, 1
+        StatRow "POW", rStat(hover, 0), 27
+        StatRow "SPD", rStat(hover, 1), 33
+        StatRow "RNG", rStat(hover, 2), 39
+        StatRow "HP", rStat(hover, 3), 45
+    End If
 
     ' portrait grid
     For k = 0 To ROSTER - 1
@@ -381,10 +413,11 @@ Private Sub StatRow(ByVal lbl As String, ByVal v As Long, ByVal y As Long)
     Next k
 End Sub
 
-Private Sub BigView(ByVal k As Long, ByVal x As Long, ByVal flip As Boolean, ByVal clipL As Long, ByVal clipR As Long)
+Private Sub BigView(ByVal k As Long, ByVal x As Long, ByVal flip As Boolean, ByVal clipL As Long, ByVal clipR As Long, _
+                    Optional ByVal alt As Boolean = False)
     Dim id As Long, ref As Long
-    If Locked(k) Then
-        PixelFont.DrawBig "?", x, 48, RGB(80, 70, 100), 3
+    If Locked(k) Or IsRandom(k) Then
+        PixelFont.DrawBig "?", x, 48, IIf(IsRandom(k), RGB(200, 160, 80), RGB(80, 70, 100)), 3
         Exit Sub
     End If
     ' centre the drawn body (not the anchor) in the panel; use idle_0's width so breathing does not shift it
@@ -395,19 +428,19 @@ Private Sub BigView(ByVal k As Long, ByVal x As Long, ByVal flip As Boolean, ByV
         x = x - (Data.SprW(ref) - Data.SprAX(ref) * 2)
     End If
     id = Data.AnimFrame(Data.AnimId(rPrefix(k) & ".idle"), mMenuTick)
-    Renderer.DrawSpriteScaled id, x, 96, flip, 2, clipL, 10, clipR, 99
+    Renderer.DrawSpriteScaled id, x, 96, flip, 2, clipL, 10, clipR, 99, -1, alt
 End Sub
 
 Private Sub Portrait(ByVal k As Long)
-    Dim x As Long, y As Long, id As Long, frameC As Long, blink As Boolean
+    Dim x As Long, y As Long, frameC As Long, blink As Boolean
     x = BoxX(k): y = BoxY(k)
-    Renderer.FillRect x, y, 20, 20, RGB(26, 22, 36)
+    Renderer.FillRect x, y, BOX_W, 20, RGB(26, 22, 36)
     If Locked(k) Then
-        PixelFont.DrawBig "?", x + 10, y + 3, RGB(70, 64, 90), 2
+        PixelFont.DrawBig "?", x + BOX_W \ 2 + 1, y + 3, RGB(70, 64, 90), 2
+    ElseIf IsRandom(k) Then
+        PixelFont.DrawBig "?", x + BOX_W \ 2 + 1, y + 3, RGB(200, 160, 80), 2
     Else
-        id = Data.SpriteId(rPrefix(k) & ".idle_0")
-        ' head and shoulders, enlarged x2, head centred in the box
-        Renderer.DrawSpriteScaled id, x + 10 - rHeadX(k) * 2, y + 9 - rHeadY(k) * 2, False, 2, x + 1, y + 1, x + 18, y + 18
+        DrawPortraitAt k, x, y, BOX_W                     ' head and shoulders, enlarged x2
     End If
     ' frames: chosen player slot (blue), cursor (gold for player, red for opponent)
     frameC = RGB(70, 60, 90)
@@ -418,8 +451,8 @@ Private Sub Portrait(ByVal k As Long)
     If k = mSel(mPhase) And blink Then
         If PlayerPhase() Then frameC = cGold Else frameC = cP2
     End If
-    Renderer.DrawRectOutline x, y, 20, 20, frameC
-    If k = mSel(mPhase) Then Renderer.DrawRectOutline x - 1, y - 1, 22, 22, frameC
+    Renderer.DrawRectOutline x, y, BOX_W, 20, frameC
+    If k = mSel(mPhase) Then Renderer.DrawRectOutline x - 1, y - 1, BOX_W + 2, 22, frameC
 End Sub
 
 ' ---------------------------------------------------------------- level select (VS CPU)
@@ -457,7 +490,7 @@ Public Sub LevelRender()
         PixelFont.DrawBig "?", 160, 48, RGB(110, 50, 60), 3
         PixelFont.DrawText "ARCADE", cx, 23, cDim, 1, 1
     Else
-        BigView OppPick(), 160, True, 129, SCREEN_W - 1
+        BigView OppPick(), 160, True, 129, SCREEN_W - 1, (OppPick() = mPick(0))
     End If
     If TagMode() Then TeamNames 4
     PixelFont.DrawBig "VS", cx, 13, RGB(255, 240, 210), 2

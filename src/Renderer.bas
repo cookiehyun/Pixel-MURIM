@@ -69,6 +69,10 @@ Private mSeenN As Long
 Private mRep() As Long                   ' colors kept as they are
 Private mRepN As Long
 Private mQReady As Boolean
+' alternate colors (mirror match: the second copy of a fighter), built per sprite on first use
+Private mAltPix() As Long
+Private mAltDone() As Boolean
+Private mAltReady As Boolean
 
 Public Sub Init()
     Dim x As Long, y As Long
@@ -269,13 +273,15 @@ End Sub
 ' Draw sprite so that its anchor (ground point under the hip) lands on (x, y).
 ' Sprites face right; flip = True mirrors around the anchor.
 ' tint >= 0 paints every opaque pixel with that color (hit flash).
+' alt = True draws the alternate colors (second copy of the same fighter).
 Public Sub DrawSprite(ByVal id As Long, ByVal x As Long, ByVal y As Long, ByVal flip As Boolean, _
-                      Optional ByVal tint As Long = -1)
+                      Optional ByVal tint As Long = -1, Optional ByVal alt As Boolean = False)
     Dim w As Long, h As Long, ax As Long, ay As Long, off As Long
     Dim sx As Long, sy As Long, px As Long, py As Long, c As Long
     w = Data.SprW(id): h = Data.SprH(id)
     ax = Data.SprAX(id): ay = Data.SprAY(id): off = Data.SprOff(id)
     If tint >= 0 Then tint = Quant(tint)
+    If alt Then EnsureAlt id
     For sy = 0 To h - 1
         py = y - ay + sy
         If py >= 0 And py < SCREEN_H Then
@@ -285,7 +291,7 @@ Public Sub DrawSprite(ByVal id As Long, ByVal x As Long, ByVal y As Long, ByVal 
                 Mark py, x - ax, x - ax + w - 1
             End If
             For sx = 0 To w - 1
-                c = Data.SprPix(off + sy * w + sx)
+                If alt Then c = mAltPix(off + sy * w + sx) Else c = Data.SprPix(off + sy * w + sx)
                 If c >= 0 Then
                     If flip Then px = x + ax - sx Else px = x - ax + sx
                     If px >= 0 And px < SCREEN_W Then
@@ -301,12 +307,13 @@ End Sub
 ' Used by the select screens (portraits and the big character view).
 Public Sub DrawSpriteScaled(ByVal id As Long, ByVal x As Long, ByVal y As Long, ByVal flip As Boolean, _
                             ByVal k As Long, ByVal cx0 As Long, ByVal cy0 As Long, ByVal cx1 As Long, ByVal cy1 As Long, _
-                            Optional ByVal tint As Long = -1)
+                            Optional ByVal tint As Long = -1, Optional ByVal alt As Boolean = False)
     Dim w As Long, h As Long, ax As Long, ay As Long, off As Long
     Dim sx As Long, sy As Long, px As Long, py As Long, c As Long, i As Long, j As Long
     w = Data.SprW(id): h = Data.SprH(id)
     ax = Data.SprAX(id): ay = Data.SprAY(id): off = Data.SprOff(id)
     If tint >= 0 Then tint = Quant(tint)
+    If alt Then EnsureAlt id
     If cx0 < 0 Then cx0 = 0
     If cy0 < 0 Then cy0 = 0
     If cx1 > SCREEN_W - 1 Then cx1 = SCREEN_W - 1
@@ -316,7 +323,7 @@ Public Sub DrawSpriteScaled(ByVal id As Long, ByVal x As Long, ByVal y As Long, 
     Next j
     For sy = 0 To h - 1
         For sx = 0 To w - 1
-            c = Data.SprPix(off + sy * w + sx)
+            If alt Then c = mAltPix(off + sy * w + sx) Else c = Data.SprPix(off + sy * w + sx)
             If c >= 0 Then
                 If tint >= 0 Then c = tint
                 If flip Then px = x + (ax - sx) * k - (k - 1) Else px = x + (sx - ax) * k
@@ -332,6 +339,69 @@ Public Sub DrawSpriteScaled(ByVal id As Long, ByVal x As Long, ByVal y As Long, 
         Next sx
     Next sy
 End Sub
+
+' Build the alternate-color pixels of sprite id (once).
+Private Sub EnsureAlt(ByVal id As Long)
+    Dim k As Long, off As Long, n As Long, c As Long, lastC As Long, lastA As Long
+    If Not mAltReady Then
+        ReDim mAltPix(0 To UBound(Data.SprPix))
+        ReDim mAltDone(0 To Data.SprCount)
+        mAltReady = True
+    End If
+    If UBound(mAltPix) < UBound(Data.SprPix) Then ReDim Preserve mAltPix(0 To UBound(Data.SprPix))
+    If UBound(mAltDone) < id Then ReDim Preserve mAltDone(0 To Data.SprCount)
+    If mAltDone(id) Then Exit Sub
+    off = Data.SprOff(id): n = Data.SprW(id) * Data.SprH(id)
+    lastC = -2
+    For k = off To off + n - 1
+        c = Data.SprPix(k)
+        If c < 0 Then
+            mAltPix(k) = c
+        Else
+            If c <> lastC Then lastC = c: lastA = Quant(AltColor(c))
+            mAltPix(k) = lastA
+        End If
+    Next k
+    mAltDone(id) = True
+End Sub
+
+' Alternate color: clothes and effects get their hue turned by 150 degrees; skin, hair,
+' greys and very dark pixels stay as they are, so the copy still looks like the same person.
+Public Function AltColor(ByVal c As Long) As Long
+    Dim r As Double, g As Double, b As Double, mx As Double, mn As Double, d As Double
+    Dim h As Double, s As Double, v As Double, f As Double, p As Double, q As Double, t As Double, i As Long
+    r = (c And &HFF&) / 255#: g = ((c \ &H100&) And &HFF&) / 255#: b = ((c \ &H10000) And &HFF&) / 255#
+    mx = r: If g > mx Then mx = g
+    If b > mx Then mx = b
+    mn = r: If g < mn Then mn = g
+    If b < mn Then mn = b
+    d = mx - mn: v = mx
+    If mx > 0 Then s = d / mx
+    AltColor = c
+    If s < 0.2 Or v < 0.16 Then Exit Function                 ' grey, white, black outline
+    If mx = r Then
+        h = 60# * ((g - b) / d)
+    ElseIf mx = g Then
+        h = 60# * ((b - r) / d) + 120#
+    Else
+        h = 60# * ((r - g) / d) + 240#
+    End If
+    If h < 0 Then h = h + 360#
+    If h >= 8 And h <= 45 And s < 0.62 And v > 0.45 Then Exit Function   ' skin
+    h = h + 150#
+    If h >= 360# Then h = h - 360#
+    i = Int(h / 60#): f = h / 60# - i
+    p = v * (1 - s): q = v * (1 - s * f): t = v * (1 - s * (1 - f))
+    Select Case i
+    Case 0: r = v: g = t: b = p
+    Case 1: r = q: g = v: b = p
+    Case 2: r = p: g = v: b = t
+    Case 3: r = p: g = q: b = v
+    Case 4: r = t: g = p: b = v
+    Case Else: r = v: g = p: b = q
+    End Select
+    AltColor = RGB(CLng(r * 255), CLng(g * 255), CLng(b * 255))
+End Function
 
 ' Paint differences to the sheet. Returns number of Range paint calls.
 Public Function Flush() As Long
