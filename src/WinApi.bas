@@ -48,16 +48,34 @@ Public Function NowSec() As Double
     #End If
 End Function
 
-' Mac Excel runs in a sandbox: it may read files next to the workbook only after the user
-' allows it once (a "Grant File Access" dialog that Excel remembers). Asked once per session.
-' Does nothing on Windows.
+' Mac Excel runs in a sandbox and asks before touching each file. Ask for the folder, every
+' file in it and keys.txt (written by the key config) in ONE "Grant File Access" dialog;
+' Excel remembers the answer, so later runs ask nothing. Once per session. No-op on Windows.
 Public Sub GrantFolderAccess(ByVal folder As String)
     #If Mac Then
         Static asked As Boolean
+        Dim paths() As Variant, n As Long, f As String, hasKeys As Boolean
         If asked Then Exit Sub
         asked = True
+        ReDim paths(0 To 0)
+        paths(0) = folder
+        n = 1
+        f = Dir(folder & "/")
+        Do While Len(f) > 0
+            If Left$(f, 1) <> "." Then
+                ReDim Preserve paths(0 To n)
+                paths(n) = folder & "/" & f
+                n = n + 1
+                If LCase$(f) = "keys.txt" Then hasKeys = True
+            End If
+            f = Dir()
+        Loop
+        If Not hasKeys Then
+            ReDim Preserve paths(0 To n)
+            paths(n) = folder & "/keys.txt"
+        End If
         On Error Resume Next
-        GrantAccessToMultipleFiles Array(folder)
+        GrantAccessToMultipleFiles paths
         On Error GoTo 0
     #End If
 End Sub

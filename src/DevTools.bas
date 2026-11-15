@@ -16,7 +16,7 @@ Public Sub ImportSrc()
     Dim names As New Collection, nm As Variant
 
     srcPath = SrcFolder()
-    GrantAccess srcPath
+    GrantFolder srcPath, New Collection
     On Error GoTo NoTrust
     Set proj = ThisWorkbook.VBProject
     On Error GoTo 0
@@ -75,19 +75,42 @@ Private Function SrcFolder() As String
     SrcFolder = ThisWorkbook.Path & Application.PathSeparator & SRC_DIR & Application.PathSeparator
 End Function
 
-' Mac Excel is sandboxed: ask once for permission to read / write the src folder. No-op on Windows.
-Private Sub GrantAccess(ByVal folder As String)
+' Mac Excel is sandboxed and asks before touching each file. Ask for the folder, every file
+' in it and the extra paths (files about to be created) in ONE "Grant File Access" dialog;
+' Excel remembers the answer. No-op on Windows.
+Private Sub GrantFolder(ByVal folder As String, ByVal extra As Collection)
     #If Mac Then
+        Dim paths() As Variant, n As Long, f As String, x As Variant
+        ReDim paths(0 To 0)
+        paths(0) = Left$(folder, Len(folder) - 1)
+        n = 1
+        f = Dir(folder)
+        Do While Len(f) > 0
+            If Left$(f, 1) <> "." Then
+                ReDim Preserve paths(0 To n)
+                paths(n) = folder & f
+                n = n + 1
+            End If
+            f = Dir()
+        Loop
+        For Each x In extra
+            ReDim Preserve paths(0 To n)
+            paths(n) = CStr(x)
+            n = n + 1
+        Next x
         On Error Resume Next
-        GrantAccessToMultipleFiles Array(Left$(folder, Len(folder) - 1))
+        GrantAccessToMultipleFiles paths
         On Error GoTo 0
     #End If
 End Sub
 
 Public Sub ExportSrc()
-    Dim comp As Object, srcPath As String, n As Long
+    Dim comp As Object, srcPath As String, n As Long, outFiles As New Collection
     srcPath = SrcFolder()
-    GrantAccess srcPath
+    For Each comp In ThisWorkbook.VBProject.VBComponents
+        If comp.Type = 1 Then outFiles.Add srcPath & comp.Name & ".bas"
+    Next comp
+    GrantFolder srcPath, outFiles
     If Len(Dir(srcPath, vbDirectory)) = 0 Then MkDir srcPath
     For Each comp In ThisWorkbook.VBProject.VBComponents
         If comp.Type = 1 Then            ' vbext_ct_StdModule
