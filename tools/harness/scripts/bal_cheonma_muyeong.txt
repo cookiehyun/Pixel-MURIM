@@ -1,0 +1,4 @@
+CMD norender
+CMD start 0 2 1 15308 1
+CMD chars cheonma muyeong
+40000 -

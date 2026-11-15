@@ -1,0 +1,4 @@
+CMD norender
+CMD start 0 2 1 116253 1
+CMD chars seolhwa cheonma
+40000 -
