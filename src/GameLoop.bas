@@ -89,7 +89,7 @@ Public Sub StartGame()
 
         ' sleep until the next tick is due (accurate thanks to timeBeginPeriod 1)
         waitMs = Int((DT - acc - (WinApi.NowSec() - nowT)) * 1000) - 1
-        If waitMs > 0 Then WaitMs waitMs
+        If waitMs > 0 Then WaitForTick waitMs
     Loop
 
     EndSession
@@ -161,7 +161,7 @@ End Sub
 
 ' Sleep until the next tick. On a Mac, keep sampling the keyboard meanwhile so short taps
 ' are not lost (Windows remembers taps by itself).
-Private Sub WaitMs(ByVal ms As Long)
+Private Sub WaitForTick(ByVal ms As Long)
     #If Mac Then
         Dim t0 As Double
         t0 = WinApi.NowSec()

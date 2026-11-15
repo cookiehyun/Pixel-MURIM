@@ -21,4 +21,18 @@ for p in sorted(glob.glob("src/*.bas")):
             print(f"{p}:{n}: function returning a typed array -> return Variant"); bad += 1
         if re.search(r"\bm\w+\((nm|key)\)", code) and "Item" not in code and "Collection" in open(p).read():
             pass
+# a variable with the same name as a Sub/Function in the same module (VBA ignores case):
+# Excel reports "Expected Sub, Function, or Property" at the call
+for p in sorted(glob.glob("src/*.bas")):
+    txt = open(p, encoding="ascii").read()
+    procs = {m.lower(): m for m in re.findall(r"^\s*(?:Public |Private |Friend )?(?:Static )?(?:Sub|Function|Property \w+) (\w+)", txt, re.M)}
+    for n, line in enumerate(txt.split("\n"), 1):
+        code = line.split("'")[0]
+        m = re.match(r"\s*(?:Dim|Static|Private|Public) (?!Sub|Function|Property|Const|Declare|Type|Enum)(.*)", code)
+        if not m:
+            continue
+        for part in m.group(1).split(","):
+            v = re.match(r"\s*(?:WithEvents )?(\w+)", part)
+            if v and v.group(1).lower() in procs:
+                print(f"{p}:{n}: variable '{v.group(1)}' has the same name as procedure '{procs[v.group(1).lower()]}' (VBA ignores case)"); bad += 1
 sys.exit(1 if bad else 0)
