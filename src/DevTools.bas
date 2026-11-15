@@ -28,7 +28,7 @@ Public Sub ImportSrc()
     Loop
     If names.Count = 0 Then
         MsgBox "No .bas files found in " & srcPath & vbCrLf & _
-               "Save this workbook in the excel-murim folder (next to src and data).", vbExclamation, "DevTools"
+               "Save this workbook in the pixel-murim folder (next to src and data).", vbExclamation, "DevTools"
         Exit Sub
     End If
 

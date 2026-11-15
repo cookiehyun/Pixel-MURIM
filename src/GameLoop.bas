@@ -100,7 +100,7 @@ Fail:
     n = Err.Number: d = Err.Description
     mRunning = False
     EndSession
-    If n <> 18 Then MsgBox "Error " & n & ": " & d, vbExclamation, "Excel Murim"   ' 18 = user break
+    If n <> 18 Then MsgBox "Error " & n & ": " & d, vbExclamation, "Pixel Murim"   ' 18 = user break
 End Sub
 
 ' Measures how fast this PC paints frames: plays a CPU vs CPU fight for a few
@@ -141,13 +141,13 @@ Public Sub RenderBenchmark()
     Renderer.RenderMode = keepMode
     Game.WatchMode = False
     EndSession
-    MsgBox results & vbCrLf & "Lower is better. Send these numbers to tune the renderer.", vbInformation, "Excel Murim"
+    MsgBox results & vbCrLf & "Lower is better. Send these numbers to tune the renderer.", vbInformation, "Pixel Murim"
     Exit Sub
 Fail:
     Renderer.KeepScreenUpdating = False
     Renderer.RenderMode = 0
     EndSession
-    MsgBox "Error " & Err.Number & ": " & Err.Description, vbExclamation, "Excel Murim"
+    MsgBox "Error " & Err.Number & ": " & Err.Description, vbExclamation, "Pixel Murim"
 End Sub
 
 Public Sub StopGame()

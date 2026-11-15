@@ -6,13 +6,13 @@ Mac은 Microsoft 365 또는 Excel 2019 이후 버전이 필요합니다.
 ## 0. 받기
 1. 열려 있는 엑셀 창을 **모두 닫는다**.
 2. GitHub 저장소 페이지에서 **Code → Download ZIP** → 압축을 푼다.
-   (git을 쓴다면 `git clone https://github.com/cookiehyun/excel-murim.git`)
-3. 압축 푼 폴더(`excel-murim-main` 등)를 열어 확인한다.
+   (git을 쓴다면 `git clone https://github.com/cookiehyun/pixel-murim.git`)
+3. 압축 푼 폴더(`pixel-murim-main` 등)를 열어 확인한다.
    - `src` 폴더: `.bas` 파일들 (DevTools, GameLoop, KeyInput, WinApi ...)
    - `data` 폴더: 캐릭터·무대 `.txt` 파일들
 4. 폴더 위치
-   - **[Win]** OneDrive 동기화 폴더는 피한다. 예: `C:\Games\excel-murim`
-   - **[Mac]** iCloud로 동기화되는 "문서"·"데스크탑"은 피한다. 예: 홈 폴더 바로 아래 `~/excel-murim`
+   - **[Win]** OneDrive 동기화 폴더는 피한다. 예: `C:\Games\pixel-murim`
+   - **[Mac]** iCloud로 동기화되는 "문서"·"데스크탑"은 피한다. 예: 홈 폴더 바로 아래 `~/pixel-murim`
 
 ## 1. 엑셀 보안 설정 (컴퓨터당 한 번)
 - **[Win]** 파일 → 옵션 → 보안 센터 → [보안 센터 설정...] → 매크로 설정
@@ -27,11 +27,11 @@ Mac은 Microsoft 365 또는 Excel 2019 이후 버전이 필요합니다.
 1. 빈 통합 문서를 만든다.
 2. 다른 이름으로 저장 (**[Win]** F12, **[Mac]** ⌘⇧S).
 3. 위치: **게임 폴더 바로 안** (`src`, `data` 폴더가 보이는 곳. `src` 안이 아님).
-4. 이름 `ExcelMurim`, 형식 **Excel 매크로 사용 통합 문서 (.xlsm)** ← 반드시. `.xlsx`면 코드가 저장되지 않는다.
+4. 이름 `PixelMurim`, 형식 **Excel 매크로 사용 통합 문서 (.xlsm)** ← 반드시. `.xlsx`면 코드가 저장되지 않는다.
 
 ## 3. DevTools 가져오기 (워크북당 한 번)
 1. VBA 편집기 열기: **[Win]** Alt+F11, **[Mac]** 도구 → 매크로 → Visual Basic Editor (⌥F11 / fn+⌥F11)
-2. 프로젝트 창에서 `VBAProject (ExcelMurim.xlsm)`을 한 번 클릭해 선택.
+2. 프로젝트 창에서 `VBAProject (PixelMurim.xlsm)`을 한 번 클릭해 선택.
 3. **파일 → 파일 가져오기...** → `src/DevTools.bas`
 4. `모듈` 폴더에 `DevTools`가 생겼는지 확인.
 
@@ -68,7 +68,7 @@ Mac은 Microsoft 365 또는 Excel 2019 이후 버전이 필요합니다.
 VBA 편집기 → 직접 실행 창 (**[Win]** Ctrl+G, **[Mac]** ⌃⌘G) → `GameLoop.RestoreExcel` 입력 → Enter.
 
 ## 이후 업데이트 받을 때
-1. 새 ZIP을 받아 압축을 풀고, 안의 `src`, `data` 폴더를 게임 폴더에 **덮어쓴다**. (`ExcelMurim.xlsm`은 그대로 둔다. git을 쓰면 `git pull`)
+1. 새 ZIP을 받아 압축을 풀고, 안의 `src`, `data` 폴더를 게임 폴더에 **덮어쓴다**. (`PixelMurim.xlsm`은 그대로 둔다. git을 쓰면 `git pull`)
 2. 엑셀에서 매크로 창 → **`ImportSrc`** (src에서 사라진 옛 모듈도 자동으로 지워진다).
 3. **디버그 → VBAProject 컴파일** → 저장 → `StartGame`.
 4. `DevTools.bas` 자체가 바뀐 경우에만 3단계를 다시 한다. 먼저 VBA 편집기에서 기존 `DevTools` 모듈을 우클릭 → 제거한 뒤 가져온다.
