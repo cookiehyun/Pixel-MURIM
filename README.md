@@ -16,7 +16,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 |---|---|---|
 | 1. 받기 / Download | GitHub **Code → Download ZIP** → 압축 풀기 (또는 `git clone`) | 같음 / same |
 | 2. 보안 설정 / Security | Excel > 파일 > 옵션 > 보안 센터 > 보안 센터 설정 > 매크로 설정: **VBA 프로젝트 개체 모델에 안전하게 액세스할 수 있음** 켜기 | Excel > 설정(환경설정) > 보안: **VBA 프로젝트 개체 모델에 대한 액세스 신뢰** 켜기 |
-| 3. 저장 / Save | 저장 > 새 통합 문서 → 압축 푼 폴더(1번에서) 안에 `PixelMurim.xlsm`(확장자 xlsx 아님)으로 저장. OneDrive 폴더는 피하기 | 같음. 단 iCloud로 동기화되는 문서·데스크탑 폴더는 피하고 홈 폴더 등에 두기 |
+| 3. 저장 / Save | 압축 푼 폴더(1번에서) 안에 `PixelMurim.xlsm`(확장자 xlsx 아님)으로 저장. OneDrive 폴더는 피하기 | 같음. 단 iCloud로 동기화되는 문서·데스크탑 폴더는 피하고 홈 폴더 등에 두기 |
 | 4. DevTools | Alt+F11 → 파일 > 파일 가져오기 → `src/DevTools.bas` | 도구 > 매크로 > Visual Basic Editor → 파일 > 파일 가져오기 → `src/DevTools.bas` |
 | 5. 모듈 불러오기 / Import | Alt+F8 → `ImportSrc` | 도구 > 매크로 > 매크로... → `ImportSrc`. 폴더 접근 허용 창이 뜨면 **선택/허용** |
 | 6. 컴파일 / Compile | VBE: 디버그 > VBAProject 컴파일 → 저장 | 같음 / same |
