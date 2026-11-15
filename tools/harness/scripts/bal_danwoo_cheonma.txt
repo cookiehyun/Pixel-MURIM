@@ -1,0 +1,4 @@
+CMD norender
+CMD start 0 2 1 18683 1
+CMD chars danwoo cheonma
+40000 -

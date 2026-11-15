@@ -1,0 +1,4 @@
+CMD norender
+CMD start 0 2 1 131793 1
+CMD chars heukrim cheonma
+40000 -
