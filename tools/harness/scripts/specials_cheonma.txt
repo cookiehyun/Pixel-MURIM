@@ -1,0 +1,36 @@
+# Cheonma: demon palm (rush), heupseong daebeop (command grab: steals naegong, heals),
+# Cheonma Gunrim (demon burst in front, 4 hits), and the red aura below 30% health.
+CMD start 0 1 0 1
+CMD chars cheonma danwoo
+CMD dummy 1
+CMD place 50 90
+3 -
+# demon palm: down, down-forward, forward + A from mid range
+1 D
+1 D+R
+1 R+A
+40 -
+# command grab: forward, down, back + A, after taking some damage (heal shows)
+CMD hp 0 700
+CMD place 80 96
+3 -
+1 R
+1 D
+1 L+A
+40 -
+# super from close range
+CMD meter 0 1000
+CMD place 70 98
+3 -
+1 D
+1 R
+1 D
+1 R+A
+60 -
+# low health: aura and +15% damage on a heavy punch
+30 -
+CMD hp 0 250
+CMD place 80 98
+3 -
+1 S
+30 -

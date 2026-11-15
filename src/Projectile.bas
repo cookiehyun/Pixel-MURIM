@@ -43,8 +43,13 @@ Public Sub Spawn(ByVal owner As Long, ByVal mv As Long)
     mType(owner) = Data.MvType(mv)
     mBack(owner) = False
     If mType(owner) = MT_SUPER_FIRE Then
-        ' fire pillar under the opponent, where they stand right now
-        mX(owner) = Fighter.F(1 - owner).x
+        ' fire pillar under the opponent, where they stand right now;
+        ' p1 > 0: a burst p1 px in front of the user instead (Cheonma)
+        If Data.MvP1(mv) > 0 Then
+            mX(owner) = Fighter.F(owner).x + Fighter.F(owner).facing * Data.MvP1(mv)
+        Else
+            mX(owner) = Fighter.F(1 - owner).x
+        End If
         mY(owner) = GROUND_Y - Data.MvHbH(mv) \ 2
         mVX(owner) = 0
     Else
@@ -175,7 +180,16 @@ Private Sub FirePillar(ByVal k As Long)
         wob = Int(2 * Sin((y + mAge(k) * 3) * 0.5))
         w = 9 - y \ 6
         If w < 2 Then w = 2
-        If y < h \ 3 Then
+        If Fighter.F(k).prefix = "cheonma" Then          ' demon qi: wider, crimson and violet
+            w = w + 4
+            If y < h \ 3 Then
+                c = RGB(255, 170, 190)
+            ElseIf y < (h * 2) \ 3 Then
+                c = RGB(200, 40, 70)
+            Else
+                c = RGB(90, 20, 70)
+            End If
+        ElseIf y < h \ 3 Then
             c = RGB(255, 240, 160)
         ElseIf y < (h * 2) \ 3 Then
             c = RGB(255, 160, 50)

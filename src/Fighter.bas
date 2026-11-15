@@ -63,6 +63,7 @@ Private Const GETUP_TICKS As Long = 4
 Private Const ROLL_TICKS As Long = 8       ' wake-up roll: invulnerable, then the normal get-up
 Private Const ROLL_SPEED As Double = 3.5   ' px / tick (8 ticks = 28 px)
 Private Const WAKE_THROW_INV As Long = 6   ' after getting up: cannot be thrown for this many ticks
+Private Const DRAIN_NG As Long = 400       ' Cheonma's grab steals up to this much naegong
 Private Const DUMMY_INTERVAL As Long = 30
 Private Const BUF_TICKS As Long = 5
 Private Const MAX_CHAIN As Long = 3
@@ -169,6 +170,8 @@ Private mGId(0 To 1, 0 To GHOSTS - 1) As Long
 Private mGFlip(0 To 1, 0 To GHOSTS - 1) As Boolean
 Private mGN(0 To 1) As Long
 Private mPose(0 To 1) As Long          ' intro / win pose sprite shown while standing (-1 = none)
+Private mAwakeShown(0 To 1) As Boolean ' "CHEONMA SIMGONG" shown this round
+Private mFrame As Long                 ' counts Update calls (aura flicker)
 
 ' c0 / c1 = character names ("danwoo", "cheolsan"); the same character may appear twice.
 Public Sub Init(ByVal c0 As String, ByVal c1 As String, ByVal humanIndex As Long)
@@ -248,7 +251,7 @@ Private Sub SetupCharacter(ByVal i As Long, ByVal prefix As String, ByVal x As D
             .seqFx = FX_DARK
         Case "hongryeon": .superName = "HONGRYEON EOPHWA"
         Case "cheonma"
-            .superName = "CHEONMA MUHWANG"
+            .superName = "CHEONMA GUNRIM"
             .seqFx = FX_DARK
         Case Else: .superName = "CHEONPUNG MANJANG"
         End Select
@@ -409,6 +412,7 @@ Private Sub ResetOne(ByVal i As Long)
     Dim k As Long
     mGN(i) = 0
     mPose(i) = -1
+    mAwakeShown(i) = False
     With F(i)
         .x = .startX
         .footY = GROUND_Y
@@ -620,6 +624,7 @@ End Function
 
 Public Sub Update()
     Dim i As Long
+    mFrame = mFrame + 1
     If Game.GameMode = MODE_TRAINING Then                ' debug keys: training only
         If KeyInput.IsPressed(BTN_SWAP) Then mControl = 1 - mControl: F(0).bufAtk = -1: F(1).bufAtk = -1
         If KeyInput.IsPressed(BTN_DBG_DUMMY) Then SetDummy ((mDummy + 1) Mod 5)
@@ -758,6 +763,7 @@ Private Sub UpdateFighter(ByVal i As Long)
                 SuperSlashStep i
             ElseIf .stTick = Data.MvStartup(.mv) Then
                 Combat.DealDamage 1 - i, Data.MvDamage(.mv)
+                If Data.MvType(.mv) = MT_GRAB And .prefix = "cheonma" Then DrainGrab i
                 Combat.AddMeter i, 80
                 ApplyHit 1 - i, 0, 2.5, True
                 FX.Spawn Int(F(1 - i).x + 0.5), Int(F(1 - i).footY) - 18, FX_HEAVY
@@ -1506,11 +1512,43 @@ Private Sub DrawOne(ByVal i As Long)
     tint = -1
     If F(i).flash > 0 Then tint = RGB(255, 255, 255)
     With F(i)
+        If DemonAwake(i) And tint < 0 Then                 ' red aura: flickering outline one pixel around the body
+            If (mFrame \ 2) Mod 2 = 0 Then
+                Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5) - 1, Int(.footY + 0.5), (.facing < 0), RGB(200, 30, 50)
+                Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5) + 1, Int(.footY + 0.5), (.facing < 0), RGB(200, 30, 50)
+                Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5), Int(.footY + 0.5) - 1, (.facing < 0), RGB(200, 30, 50)
+            End If
+            If Not mAwakeShown(i) Then
+                mAwakeShown(i) = True
+                Combat.ShowText "CHEONMA SIMGONG", 40, i
+            End If
+        End If
         ' mirror match: the right-side copy of the same fighter wears alternate colors
         Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5), Int(.footY + 0.5), (.facing < 0), tint, _
                             (i = 1 And F(0).prefix = F(1).prefix)
     End With
 End Sub
+
+' Cheonma's command grab (heupseong daebeop): steals the victim's naegong and heals half the damage.
+Private Sub DrainGrab(ByVal i As Long)
+    Dim o As Long, steal As Long
+    o = 1 - i
+    steal = F(o).naegong
+    If steal > DRAIN_NG Then steal = DRAIN_NG
+    F(o).naegong = F(o).naegong - steal
+    F(i).naegong = F(i).naegong + steal
+    If F(i).naegong > NAEGONG_MAX Then F(i).naegong = NAEGONG_MAX
+    F(i).health = F(i).health + Data.MvDamage(F(i).mv) \ 2
+    If F(i).health > F(i).maxHealth Then F(i).health = F(i).maxHealth
+    If F(i).health > F(i).healthShown Then F(i).healthShown = F(i).health
+    FX.Spawn Int(F(i).x + 0.5), Int(F(i).footY) - 20, FX_DARK
+End Sub
+
+' Cheonma simgong: below 30% health Cheonma's hits do 15% more damage (red aura).
+Public Function DemonAwake(ByVal i As Long) As Boolean
+    If F(i).prefix <> "cheonma" Or F(i).health <= 0 Then Exit Function
+    DemonAwake = (F(i).health * 10 <= F(i).maxHealth * 3)
+End Function
 
 ' Debug: hurtbox (green) and, during active frames, the hitbox (red).
 Private Sub DrawBoxes(ByVal i As Long)

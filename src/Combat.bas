@@ -165,6 +165,7 @@ Public Sub ApplyAttack(ByVal a As Long, ByVal d As Long, ByVal mv As Long, ByVal
         dmg = Data.MvDamage(mv) / hits
         If mCombo(a) >= 3 Then dmg = dmg * Max2D(0.5, 1 - 0.1 * (mCombo(a) - 2))   ' combo scaling
         If counter Then dmg = dmg * 1.25
+        If Fighter.DemonAwake(a) Then dmg = dmg * 1.15                 ' Cheonma below 30% health
         DealDamage d, Int(dmg + 0.5)
         ko = (Fighter.F(d).health <= 0)
         stun = Data.MvHitstun(mv)

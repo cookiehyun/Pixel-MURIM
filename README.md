@@ -48,7 +48,8 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 - 아케이드를 한 번 깨면 **천마를 고를 수 있게 됩니다** (선택 화면 7번째 칸). 기록은 `data/save.txt`에 저장됩니다. 플레이어용 천마는 체력 1000이고, 천마로 아케이드를 하면 마지막 상대는 분신 천마(보스)입니다.
 - 선택 화면 8번째 칸 **?** 는 랜덤입니다.
 - 지면 CONTINUE? 화면이 뜹니다. 9초 안에 A를 누르면 같은 상대와 다시 싸우고, S를 누르거나 시간이 지나면 게임 오버입니다.
-- 천마는 체력 1400에 흑림 계열 기술을 더 강하게 씁니다(마공탄, 순간이동, 궁극기 천마무황).
+- 보스 천마는 체력 1400입니다. 장풍 없이 다가와서 마공장, 흡성대법, 천마군림으로 압박합니다.
+- 천마심공: 천마는 체력이 30% 이하가 되면 붉은 기운이 돌며 공격력이 15% 올라갑니다.
 
 ### 선택 화면 능력치
 - POW 한 방, SPD 이동 속도, RNG 사거리(장풍 포함), HP 체력, TEC 기술(공격이 빨리 나가고 빨리 회복하는지, 맞는 판정이 작은지, 돌진·승룡·순간이동 같은 기술).
@@ -113,7 +114,7 @@ P는 A 또는 S, K는 Z 또는 X입니다. →는 상대가 있는 쪽입니다.
 | 설화 | 발차기 | ↓↙←K 연환비각 (3연타 돌진) | →↓↘K 선풍각 (공중제비 대공) | ↓→↓→K 낙화유수 (연속 차기) |
 | 흑림 | 견제 | ↓↘→P 흑사침 (독침) | ↓↙←K 귀영보 (등 뒤로 순간이동) | ↓→↓→P 천마강림 (순간이동 장법) |
 | 홍련 | 부채 | ↓↘→P 부채 던지기 (돌아오는 부채) | →↓↘K 연화선 (회전 차기) | ↓→↓→P 홍련업화 (상대 발밑 불기둥) |
-| 천마 | 아케이드 보스 | ↓↘→P 마공탄 | ↓↙←K 순간이동 | ↓→↓→P 천마무황 |
+| 천마 | 근거리 압박 (아케이드를 깨면 열림) | ↓↘→P 마공장 (돌진 장법) | →↓←P 흡성대법 (커맨드 잡기: 내공을 빼앗고 체력 회복) | ↓→↓→P 천마군림 (앞에 마기 폭발 4연타) |
 
 - 내공(초록 바): 필살기 1·2를 쓰면 줄고 시간이 지나면 다시 찹니다. 모자라면 커맨드를 넣어도 일반 공격이 나가고 바가 빨갛게 깜빡입니다.
 - 궁극기 게이지(파란 바): 때리거나 맞으면 찹니다.
@@ -168,7 +169,8 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 - Clearing arcade once **unlocks Cheonma** (7th slot on the select screen), saved in `data/save.txt`. Playable Cheonma has 1000 HP; as Cheonma, the last fight is a shadow Cheonma boss.
 - The 8th slot **?** picks a random fighter.
 - Lose and you get CONTINUE?. Press A within 9 seconds to retry the same fight; press S or let it run out and it's game over.
-- Cheonma has 1400 HP and a stronger version of Heukrim's moves (demon orb, teleport, super Cheonma Muhwang).
+- Boss Cheonma has 1400 HP. No projectile: he closes in with the demon palm, the draining grab and Cheonma Gunrim.
+- Cheonma simgong: below 30% health Cheonma glows red and deals 15% more damage.
 
 ### Select screen stats
 - POW damage, SPD movement, RNG reach (projectiles count), HP health, TEC technique (fast startup and recovery, small hurtbox, rush / uppercut / teleport moves).
@@ -233,7 +235,7 @@ P is A or S, K is Z or X. → means toward the opponent.
 | Seolhwa | Kicker | ↓↙←K Yeonhwan Bigak (3-hit rush) | →↓↘K Seonpunggak (flip kick) | ↓→↓→K Nakhwa Yusu (kick barrage) |
 | Heukrim | Zoner | ↓↘→P Heuksachim (poison needles) | ↓↙←K Gwiyeongbo (teleport behind) | ↓→↓→P Cheonma Gangrim (teleport palm) |
 | Hongryeon | Fans | ↓↘→P Fan throw (comes back) | →↓↘K Yeonhwaseon (spinning kick) | ↓→↓→P Hongryeon Eophwa (fire pillar under the opponent) |
-| Cheonma | Arcade boss | ↓↘→P Demon orb | ↓↙←K Teleport | ↓→↓→P Cheonma Muhwang |
+| Cheonma | Close-range pressure (unlocked by clearing arcade) | ↓↘→P Demon palm (lunging palm) | →↓←P Heupseong daebeop (command grab: steals naegong, heals) | ↓→↓→P Cheonma Gunrim (4-hit demon burst in front) |
 
 - Inner energy (green bar): specials 1 and 2 use it and it refills over time. Without enough of it you get a normal attack instead, and the bar flashes red.
 - Super gauge (blue bar): fills when you hit or get hit.

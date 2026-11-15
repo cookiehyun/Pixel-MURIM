@@ -366,7 +366,12 @@ Private Function Neutral(ByVal i As Long, ByVal o As Long, ByVal v As Long, ByVa
     ' 4. super when the gauge is full
     meFull = (Fighter.F(i).meter >= METER_MAX)
     If meFull And Rnd < 0.04 * (1 + pAggr) Then
-        If SpecialType(i, MV_SUPER) = MT_SUPER_TELE Or SpecialType(i, MV_SUPER) = MT_SUPER_FIRE Then
+        If SpecialType(i, MV_SUPER) = MT_SUPER_FIRE And Data.MvP1(Fighter.F(i).moves(MV_SUPER)) > 0 Then
+            If dist < 40 Then                                   ' burst in front of the user: get close first
+                QSpecial i, MV_SUPER, False
+                Exit Function
+            End If
+        ElseIf SpecialType(i, MV_SUPER) = MT_SUPER_TELE Or SpecialType(i, MV_SUPER) = MT_SUPER_FIRE Then
             QSpecial i, MV_SUPER, False                        ' teleport strike works from anywhere
             Exit Function
         ElseIf SpecialType(i, MV_SUPER) = MT_SUPER_RUSH Then
@@ -467,7 +472,6 @@ End Function
 Private Function Zoner(ByVal i As Long) As Double
     Select Case Fighter.F(i).prefix
     Case "heukrim": Zoner = 1#
-    Case "cheonma": Zoner = 0.6
     Case "hongryeon": Zoner = 0.7
     Case "danwoo": Zoner = 0.3
     Case Else: Zoner = 0
