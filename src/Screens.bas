@@ -375,12 +375,11 @@ Public Sub SelectRender()
         PixelFont.DrawBig rName(hover), cx, 13, RGB(255, 240, 210), 1
     Else
         PixelFont.DrawBig rName(hover), cx, 12, RGB(255, 240, 210), 1
-        PixelFont.DrawText rStyle(hover), cx, 19, cDim, 1, 1
-        StatRow "POW", rStat(hover, 0), 25
-        StatRow "SPD", rStat(hover, 1), 30
-        StatRow "RNG", rStat(hover, 2), 35
-        StatRow "HP", rStat(hover, 3), 40
-        StatRow "TEC", rStat(hover, 4), 45
+        StatRow "POW", rStat(hover, 0), 20                   ' 5 rows, 6 px apart (style text no longer fits)
+        StatRow "SPD", rStat(hover, 1), 26
+        StatRow "RNG", rStat(hover, 2), 32
+        StatRow "HP", rStat(hover, 3), 38
+        StatRow "TEC", rStat(hover, 4), 44
     End If
 
     ' portrait grid
