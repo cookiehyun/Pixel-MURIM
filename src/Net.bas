@@ -55,11 +55,18 @@ Private mSock As Long
 
 Private mOpen As Boolean
 Private mErr As String
+' diagnostics (shown on online error screens): packets sent / refused, last errors, packets received
+Private mSentOk As Long, mSentFail As Long, mSendErr As Long, mRecvOk As Long, mRecvErr As Long
 Private mBuf(0 To BUFLEN - 1) As Byte
 
 Public Property Get LastError() As String
     LastError = mErr
 End Property
+
+' "S12/0 E0 R0/35": sent ok / failed, last send errno, received / last receive errno
+Public Function Diag() As String
+    Diag = "S" & mSentOk & "/" & mSentFail & " E" & mSendErr & " R" & mRecvOk & "/" & mRecvErr
+End Function
 
 Public Property Get IsOpen() As Boolean
     IsOpen = mOpen
@@ -103,6 +110,7 @@ Public Function OpenSocket(ByVal port As Long) As Boolean
     Dim a() As Byte
     CloseSocket
     mErr = ""
+    mSentOk = 0: mSentFail = 0: mSendErr = 0: mRecvOk = 0: mRecvErr = 0
     On Error GoTo Fail
     #If Mac Then
         mSock = m_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
@@ -157,11 +165,15 @@ Public Sub SendTo(ByVal ip As String, ByVal port As Long, ByVal msg As String)
     MakeAddr a, ip, port
     b = StrConv(msg, vbFromUnicode)
     On Error Resume Next
+    Dim n As Long
     #If Mac Then
-        m_sendto mSock, b(0), UBound(b) + 1, 0, a(0), 16
+        n = CLng(m_sendto(mSock, b(0), UBound(b) + 1, 0, a(0), 16))
+        If n < 0 Then mSendErr = MacErrno()
     #Else
-        w_sendto mSock, b(0), UBound(b) + 1, 0, a(0), 16
+        n = w_sendto(mSock, b(0), UBound(b) + 1, 0, a(0), 16)
+        If n < 0 Then mSendErr = WSAGetLastError()
     #End If
+    If n > 0 Then mSentOk = mSentOk + 1 Else mSentFail = mSentFail + 1
 End Sub
 
 ' Next waiting message, if any (never waits). Returns the sender's ip / port too.
@@ -180,13 +192,15 @@ Public Function Receive(ByRef msg As String, ByRef fromIp As String, ByRef fromP
             b = mBuf
             ReDim Preserve b(0 To n - 1)
             msg = StrConv(b, vbUnicode)
+            mRecvOk = mRecvOk + 1
             fromIp = a(4) & "." & a(5) & "." & a(6) & "." & a(7)
             fromPort = CLng(a(2)) * 256 + a(3)
             Receive = True
             Exit Function
         End If
         #If Mac Then
-            Exit Function                              ' nothing waiting
+            If n < 0 Then mRecvErr = MacErrno()         ' 35 = nothing waiting (normal)
+            Exit Function
         #Else
             If WSAGetLastError() <> 10054 Then Exit Function    ' 10035 = nothing waiting
         #End If

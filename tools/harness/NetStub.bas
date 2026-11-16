@@ -12,6 +12,10 @@ Public Property Get LastError() As String
     LastError = "stub"
 End Property
 
+Public Function Diag() As String
+    Diag = "stub"
+End Function
+
 Public Property Get IsOpen() As Boolean
     IsOpen = mOpen
 End Property

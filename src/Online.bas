@@ -311,7 +311,7 @@ NextMsg:
     If mState = OS_OFF Or mState = OS_ERROR Then Exit Sub
     If mSilent > SILENT_LIMIT And mState <> OS_HOSTWAIT And mState <> OS_JOINING And mState <> OS_SRV_CONNECT Then
         If mServer And mState <> OS_LOBBY And mState <> OS_FIGHT And mState <> OS_RESULT Then
-            Fail "SERVER NOT RESPONDING", "NO ANSWER FOR 10 SECONDS"
+            Fail "SERVER NOT RESPONDING", "NO ANSWER FOR 10 SECONDS  " & Net.Diag()
         Else
             Fail "CONNECTION LOST", "NO DATA FOR 10 SECONDS"
         End If
@@ -453,7 +453,7 @@ Public Sub LobbyTick()
     Select Case mState
     Case OS_SRV_CONNECT
         If mT Mod 10 = 1 Then Send "HELLO " & SRV_PROTO & " " & mName & " " & mToken
-        If mT > SILENT_LIMIT Then Fail "SERVER NOT RESPONDING", "TRY AGAIN LATER OR USE DIRECT IP"
+        If mT > SILENT_LIMIT Then Fail "SERVER NOT RESPONDING", mServerIp & "  " & Net.Diag()
         If KeyInput.IsPressed(BTN_QUIT) Or KeyInput.IsPressed(BTN_HP) Then Leave
     Case OS_ROOMWAIT, OS_QUEUE
         If KeyInput.IsPressed(BTN_QUIT) Or KeyInput.IsPressed(BTN_HP) Then Leave
