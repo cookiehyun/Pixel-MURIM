@@ -260,7 +260,7 @@ Public Sub Think(ByVal i As Long)
                     Else
                         d = 6
                     End If
-                    Fighter.FeedInput i, d, B_LP, B_LP
+                    Fighter.FeedInput i, d, 0, 0                  ' a fresh forward / back press rolls
                     Exit Sub
                 End If
             ElseIf .downPhase = 2 And Not mWakeDecided(i) Then

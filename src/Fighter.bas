@@ -733,8 +733,9 @@ Private Sub UpdateFighter(ByVal i As Long)
                 End If
             Case 1
                 If .health > 0 Then                                      ' KO'd fighters stay down
-                    atk = TakeAttack(i)
-                    If atk >= 0 And (fwd Or back) Then                   ' forward / back + any attack button = roll
+                    ' press forward / back while lying = roll. Only a new press counts: a direction already held
+                    ' while falling (e.g. back to block) does not roll by accident.
+                    If (fwd Or back) And HistAt(i, 1) <> .inDir And .stTick >= 1 Then
                         .downPhase = 3
                         .stTick = 0
                         If fwd Then .rollDir = .facing Else .rollDir = -.facing
