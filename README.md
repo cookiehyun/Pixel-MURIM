@@ -43,7 +43,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | MULTIPLAYER | 2P → KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
 | MULTIPLAYER | ONLINE (모두 태그 대전: 각자 2명, C = 교체) → QUICK MATCH | 랭크전: 서버가 점수가 비슷한 상대를 찾아 줌. 이기면 점수(Elo)가 오름 |
 | MULTIPLAYER | ONLINE → ROOM CODE | CREATE ROOM: 4글자 방 코드를 친구에게 알려 줌 / JOIN ROOM: 친구의 코드 입력 |
-| MULTIPLAYER | ONLINE → DIRECT IP | 서버 없이 IP로 직접 연결 (HOST GAME / JOIN GAME) |
+| MULTIPLAYER | ONLINE → DIRECT IP | 서버 없이 IP로 직접 연결 (HOST GAME / JOIN GAME). Mac은 HOST GAME 불가(보안 제한), JOIN은 가능 |
 | MULTIPLAYER | ONLINE → RANKING | 상위 10명과 내 순위. 자세한 내용은 [docs/ONLINE.md](docs/ONLINE.md) |
 
 ### 아케이드
@@ -167,7 +167,7 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 | MULTIPLAYER | 2P > KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
 | MULTIPLAYER | ONLINE (all tag battles: 2 fighters each, C = tag) > QUICK MATCH | Ranked: the server finds an opponent with a similar rating; winning raises your Elo |
 | MULTIPLAYER | ONLINE > ROOM CODE | CREATE ROOM shows a 4-letter code for your friend; JOIN ROOM asks for it |
-| MULTIPLAYER | ONLINE > DIRECT IP | Direct connection by IP, no server (HOST GAME / JOIN GAME) |
+| MULTIPLAYER | ONLINE > DIRECT IP | Direct connection by IP, no server (HOST GAME / JOIN GAME). Mac cannot host (sandbox); joining works |
 | MULTIPLAYER | ONLINE > RANKING | Top 10 and your rank. See [docs/ONLINE.md](docs/ONLINE.md) |
 
 ### Arcade

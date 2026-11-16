@@ -206,7 +206,12 @@ Public Sub BeginHost()
     Reset
     mHost = True
     If Not Net.OpenSocket(NET_PORT) Then
-        Fail "CANNOT OPEN PORT " & NET_PORT, Net.LastError
+        #If Mac Then
+            ' Mac Excel's sandbox does not let it accept incoming connections: hosting a direct game is impossible
+            Fail "MAC CANNOT HOST A DIRECT GAME", "USE ROOM CODE INSTEAD (OR HOST ON WINDOWS)  " & Net.LastError
+        #Else
+            Fail "CANNOT OPEN PORT " & NET_PORT, Net.LastError
+        #End If
         Exit Sub
     End If
     mLocalIp = Net.LocalIp()

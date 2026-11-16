@@ -132,7 +132,7 @@ BYE    <match_id> <reason>                 나가기
 
 처음 할 때 나올 수 있는 것:
 - Windows: "Windows 보안 경고 - 방화벽" 창 → **개인 네트워크 허용**.
-- Mac: "네트워크 연결을 받도록 허용하시겠습니까?" → 허용. Mac이 방장이 안 되면(친구가 연결이 안 되면) Windows 쪽을 방장으로 해 본다.
+- **Mac은 DIRECT IP의 HOST GAME을 할 수 없다.** Mac 엑셀의 보안 제한(샌드박스)이 들어오는 연결을 받는 포트를 막는다. Mac에서는 JOIN GAME, 또는 서버를 거치는 ROOM CODE(Mac이 방을 만들어도 됨)를 쓴다.
 
 ### 인터넷 너머 친구와
 둘 다 [Tailscale](https://tailscale.com)을 설치하고 같은 계정/네트워크에 들어간 뒤, 방장의 Tailscale IP(`100.x.y.z`)로 JOIN 한다. 또는 방장 공유기에서 UDP 47700을 방장 컴퓨터로 포트 포워딩한다.
