@@ -9,6 +9,10 @@ Option Explicit
 '   CMD dummy <mode>    0 CPU, 1 idle, 2 guard, 3 attack
 '   CMD meter <i> <n>   set super gauge
 '   CMD place <x0> <x1> set positions
+'   CMD nettest <seed> <local 0/1> <delay> <latency> <jitter> <loss %> <frames> [<bad hash frame>]
+'                       online lockstep against a simulated remote over a fake network; inputs for both
+'                       sides come from a per-frame generator, so every run must give the same
+'                       "N <frame> <hash>" lines whatever the network does
 ' Output file: "T <tick> <paintCalls> <runs> <hitstop> | <fighter0> | <fighter1>" per tick,
 '              "F <tick>" + SCREEN_H rows of hex BGR pixels for dumped frames.
 
@@ -73,6 +77,10 @@ Public Function RunScript(ByVal dataDir As String, ByVal script As String, ByVal
                 Case "place"
                     Fighter.F(0).x = CDbl(p(2))
                     Fighter.F(1).x = CDbl(p(3))
+                Case "nettest"
+                    k = -1
+                    If UBound(p) >= 9 Then k = CLng(p(9))
+                    NetTest f, CLng(p(2)), CLng(p(3)), CLng(p(4)), CLng(p(5)), CLng(p(6)), CLng(p(7)), CLng(p(8)), k
                 End Select
             Else
                 n = CLng(p(0))
@@ -117,6 +125,101 @@ Fail:
     On Error Resume Next
     Close #f
 End Function
+
+' ---------------------------------------------------------------- online lockstep test
+
+' Deterministic "player" input for a frame: a direction held for 4 frames, buttons pressed now and then.
+Private Function GenInput(ByVal seed As Long, ByVal side As Long, ByVal frame As Long) As Long
+    Dim x As Double, blk As Long, r As Long, dirs As Variant, b As Long
+    blk = frame \ 4
+    x = LcgNext(LcgNext(seed * 7919# + side * 104729# + blk))
+    dirs = Array(0, 1, 2, 2, 1, 4, 8, 9, 10, 0, 2, 1)          ' none, L, R, R, L, U, D, D+L, D+R ...
+    r = dirs(Int(x / 2147483647# * 12))
+    x = LcgNext(x)
+    If frame Mod 4 = 0 And x / 2147483647# < 0.45 Then
+        b = 2 ^ Int(LcgNext(x) / 2147483647# * 4)              ' one of LP HP LK HK
+        r = r Or (b * 16) Or (b * 256)
+    End If
+    GenInput = r
+End Function
+
+Private Function LcgNext(ByVal x As Double) As Double
+    LcgNext = x * 48271# + 11#
+    LcgNext = LcgNext - Int(LcgNext / 2147483647#) * 2147483647#
+End Function
+
+Private Sub NetTest(ByVal f As Integer, ByVal seed As Long, ByVal localIdx As Long, ByVal delay As Long, _
+                    ByVal latency As Long, ByVal jitter As Long, ByVal lossPct As Long, ByVal frames As Long, _
+                    ByVal badHashFrame As Long)
+    Const QN As Long = 4096
+    Dim qAt(0 To QN - 1) As Long, qTxt(0 To QN - 1) As String, qn_ As Long
+    Dim wall As Long, k As Long, rNext As Long, rs As Long, s As String, g As Long, lastFrame As Long
+    Dim rnd_ As Double, sent As Long, lost As Long, h As Long
+
+    Game.GameMode = MODE_VSCPU
+    Game.Multi = False
+    Game.WatchMode = False
+    Game.AutoRestart = True
+    Game.HarnessSeed = seed
+    Game.NetExternalLocal = True
+    Game.StartMatch seed
+    Lockstep.Begin localIdx, delay
+    rs = 1 - localIdx
+    rNext = delay                                          ' the remote's next frame to generate
+    rnd_ = seed + 12345#
+    lastFrame = -1
+
+    For wall = 0 To frames * 20
+        ' the simulated remote produces its input for frame rNext and sends its last 8 frames
+        If rNext <= wall + delay Then
+            s = "I " & IIf(rNext - 7 < 0, 0, rNext - 7) & " 0"
+            For g = IIf(rNext - 7 < 0, 0, rNext - 7) To rNext
+                s = s & " " & Right$("00" & Hex$(GenInput(seed, rs, g)), 3)
+            Next g
+            rNext = rNext + 1
+            rnd_ = LcgNext(rnd_)
+            sent = sent + 1
+            If rnd_ / 2147483647# * 100 >= lossPct Then
+                rnd_ = LcgNext(rnd_)
+                qAt(qn_ Mod QN) = wall + latency + Int(rnd_ / 2147483647# * (jitter + 1))
+                qTxt(qn_ Mod QN) = s
+                qn_ = qn_ + 1
+            Else
+                lost = lost + 1
+            End If
+        End If
+        ' deliver everything that has arrived (in any order: jitter reorders packets)
+        For k = IIf(qn_ - QN < 0, 0, qn_ - QN) To qn_ - 1
+            If Len(qTxt(k Mod QN)) > 0 And qAt(k Mod QN) <= wall Then
+                Lockstep.Receive qTxt(k Mod QN)
+                qTxt(k Mod QN) = ""
+            End If
+        Next k
+        ' local player: input for the frame Lockstep is filling now
+        Lockstep.CaptureLocal GenInput(seed, localIdx, Lockstep.NextLocalFrame)
+        Lockstep.TickHeard
+        Game.GameTick
+        ' the outgoing packet is built every tick like the real thing (exercises the code path)
+        s = Lockstep.OutPacket()
+        s = Lockstep.OutHash()
+        If Len(s) > 0 Then
+            ' echo our own hash back as if the remote computed the same; a bad one at badHashFrame
+            h = CLng(Split(s, " ")(2))
+            If CLng(Split(s, " ")(1)) = badHashFrame Then h = h + 1
+            Lockstep.Receive "H " & Split(s, " ")(1) & " " & h
+        End If
+        If Lockstep.Frame - 1 > lastFrame Then
+            lastFrame = Lockstep.Frame - 1
+            Print #f, "N " & lastFrame & " " & Fighter.StateHash()
+        End If
+        If Lockstep.Frame >= frames Then Exit For
+    Next wall
+    Print #f, "E frames=" & Lockstep.Frame & " wall=" & wall & " stalls=" & Lockstep.Stalls & _
+              " sent=" & sent & " lost=" & lost & " desync=" & Lockstep.DesyncFrame & _
+              " p0hp=" & Fighter.F(0).health & " p1hp=" & Fighter.F(1).health & " round=" & Match.Wins(0) & "-" & Match.Wins(1)
+    Lockstep.Finish
+    Game.NetExternalLocal = False
+End Sub
 
 Private Function FighterLine(ByVal i As Long) As String
     With Fighter.F(i)

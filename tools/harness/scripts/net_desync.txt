@@ -1,0 +1,2 @@
+# a wrong hash from the remote at frame 40 must be reported as a desync at 40
+CMD nettest 7 0 2 0 0 0 200 40

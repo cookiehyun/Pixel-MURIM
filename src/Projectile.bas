@@ -201,6 +201,19 @@ Private Sub FirePillar(ByVal k As Long)
     Next y
 End Sub
 
+' Part of Fighter.StateHash (online sync check).
+Public Function HashPart() As Long
+    Dim k As Long, h As Double
+    For k = 0 To 1
+        If mOn(k) Then
+            h = Fighter.HashMix(h, CLng(mX(k) * 100)): h = Fighter.HashMix(h, mHits(k)): h = Fighter.HashMix(h, mAge(k))
+        Else
+            h = Fighter.HashMix(h, -1)
+        End If
+    Next k
+    HashPart = CLng(h)
+End Function
+
 Public Sub Clear()
     mOn(0) = False: mOn(1) = False
 End Sub

@@ -457,6 +457,67 @@ Public Function DirFrom(ByVal fwd As Boolean, ByVal back As Boolean, ByVal up As
     DirFrom = d
 End Function
 
+' Back dash hop height for tick t: 3 * Sin(pi * t / DASH_TICKS), written out as fixed numbers so
+' Windows and Mac Excel compute exactly the same position (online play needs identical results).
+Private Function BackHop(ByVal t As Long) As Double
+    Select Case t
+    Case 1, 5: BackHop = 1.5
+    Case 2, 4: BackHop = 2.598
+    Case 3: BackHop = 3#
+    Case Else: BackHop = 0#
+    End Select
+End Function
+
+' Keyboard -> absolute input bits (online play sends these; facing is applied when the tick runs):
+'   bit 0 left, 1 right, 2 up, 3 down, bits 4-7 pressed LP HP LK HK, bits 8-11 held LP HP LK HK.
+Public Function RawLocal(Optional ByVal ks As Long = 0) As Long
+    Dim r As Long, k As Long
+    If KeyInput.IsDown(KeyInput.KeyOf(ks, 0)) Then r = r Or 1
+    If KeyInput.IsDown(KeyInput.KeyOf(ks, 1)) Then r = r Or 2
+    If KeyInput.IsDown(KeyInput.KeyOf(ks, 2)) Then r = r Or 4
+    If KeyInput.IsDown(KeyInput.KeyOf(ks, 3)) Then r = r Or 8
+    For k = 0 To 3
+        If KeyInput.IsPressed(KeyInput.KeyOf(ks, 4 + k)) Then r = r Or (16 * 2 ^ k)
+        If KeyInput.IsDown(KeyInput.KeyOf(ks, 4 + k)) Then r = r Or (256 * 2 ^ k)
+    Next k
+    RawLocal = r
+End Function
+
+' Feed absolute input bits (see RawLocal) to fighter i, turned into forward / back by its facing now.
+Public Sub FeedRaw(ByVal i As Long, ByVal r As Long)
+    Dim l As Boolean, rt As Boolean, d As Long
+    l = ((r And 1) <> 0): rt = ((r And 2) <> 0)
+    If F(i).facing > 0 Then
+        d = DirFrom(rt, l, (r And 4) <> 0, (r And 8) <> 0)
+    Else
+        d = DirFrom(l, rt, (r And 4) <> 0, (r And 8) <> 0)
+    End If
+    FeedInput i, d, (r \ 16) And 15, (r \ 256) And 15
+End Sub
+
+' Summary of everything that decides the fight, for comparing two online peers (and harness runs).
+Public Function StateHash() As Long
+    Dim i As Long, h As Double
+    For i = 0 To 1
+        With F(i)
+            h = HashMix(h, CLng(.x * 100)): h = HashMix(h, CLng(.footY * 100))
+            h = HashMix(h, CLng(.vx * 100)): h = HashMix(h, CLng(.vy * 100))
+            h = HashMix(h, .health): h = HashMix(h, .state): h = HashMix(h, .stTick)
+            h = HashMix(h, .meter): h = HashMix(h, .naegong): h = HashMix(h, .facing)
+            h = HashMix(h, .mv): h = HashMix(h, .downPhase): h = HashMix(h, .stun)
+        End With
+    Next i
+    h = HashMix(h, Projectile.HashPart())
+    h = HashMix(h, Combat.HitStop): h = HashMix(h, Combat.SuperFreeze)
+    h = HashMix(h, Match.HashPart())
+    StateHash = CLng(h)
+End Function
+
+Public Function HashMix(ByVal h As Double, ByVal v As Long) As Double
+    HashMix = h * 31# + v
+    HashMix = HashMix - Int(HashMix / 1000000007#) * 1000000007#
+End Function
+
 ' Keyboard -> relative input for fighter i.
 ' ks = key set (KeyInput.KeyOf): 0 single player, 1 / 2 multiplayer 1P / 2P.
 Public Sub FeedHuman(ByVal i As Long, Optional ByVal ks As Long = 0)
@@ -688,7 +749,7 @@ Private Sub UpdateFighter(ByVal i As Long)
                 .vx = .facing * .jumpVX * 1.7
                 .footY = GROUND_Y
             ElseIf .backward Then
-                .footY = GROUND_Y - 3 * Sin(3.14159 * .stTick / DASH_TICKS)     ' small hop
+                .footY = GROUND_Y - BackHop(.stTick)                         ' small hop
             End If
             If .state = ST_DASH And .stTick >= DASH_TICKS Then
                 .footY = GROUND_Y

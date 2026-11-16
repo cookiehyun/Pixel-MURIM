@@ -76,6 +76,14 @@ Public Property Get RoundsOn() As Boolean
     RoundsOn = mRounds
 End Property
 
+' Part of Fighter.StateHash (online sync check).
+Public Function HashPart() As Long
+    Dim h As Double
+    h = Fighter.HashMix(h, mPhase): h = Fighter.HashMix(h, mT): h = Fighter.HashMix(h, mRound)
+    h = Fighter.HashMix(h, mWins(0)): h = Fighter.HashMix(h, mWins(1)): h = Fighter.HashMix(h, mTime)
+    HashPart = CLng(h)
+End Function
+
 Public Function InputAllowed() As Boolean
     InputAllowed = (mPhase = MP_FIGHT)
 End Function

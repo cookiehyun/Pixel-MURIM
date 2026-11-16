@@ -1,0 +1,2 @@
+# latency longer than the input delay (stalls), heavy jitter, 40% loss
+CMD nettest 7 0 2 8 6 40 1200

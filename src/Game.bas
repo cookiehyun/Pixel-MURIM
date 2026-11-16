@@ -33,6 +33,7 @@ Public GameMode As Long              ' MODE_TRAINING / MODE_VSCPU
 Public QuitRequested As Boolean       ' title screen Esc -> GameLoop stops
 Public HarnessSeed As Long            ' harness: seed for the next auto-restarted match (varies every match)
 Public AutoRestart As Boolean        ' harness: start a new match after KO instead of the menu
+Public NetExternalLocal As Boolean   ' harness: local online input is supplied by the test, not the keyboard
 
 Private mPaused As Boolean
 Private mPauseSel As Long
@@ -77,9 +78,17 @@ Public Sub StartMatch(Optional ByVal seed As Long = 0)
 End Sub
 
 Public Sub GameTick()
-    Dim i As Long, frozen As Boolean
+    Dim i As Long, frozen As Boolean, online As Boolean
     KeyInput.Poll
-    If GameState = GS_FIGHT Then
+    online = Lockstep.Active And GameState = GS_FIGHT
+    If online Then
+        ' online fight: no pause; run this tick only when both players' inputs for it are known
+        If Not NetExternalLocal Then Lockstep.CaptureLocal Fighter.RawLocal(0)
+        If Not Lockstep.Ready Then
+            Lockstep.NoteStall
+            Exit Sub
+        End If
+    ElseIf GameState = GS_FIGHT Then
         If KeyInput.IsPressed(BTN_QUIT) Then                ' Esc = pause menu
             mPaused = Not mPaused
             mPauseSel = 0
@@ -115,6 +124,8 @@ Public Sub GameTick()
     For i = 0 To 1
         If Not Match.InputAllowed Then
             Fighter.FeedInput i, 5, 0, 0                ' intro / round over: nobody moves
+        ElseIf online Then
+            If i = 0 Then Lockstep.FeedFrame            ' both fighters from the exchanged inputs
         ElseIf Multi Then
             Fighter.FeedHuman i, 1 + i                  ' 1P / 2P key sets
         ElseIf IsCpu(i) Then
@@ -143,6 +154,7 @@ Public Sub GameTick()
     Hud.Update
     frozen = (Combat.SuperFreeze > 0 Or Combat.HitStop > 0)
     Match.Tick frozen
+    If online Then Lockstep.EndFrame
 End Sub
 
 Public Function IsCpu(ByVal i As Long) As Boolean

@@ -1,0 +1,2 @@
+# same match seen from the right fighter, latency 4 ticks, jitter 4, 25% loss
+CMD nettest 7 1 3 4 4 25 1200
