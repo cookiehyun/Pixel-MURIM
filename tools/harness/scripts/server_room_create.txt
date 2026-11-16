@@ -1,0 +1,2 @@
+# server mode against a scripted server: room_create
+CMD servertest 2 7 5000

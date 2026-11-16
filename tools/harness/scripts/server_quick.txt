@@ -1,0 +1,2 @@
+# server mode against a scripted server: quick
+CMD servertest 1 7 5000

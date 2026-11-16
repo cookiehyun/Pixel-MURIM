@@ -41,8 +41,10 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | SINGLE PLAYER | TRAINING | 시간 제한 없음. 콤보가 끝나면 체력이 다시 차고, 내공과 게이지는 항상 가득 |
 | MULTIPLAYER | 2P → START | 키보드 하나로 1P 팀 2명 대 2P 팀 2명 태그 대전. 각자 교체 키로 교체 |
 | MULTIPLAYER | 2P → KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
-| MULTIPLAYER | ONLINE → HOST GAME | 온라인 1:1 대전 방 만들기. 내 IP가 화면에 나오고 친구를 기다림. 방장은 왼쪽, 무대를 고름 |
-| MULTIPLAYER | ONLINE → JOIN GAME | 친구가 만든 방에 들어가기. 친구 화면의 IP를 입력. 각자 캐릭터를 고르고 A = 준비. Esc = 나가기. 자세한 내용은 [docs/ONLINE.md](docs/ONLINE.md) |
+| MULTIPLAYER | ONLINE → QUICK MATCH | 랭크전: 서버가 점수가 비슷한 상대를 찾아 줌. 이기면 점수(Elo)가 오름 |
+| MULTIPLAYER | ONLINE → ROOM CODE | CREATE ROOM: 4글자 방 코드를 친구에게 알려 줌 / JOIN ROOM: 친구의 코드 입력 |
+| MULTIPLAYER | ONLINE → DIRECT IP | 서버 없이 IP로 직접 연결 (HOST GAME / JOIN GAME) |
+| MULTIPLAYER | ONLINE → RANKING | 상위 10명과 내 순위. 자세한 내용은 [docs/ONLINE.md](docs/ONLINE.md) |
 
 ### 아케이드
 - 상대 5명은 매번 순서가 섞입니다. 그다음 6번째는 **내 분신**(같은 캐릭터, 다른 색)입니다. 4번째 상대부터 CPU가 한 단계 강해지고, 보스는 항상 HARD입니다.
@@ -163,8 +165,10 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 | SINGLE PLAYER | TRAINING | No timer. Health refills after a combo; inner energy and super gauge stay full |
 | MULTIPLAYER | 2P > START | Tag versus on one keyboard: 1P's two-fighter team against 2P's, each with their own tag key |
 | MULTIPLAYER | 2P > KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
-| MULTIPLAYER | ONLINE > HOST GAME | Make an online 1 vs 1 room: your IP is shown and the game waits for a friend. The host is on the left and picks the stage |
-| MULTIPLAYER | ONLINE > JOIN GAME | Join a friend's room by typing the IP on their screen. Both pick a fighter, A = ready. Esc = leave. See [docs/ONLINE.md](docs/ONLINE.md) |
+| MULTIPLAYER | ONLINE > QUICK MATCH | Ranked: the server finds an opponent with a similar rating; winning raises your Elo |
+| MULTIPLAYER | ONLINE > ROOM CODE | CREATE ROOM shows a 4-letter code for your friend; JOIN ROOM asks for it |
+| MULTIPLAYER | ONLINE > DIRECT IP | Direct connection by IP, no server (HOST GAME / JOIN GAME) |
+| MULTIPLAYER | ONLINE > RANKING | Top 10 and your rank. See [docs/ONLINE.md](docs/ONLINE.md) |
 
 ### Arcade
 - The five opponents come in a random order, then your **shadow** (the same fighter in other colors). From the fourth fight the CPU gets one level harder; the boss is always HARD.

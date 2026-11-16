@@ -10,11 +10,12 @@
 //!
 //! Client -> server
 //!   HELLO <proto> <name> <token>     register / log in (token = secret made by the client)
-//!   KEEP                             keep-alive while idle (every few seconds)
+//!   KEEP                             keep-alive (every few seconds)        -> KEPT
 //!   ROOM                             make a room            -> ROOMCODE <code>
 //!   JOINROOM <code>                  join a friend's room   -> MATCHED ... (both)
 //!   QUEUE / UNQUEUE                  ranked quick match on / off -> QUEUED, MATCHED ...
-//!   RESULT <match id> <winner>       winner: 0 host, 1 guest, -1 draw -> RATING <new> <change>
+//!   RESULT <match id> <game> <winner>  game = 1, 2, ... within the match; winner: 0 host, 1 guest,
+//!                                    -1 draw. May be sent several times. -> RATING <new> <change>
 //!   LEAVE                            leave the room / match (the partner gets BYE)
 //!   TOP                              -> TOP <n> <name> <rating> ... ME <rank> <rating> <games>
 //!   anything else while matched      relayed to the partner
@@ -66,7 +67,8 @@ struct Match {
     host: SocketAddr,
     guest: SocketAddr,
     ranked: bool,
-    report: [Option<i32>; 2],
+    reports: HashMap<u32, [Option<i32>; 2]>, // game number -> what host / guest reported
+    counted: Vec<u32>,                        // games already settled
 }
 
 pub struct Server {
@@ -267,7 +269,7 @@ impl Server {
         self.clients.get_mut(&from).unwrap().last_seen = Instant::now();
         let at = self.clients[&from].at;
         match p[0] {
-            "KEEP" => {}
+            "KEEP" => self.send(from, "KEPT"),
             "ROOM" => {
                 self.leave(from, false);
                 let code = self.new_code();
@@ -301,9 +303,9 @@ impl Server {
             }
             "LEAVE" => self.leave(from, true),
             "TOP" => self.top(from),
-            "RESULT" if p.len() >= 3 => {
-                if let (Ok(id), Ok(w)) = (p[1].parse::<u64>(), p[2].parse::<i32>()) {
-                    self.result(from, id, w);
+            "RESULT" if p.len() >= 4 => {
+                if let (Ok(id), Ok(g), Ok(w)) = (p[1].parse::<u64>(), p[2].parse::<u32>(), p[3].parse::<i32>()) {
+                    self.result(from, id, g, w);
                 }
             }
             _ => {
@@ -366,7 +368,7 @@ impl Server {
     fn start_match(&mut self, host: SocketAddr, guest: SocketAddr, ranked: bool) {
         let id = self.next_match;
         self.next_match += 1;
-        self.matches.insert(id, Match { host, guest, ranked, report: [None, None] });
+        self.matches.insert(id, Match { host, guest, ranked, reports: HashMap::new(), counted: Vec::new() });
         for a in [host, guest] {
             self.clients.get_mut(&a).unwrap().at = Where::InMatch(id);
         }
@@ -414,18 +416,23 @@ impl Server {
         }
     }
 
-    /// Both players report each game's winner. Once both reports are in they are compared and cleared
-    /// (the same pair can rematch and report again); ranked games that agree change the ratings.
-    fn result(&mut self, from: SocketAddr, id: u64, winner: i32) {
+    /// Both players report each game's winner (repeats are fine). When both reports for a game are
+    /// in, they are compared once; ranked games that agree change the ratings.
+    fn result(&mut self, from: SocketAddr, id: u64, game: u32, winner: i32) {
         let (host, guest, ranked, reports) = match self.matches.get_mut(&id) {
             Some(m) if m.host == from || m.guest == from => {
-                let side = if m.host == from { 0 } else { 1 };
-                m.report[side] = Some(winner.clamp(-1, 1));
-                if m.report[0].is_none() || m.report[1].is_none() {
+                if m.counted.contains(&game) || game == 0 || game > 1000 {
                     return;
                 }
-                let r = m.report;
-                m.report = [None, None];
+                let side = if m.host == from { 0 } else { 1 };
+                let r = m.reports.entry(game).or_insert([None, None]);
+                r[side] = Some(winner.clamp(-1, 1));
+                if r[0].is_none() || r[1].is_none() {
+                    return;
+                }
+                let r = *r;
+                m.reports.remove(&game);
+                m.counted.push(game);
                 (m.host, m.guest, m.ranked, r)
             }
             _ => return,

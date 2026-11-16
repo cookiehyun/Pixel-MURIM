@@ -68,6 +68,11 @@ Public Property Get Phase() As Long
     Phase = mPhase
 End Property
 
+' 0 / 1 = that fighter won the match, -1 = draw (valid in MP_MATCHEND)
+Public Property Get MatchWinner() As Long
+    MatchWinner = mMatchWinner
+End Property
+
 Public Property Get PhaseTicks() As Long
     PhaseTicks = mT
 End Property

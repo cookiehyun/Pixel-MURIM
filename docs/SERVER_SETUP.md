@@ -81,6 +81,32 @@ uname -m && lsb_release -d
 
 비밀 키 파일과 비밀번호는 보내지 마세요. 다음 단계(게임 서버 설치)는 Claude가 명령어를 정리해 드리고, 서버 안에서 사용자님이 붙여넣어 실행합니다.
 
+## 6. 게임 서버 설치 / 업데이트
+서버에 SSH로 들어간 다음 (처음 한 번):
+```bash
+git clone https://github.com/cookiehyun/excel-murim.git
+```
+```bash
+bash excel-murim/server/install.sh
+```
+빌드에 몇 분 걸립니다. 마지막에 `active (running)`이 보이면 서버가 켜진 것입니다.
+서버는 재부팅해도 자동으로 다시 켜지고, 꺼지면 2초 뒤 스스로 다시 켜집니다.
+
+업데이트할 때:
+```bash
+cd ~/excel-murim && git pull && bash server/install.sh
+```
+
+로그 보기 (누가 접속했는지, 매칭, 결과; Ctrl+C로 나옴):
+```bash
+journalctl -u pixel-murim -f
+```
+
+순위 기록 백업 (가끔):
+```bash
+cp /var/lib/pixel-murim/players.tsv ~/players-backup.tsv
+```
+
 ## 무료로 유지하려면
 - 화면에 "Upgrade to Pay As You Go"가 보여도 누르지 않습니다.
 - **놀고 있는 서버는 회수될 수 있습니다.** 7일 동안 CPU·네트워크(A1은 메모리도) 사용률이 모두 20% 미만이면 Oracle이 Always Free 서버를 회수할 수 있다고 안내합니다. 게임 서버는 사람이 없을 때 거의 일을 하지 않아서 이 조건에 걸릴 수 있습니다.

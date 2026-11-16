@@ -18,7 +18,8 @@ Private rHeadY(0 To ROSTER - 1) As Long           ' (from docs/<name>_points.txt
 
 Private mCursor As Long          ' title menu
 Private mMenuLevel As Long       ' 0 = SINGLE / MULTI, 1 = single modes, 2 = multi: 2P / ONLINE, 3 = key config,
-                                 ' 4 = online: host / join, 5 = 2P: start / key config
+                                 ' 4 = online: quick match / room code / direct IP / ranking, 5 = 2P: start / key config,
+                                 ' 6 = room code: create / join, 7 = direct IP: host / join
 Private mLastIp As String        ' online: address typed last time
 Private mMenuTick As Long
 Private mPhase As Long           ' select: 0 = player, 1 = opponent
@@ -144,6 +145,9 @@ Public Sub TitleTick()
         ElseIf mMenuLevel = 4 Or mMenuLevel = 5 Then
             If mMenuLevel = 4 Then mCursor = 1 Else mCursor = 0     ' back to the multiplayer list
             mMenuLevel = 2
+        ElseIf mMenuLevel = 6 Or mMenuLevel = 7 Then
+            mCursor = mMenuLevel - 5                        ' back to the online list, on ROOM CODE / DIRECT IP
+            mMenuLevel = 4
         Else
             mCursor = mMenuLevel - 1                        ' back to SINGLE / MULTI
             mMenuLevel = 0
@@ -177,8 +181,23 @@ Public Sub TitleTick()
             mMenuLevel = 3
             KeyConfig.Begin
         End If
-    Case 4                                                  ' online: HOST / JOIN
-        mMenuLevel = 2
+    Case 4                                                  ' online: QUICK MATCH / ROOM CODE / DIRECT IP / RANKING
+        Select Case mCursor
+        Case 0: Online.BeginQuickMatch                      ' ranked, a stranger of similar rating
+        Case 1: mMenuLevel = 6: mCursor = 0
+        Case 2: mMenuLevel = 7: mCursor = 0
+        Case Else: Online.BeginRanking
+        End Select
+    Case 6                                                  ' room code: CREATE ROOM / JOIN ROOM (through the server)
+        If mCursor = 0 Then
+            Online.BeginRoomCreate
+        Else
+            Dim code As String
+            code = InputBox("Room code (4 letters, shown on your friend's screen):", "Pixel Murim Online", "")
+            KeyInput.Init                                   ' forget the keys typed into the box
+            If Len(Trim$(code)) > 0 Then Online.BeginRoomJoin code
+        End If
+    Case 7                                                  ' direct IP: HOST GAME / JOIN GAME (no server)
         If mCursor = 0 Then
             Online.BeginHost
         Else
@@ -189,11 +208,8 @@ Public Sub TitleTick()
             If Len(Trim$(ip)) > 0 Then
                 mLastIp = Trim$(ip)
                 Online.BeginJoin mLastIp
-            Else
-                mMenuLevel = 4
             End If
         End If
-        mCursor = 1
     End Select
 End Sub
 
@@ -201,6 +217,7 @@ Private Function MenuCount() As Long
     Select Case mMenuLevel
     Case 0: MenuCount = 2
     Case 1: MenuCount = 3
+    Case 4: MenuCount = 4
     Case Else: MenuCount = 2
     End Select
 End Function
@@ -210,7 +227,9 @@ Private Function MenuLabel(ByVal k As Long) As String
     Select Case mMenuLevel
     Case 0: t = Array("SINGLE PLAYER", "MULTIPLAYER")
     Case 1: t = Array("ARCADE", "VS CPU", "TRAINING")
-    Case 4: t = Array("HOST GAME", "JOIN GAME")
+    Case 4: t = Array("QUICK MATCH", "ROOM CODE", "DIRECT IP", "RANKING")
+    Case 6: t = Array("CREATE ROOM", "JOIN ROOM")
+    Case 7: t = Array("HOST GAME", "JOIN GAME")
     Case 5: t = Array("START", "KEY CONFIG")
     Case Else: t = Array("2P", "ONLINE")
     End Select

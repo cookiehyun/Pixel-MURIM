@@ -1,0 +1,2 @@
+# server mode against a scripted server: room_join
+CMD servertest 3 7 5000

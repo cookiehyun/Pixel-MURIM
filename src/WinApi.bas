@@ -49,12 +49,12 @@ Public Function NowSec() As Double
 End Function
 
 ' Mac Excel runs in a sandbox and asks before touching each file. Ask for the folder, every
-' file in it, keys.txt (key config) and save.txt (arcade unlock) in ONE "Grant File Access" dialog;
+' file in it and the files the game writes (keys / save / profile) in ONE "Grant File Access" dialog;
 ' Excel remembers the answer, so later runs ask nothing. Once per session. No-op on Windows.
 Public Sub GrantFolderAccess(ByVal folder As String)
     #If Mac Then
         Static asked As Boolean
-        Dim paths() As Variant, n As Long, f As String, hasKeys As Boolean, hasSave As Boolean
+        Dim paths() As Variant, n As Long, f As String, k As Long, have As String, extra As Variant
         If asked Then Exit Sub
         asked = True
         ReDim paths(0 To 0)
@@ -66,20 +66,19 @@ Public Sub GrantFolderAccess(ByVal folder As String)
                 ReDim Preserve paths(0 To n)
                 paths(n) = folder & "/" & f
                 n = n + 1
-                If LCase$(f) = "keys.txt" Then hasKeys = True
-                If LCase$(f) = "save.txt" Then hasSave = True
+                have = have & "|" & LCase$(f)
             End If
             f = Dir()
         Loop
-        If Not hasKeys Then
-            ReDim Preserve paths(0 To n)
-            paths(n) = folder & "/keys.txt"
-            n = n + 1
-        End If
-        If Not hasSave Then
-            ReDim Preserve paths(0 To n)
-            paths(n) = folder & "/save.txt"
-        End If
+        ' files the game writes: key config, arcade unlock, online profile
+        extra = Array("keys.txt", "save.txt", "profile.txt")
+        For k = 0 To UBound(extra)
+            If InStr(have & "|", "|" & extra(k) & "|") = 0 Then
+                ReDim Preserve paths(0 To n)
+                paths(n) = folder & "/" & extra(k)
+                n = n + 1
+            End If
+        Next k
         On Error Resume Next
         GrantAccessToMultipleFiles paths
         On Error GoTo 0

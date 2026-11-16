@@ -13,6 +13,8 @@ Option Explicit
 '                       online lockstep against a simulated remote over a fake network; inputs for both
 '                       sides come from a per-frame generator, so every run must give the same
 '                       "N <frame> <hash>" lines whatever the network does
+'   CMD servertest <1 quick match / 2 create room / 3 join room / 4 ranking> <seed> <max ticks>
+'                       the Online module in server mode against a scripted game server + opponent
 '   CMD onlinetest <host 1 / guest 0> <seed> <max ticks>
 '                       the real Online module (lobby, START, lockstep, result, BYE) against a scripted
 '                       remote player over the stub network; logs "S" state changes and "E" at the end
@@ -80,6 +82,8 @@ Public Function RunScript(ByVal dataDir As String, ByVal script As String, ByVal
                 Case "place"
                     Fighter.F(0).x = CDbl(p(2))
                     Fighter.F(1).x = CDbl(p(3))
+                Case "servertest"
+                    ServerTest f, CLng(p(2)), CLng(p(3)), CLng(p(4))
                 Case "onlinetest"
                     OnlineTest f, (p(2) = "1"), CLng(p(3)), CLng(p(4))
                 Case "nettest"
@@ -223,6 +227,103 @@ Private Sub NetTest(ByVal f As Integer, ByVal seed As Long, ByVal localIdx As Lo
               " sent=" & sent & " lost=" & lost & " desync=" & Lockstep.DesyncFrame & _
               " p0hp=" & Fighter.F(0).health & " p1hp=" & Fighter.F(1).health & " round=" & Match.Wins(0) & "-" & Match.Wins(1)
     Lockstep.Finish
+    Game.NetExternalLocal = False
+End Sub
+
+' Scripted game server (and the opponent behind it) for the server modes.
+Private Sub ServerTest(ByVal f As Integer, ByVal mode As Long, ByVal seed As Long, ByVal maxTicks As Long)
+    Const SIP As String = "10.0.0.5"
+    Dim wall As Long, s As String, q() As String, p() As String, lastSt As Long, lastGs As Long, g As Long
+    Dim weHost As Boolean, ranked As Boolean, matched As Boolean, rStarted As Boolean, rDelay As Long, rNext As Long
+    Dim rs As Long, results As Long, byeAt As Long, roomT As Long, ratingSent As Boolean, startSent As Boolean
+    Net.StubClear
+    Game.NetExternalLocal = True
+    Online.SetProfile "tester", String$(20, "T"), SIP
+    Select Case mode
+    Case 1: Online.BeginQuickMatch
+    Case 2: Online.BeginRoomCreate
+    Case 3: Online.BeginRoomJoin "abcd"
+    Case Else: Online.BeginRanking
+    End Select
+    lastSt = -1: lastGs = -1: byeAt = -1
+    For wall = 1 To maxTicks
+        KeyInput.ClearNext
+        Do
+            s = Net.StubTakeOut()
+            If Len(s) = 0 Then Exit Do
+            q = Split(s, "|")
+            If q(0) <> SIP Then Print #f, "X sent to " & q(0) & ": " & q(2)
+            p = Split(q(2), " ")
+            Print #f, "O " & wall & " " & q(2)
+            Select Case p(0)
+            Case "HELLO": Net.StubInject SIP, 47700, "WELCOME PM3 1000 0"
+            Case "KEEP": Net.StubInject SIP, 47700, "KEPT"
+            Case "QUEUE"
+                Net.StubInject SIP, 47700, "QUEUED"
+                Net.StubInject SIP, 47700, "MATCHED 7 1 1 RIVAL 1012"      ' we are the guest of a ranked match
+                weHost = False: ranked = True: matched = True
+            Case "ROOM"
+                Net.StubInject SIP, 47700, "ROOMCODE QWER"
+                roomT = wall
+            Case "JOINROOM"
+                If p(1) = "ABCD" Then
+                    Net.StubInject SIP, 47700, "MATCHED 7 1 0 FRIEND 1000"
+                    weHost = False: matched = True
+                Else
+                    Net.StubInject SIP, 47700, "NOROOM"
+                End If
+            Case "TOP": Net.StubInject SIP, 47700, "TOP 3 KIM 1100 TESTER 1040 LEE 990 ME 2 1040 5"
+            Case "PING": Net.StubInject SIP, 47700, "PONG " & p(1)
+            Case "PICK"
+                If matched And Not rStarted Then Net.StubInject SIP, 47700, "PICK 4 1"   ' opponent: Heukrim, ready
+            Case "START"
+                If Not rStarted Then rStarted = True: rDelay = CLng(p(4)): rNext = rDelay
+            Case "RESULT"
+                results = results + 1
+                If ranked And Not ratingSent Then
+                    Net.StubInject SIP, 47700, "RATING 1016 +16"
+                    ratingSent = True
+                End If
+            End Select
+        Loop
+        If mode = 2 And roomT > 0 And wall = roomT + 20 And Not matched Then
+            Net.StubInject SIP, 47700, "MATCHED 7 0 0 FRIEND 1000"      ' friend joined: we host
+            weHost = True: matched = True
+        End If
+        rs = IIf(weHost, 1, 0)
+        ' opponent hosting: starts once we are ready
+        If matched And Not weHost And Not startSent And Online.StateCode = 3 And wall Mod 20 = 0 Then
+            Net.StubInject SIP, 47700, "START 4 0 2 3"
+            startSent = True: rStarted = True: rDelay = 3: rNext = 3
+        End If
+        If rStarted And Online.StateCode = 4 Then
+            If rNext <= Lockstep.Frame + rDelay Then
+                s = "I " & IIf(rNext - 7 < 0, 0, rNext - 7) & " 0"
+                For g = IIf(rNext - 7 < 0, 0, rNext - 7) To rNext
+                    s = s & " " & Right$("00" & Hex$(GenInput(seed, rs, g)), 3)
+                Next g
+                rNext = rNext + 1
+                Net.StubInject SIP, 47700, s
+            End If
+        End If
+        If Online.StateCode = 3 And results >= 1 And byeAt < 0 Then byeAt = wall + 30
+        If wall = byeAt Then Net.StubInject SIP, 47700, "BYE"
+        If Online.StateCode = 3 And wall Mod 7 = 0 Then KeyInput.SetNextByName "A"
+        If Lockstep.Active And Online.StateCode = 4 Then Lockstep.CaptureLocal GenInput(seed, 1 - rs, Lockstep.NextLocalFrame)
+        If mode = 4 And wall = 40 Then KeyInput.SetNextByName "A"         ' leave the ranking screen
+        Game.GameTick
+        If wall = 15 Or wall = 60 Or wall = 1800 Or wall = 3395 Then
+            Game.GameRender
+            DumpFrame f, wall
+        End If
+        If Online.StateCode <> lastSt Or Game.GameState <> lastGs Then
+            Print #f, "S " & wall & " online=" & Online.StateCode & " game=" & Game.GameState & " frame=" & Lockstep.Frame & _
+                      " p1=" & Game.P1Char & " p2=" & Game.P2Char & " host=" & Online.IsHost & " " & Online.ServerInfo & " err=" & Online.ErrorText
+            lastSt = Online.StateCode: lastGs = Game.GameState
+        End If
+        If (Online.StateCode = 6 And byeAt > 0) Or (mode = 4 And Online.StateCode = 0) Then Exit For
+    Next wall
+    Print #f, "E wall=" & wall & " online=" & Online.StateCode & " results=" & results & " " & Online.ServerInfo & " err=" & Online.ErrorText
     Game.NetExternalLocal = False
 End Sub
 

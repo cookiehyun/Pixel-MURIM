@@ -62,7 +62,7 @@ def main():
         except socket.timeout:
             check(True, "outsider's packets are not relayed"); a.s.settimeout(0.5)
         # unranked result: no rating message
-        a.send(f"RESULT {mid} 0"); b.send(f"RESULT {mid} 0"); time.sleep(0.3)
+        a.send(f"RESULT {mid} 1 0"); b.send(f"RESULT {mid} 1 0"); time.sleep(0.3)
         a.send("TOP"); t = a.recv("TOP").split()
         check(t[1] == "0", "room games do not count for the ranking")
         # leave -> partner gets BYE
@@ -75,13 +75,17 @@ def main():
         mid = ma[1]; host_is_a = ma[2] == "0"
         winner_a = "0" if host_is_a else "1"
         # disagreeing reports do not count
-        a.send(f"RESULT {mid} {winner_a}"); b.send(f"RESULT {mid} {'1' if winner_a == '0' else '0'}"); time.sleep(0.3)
+        a.send(f"RESULT {mid} 1 {winner_a}"); b.send(f"RESULT {mid} 1 {'1' if winner_a == '0' else '0'}"); time.sleep(0.3)
         a.send("TOP"); check(a.recv("TOP").split()[1] == "0", "mismatching reports ignored")
-        a.send(f"RESULT {mid} {winner_a}"); b.send(f"RESULT {mid} {winner_a}")
+        for _ in range(3):                                   # repeated reports (packet loss insurance)
+            a.send(f"RESULT {mid} 2 {winner_a}"); b.send(f"RESULT {mid} 2 {winner_a}")
         ra, rb = a.recv("RATING").split(), b.recv("RATING").split()
         check(ra == ["RATING", "1016", "+16"] and rb == ["RATING", "984", "-16"], f"Elo applied: {ra} {rb}")
-        # rematch in the same pairing: second game counts too
-        a.send(f"RESULT {mid} {winner_a}"); b.send(f"RESULT {mid} {winner_a}")
+        time.sleep(0.3)
+        a.send("TOP"); check(a.recv("TOP").split()[3] == "1016", "repeated reports counted once")
+        a.send("KEEP"); check(a.recv("KEPT") == "KEPT", "KEEP -> KEPT")
+        # rematch in the same pairing: next game counts too
+        a.send(f"RESULT {mid} 3 {winner_a}"); b.send(f"RESULT {mid} 3 {winner_a}")
         ra2 = a.recv("RATING").split(); check(int(ra2[1]) > 1016, f"rematch counted: {ra2}")
         a.send("TOP"); t = a.recv("TOP").split()
         check(t[1] == "2" and t[2] == "ALICE" and t[t.index('ME') + 1] == "1", f"ranking: {' '.join(t)}")

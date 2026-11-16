@@ -1,0 +1,2 @@
+# server mode against a scripted server: ranking
+CMD servertest 4 7 5000
