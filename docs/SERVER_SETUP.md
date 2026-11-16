@@ -42,8 +42,13 @@ Oracle 화면 메뉴 이름은 바뀔 수 있습니다. 비슷한 이름을 찾�
 3. **Add Ingress Rules** 버튼으로 저장.
 
 **(2) 서버 안의 방화벽 (Ubuntu)** — 4번에서 서버에 들어간 다음 실행합니다.
+REJECT(모두 거부) 줄보다 **위**에 넣어야 합니다. 서버마다 기본 줄 수가 달라서, REJECT 줄 번호를 찾아 그 자리에 넣습니다.
 ```bash
-sudo iptables -I INPUT 6 -p udp --dport 47700 -j ACCEPT
+sudo iptables -I INPUT $(sudo iptables -L INPUT --line-numbers | awk '/REJECT/{print $1; exit}') -p udp --dport 47700 -j ACCEPT
+```
+확인: 아래 결과에서 `udp dpt:47700` 줄이 `REJECT` 줄보다 위에 있어야 합니다.
+```bash
+sudo iptables -L INPUT -n --line-numbers
 ```
 ```bash
 sudo netfilter-persistent save
