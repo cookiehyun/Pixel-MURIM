@@ -4,7 +4,7 @@ Option Explicit
 ' Arcade mode: the player's fighter takes on the other five in random order, then its own
 ' shadow (mirror match, alternate colors), then the final boss Cheonma.
 ' Lose a match -> CONTINUE? countdown (retry the same fight).
-' Clear all seven -> character ending, and Cheonma becomes playable (saved in data/save.txt).
+' Clear all seven -> character ending, and Cheonma becomes playable (saved in save.txt, Data.UserFilePath).
 ' Playing as Cheonma: the six fighters, then the shadow Cheonma as the boss.
 '   LADDER   : next opponent preview (A or wait)
 '   CONTINUE : 9..0 countdown, A = retry, S / timeout = GAME OVER
@@ -127,13 +127,13 @@ Public Sub MatchOver(ByVal won As Boolean)
     End If
 End Sub
 
-' Has the player cleared arcade once (Cheonma playable)? Read from data/save.txt once.
+' Has the player cleared arcade once (Cheonma playable)? Read from save.txt (Data.UserFilePath) once.
 Public Function BossUnlocked() As Boolean
     Dim lines As Variant, k As Long
     If Not mUnlockRead Then
         mUnlockRead = True
         On Error Resume Next
-        lines = Data.ReadFileLines(SAVE_FILE)
+        lines = Data.ReadUserLines(SAVE_FILE)
         If Err.Number = 0 Then
             For k = LBound(lines) To UBound(lines)
                 If Trim$(lines(k)) = "cheonma=1" Then mUnlocked = True
@@ -151,7 +151,7 @@ Private Sub SaveUnlock()
     mUnlockRead = True
     On Error Resume Next                                  ' a read-only folder must not break the ending
     f = FreeFile
-    Open Data.FilePath(SAVE_FILE) For Output As #f
+    Open Data.UserFilePath(SAVE_FILE) For Output As #f
     Print #f, "cheonma=1"
     Close #f
     On Error GoTo 0

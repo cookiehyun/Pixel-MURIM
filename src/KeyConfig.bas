@@ -1,7 +1,7 @@
 Attribute VB_Name = "KeyConfig"
 Option Explicit
 
-' Multiplayer key settings: defaults, data\keys.txt (saved / loaded) and the KEY CONFIG screen.
+' Multiplayer key settings: defaults, keys.txt (Data.UserFilePath, saved / loaded) and the KEY CONFIG screen.
 '   up / down = row, left / right = 1P / 2P column, A = change (then press the new key, Esc = cancel), S = save + back
 ' A key that is already used by the other slot / player is swapped, so no two controls share a key.
 
@@ -30,12 +30,12 @@ Private Sub SetSet(ByVal ks As Long, ByVal vks As Variant)
     Next k
 End Sub
 
-' Defaults, then data\keys.txt if it exists ("1 vk vk vk vk vk vk vk vk" / "2 ...").
+' Defaults, then keys.txt if it exists ("1 vk vk vk vk vk vk vk vk" / "2 ...").
 Public Sub Load()
     Dim lines As Variant, i As Long, p() As String, k As Long, ks As Long
     ResetDefaults
     On Error GoTo NoFile
-    lines = Data.ReadFileLines(KEY_FILE)
+    lines = Data.ReadUserLines(KEY_FILE)
     For i = 0 To UBound(lines)
         p = Split(Trim$(lines(i)), " ")
         If UBound(p) >= 8 Then                          ' older files have no tag key: keep its default
@@ -54,7 +54,7 @@ Public Sub Save()
     Dim f As Integer, ks As Long, k As Long, ln As String
     On Error GoTo Fail
     f = FreeFile
-    Open Data.FilePath(KEY_FILE) For Output As #f
+    Open Data.UserFilePath(KEY_FILE) For Output As #f
     For ks = 1 To 2
         ln = CStr(ks)
         For k = 0 To CTRLS - 1

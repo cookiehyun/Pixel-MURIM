@@ -10,6 +10,8 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 
 ## 시작하기 / Getting started
 
+**기록 파일 / Player files:** 천마 해금(`save.txt`), 온라인 이름·토큰(`profile.txt`), 키 설정(`keys.txt`)은 게임 폴더 **밖**에 저장됩니다. Windows: `%APPDATA%\PixelMurim\`, Mac: 엑셀 전용 보관 폴더(`~/Library/Containers/com.microsoft.Excel/Data/PixelMurim/`). 그래서 게임 폴더를 새 버전으로 통째로 바꿔도 기록이 남습니다. / Arcade unlock, online profile and key config are stored **outside** the game folder (Windows `%APPDATA%\PixelMurim\`, Mac Excel's container `~/Library/Containers/com.microsoft.Excel/Data/PixelMurim/`), so replacing the game folder keeps them.
+
 처음 한 번만 하면 됩니다. 자세한 안내: [docs/SETUP_KO.md](docs/SETUP_KO.md) / One-time setup. Step-by-step guide (Korean): [docs/SETUP_KO.md](docs/SETUP_KO.md)
 
 | | Windows | Mac |
@@ -40,7 +42,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | SINGLE PLAYER | VS CPU | 2명씩 팀을 짜서 CPU 팀과 싸웁니다. C 키로 교체 |
 | SINGLE PLAYER | TRAINING | 시간 제한 없음. 콤보가 끝나면 체력이 다시 차고, 내공과 게이지는 항상 가득 |
 | MULTIPLAYER | 2P → START | 키보드 하나로 1P 팀 2명 대 2P 팀 2명 태그 대전. 각자 교체 키로 교체 |
-| MULTIPLAYER | 2P → KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
+| MULTIPLAYER | 2P → KEY CONFIG | 1P·2P 키 바꾸기. `keys.txt`에 저장됩니다 |
 | MULTIPLAYER | ONLINE (모두 태그 대전: 각자 2명, C = 교체) → QUICK MATCH | 랭크전: 서버가 점수가 비슷한 상대를 찾아 줌. 이기면 점수(Elo)가 오름 |
 | MULTIPLAYER | ONLINE → ROOM CODE | CREATE ROOM: 4글자 방 코드를 친구에게 알려 줌 / JOIN ROOM: 친구의 코드 입력 |
 | MULTIPLAYER | ONLINE → DIRECT IP | 서버 없이 IP로 직접 연결 (HOST GAME / JOIN GAME). Mac은 HOST GAME 불가(보안 제한), JOIN은 가능 |
@@ -48,7 +50,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 
 ### 아케이드
 - 상대 5명은 매번 순서가 섞입니다. 그다음 6번째는 **내 분신**(같은 캐릭터, 다른 색)입니다. 4번째 상대부터 CPU가 한 단계 강해지고, 보스는 항상 HARD입니다.
-- 아케이드를 한 번 깨면 **천마를 고를 수 있게 됩니다** (선택 화면 7번째 칸). 기록은 `data/save.txt`에 저장됩니다. TRAINING에서는 깨지 않아도 천마를 고를 수 있습니다. 플레이어용 천마는 체력 1000이고, 천마로 아케이드를 하면 마지막 상대는 분신 천마(보스)입니다.
+- 아케이드를 한 번 깨면 **천마를 고를 수 있게 됩니다** (선택 화면 7번째 칸). 기록은 `save.txt`에 저장됩니다. TRAINING에서는 깨지 않아도 천마를 고를 수 있습니다. 플레이어용 천마는 체력 1000이고, 천마로 아케이드를 하면 마지막 상대는 분신 천마(보스)입니다.
 - 선택 화면 8번째 칸 **?** 는 랜덤입니다.
 - 지면 CONTINUE? 화면이 뜹니다. 9초 안에 A를 누르면 같은 상대와 다시 싸우고, S를 누르거나 시간이 지나면 게임 오버입니다.
 - 보스 천마는 체력 1400입니다. 장풍 없이 다가와서 마공장, 흡성대법, 천마군림으로 압박합니다.
@@ -164,7 +166,7 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 | SINGLE PLAYER | VS CPU | Two-fighter teams against a CPU team. Press C to switch |
 | SINGLE PLAYER | TRAINING | No timer. Health refills after a combo; inner energy and super gauge stay full |
 | MULTIPLAYER | 2P > START | Tag versus on one keyboard: 1P's two-fighter team against 2P's, each with their own tag key |
-| MULTIPLAYER | 2P > KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
+| MULTIPLAYER | 2P > KEY CONFIG | Change 1P / 2P keys. Saved to `keys.txt` |
 | MULTIPLAYER | ONLINE (all tag battles: 2 fighters each, C = tag) > QUICK MATCH | Ranked: the server finds an opponent with a similar rating; winning raises your Elo |
 | MULTIPLAYER | ONLINE > ROOM CODE | CREATE ROOM shows a 4-letter code for your friend; JOIN ROOM asks for it |
 | MULTIPLAYER | ONLINE > DIRECT IP | Direct connection by IP, no server (HOST GAME / JOIN GAME). Mac cannot host (sandbox); joining works |
@@ -172,7 +174,7 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 
 ### Arcade
 - The five opponents come in a random order, then your **shadow** (the same fighter in other colors). From the fourth fight the CPU gets one level harder; the boss is always HARD.
-- Clearing arcade once **unlocks Cheonma** (7th slot on the select screen), saved in `data/save.txt`. In TRAINING Cheonma is always available. Playable Cheonma has 1000 HP; as Cheonma, the last fight is a shadow Cheonma boss.
+- Clearing arcade once **unlocks Cheonma** (7th slot on the select screen), saved in `save.txt`. In TRAINING Cheonma is always available. Playable Cheonma has 1000 HP; as Cheonma, the last fight is a shadow Cheonma boss.
 - The 8th slot **?** picks a random fighter.
 - Lose and you get CONTINUE?. Press A within 9 seconds to retry the same fight; press S or let it run out and it's game over.
 - Boss Cheonma has 1400 HP. No projectile: he closes in with the demon palm, the draining grab and Cheonma Gunrim.
@@ -310,7 +312,7 @@ pixel-murim/
     GameLoop.bas      고정 타임스텝 루프, 엑셀 설정/복구
     Game.bas          상태 전환, 한 틱 진행과 그리기, 일시정지 메뉴
     KeyInput.bas      키 입력 (Windows GetAsyncKeyState / Mac CGEventSourceKeyState), 창 포커스 확인
-    KeyConfig.bas     2인 키 설정 화면, data/keys.txt 저장
+    KeyConfig.bas     2인 키 설정 화면, keys.txt 저장
     Renderer.bas      셀 픽셀 버퍼, 스프라이트, 바뀐 부분만 사각형으로 묶어 칠하기
     Data.bas          data/*.txt 읽기
     Screens.bas       시작, 캐릭터·난이도·무대 선택 화면
@@ -403,7 +405,7 @@ pixel-murim/
     GameLoop.bas      fixed-timestep loop, Excel session setup/restore
     Game.bas          game state, one tick and one frame, pause menu
     KeyInput.bas      keyboard (Windows GetAsyncKeyState / Mac CGEventSourceKeyState), window focus check
-    KeyConfig.bas     two-player key settings, data/keys.txt
+    KeyConfig.bas     two-player key settings, keys.txt
     Renderer.bas      cell pixel buffer, sprites, repaint only changed areas as merged rectangles
     Data.bas          reads data/*.txt
     Screens.bas       title, fighter / level / stage select

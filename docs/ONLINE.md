@@ -105,7 +105,7 @@ BYE    <match_id> <reason>                 나가기
 | `Net.bas` (새로) | UDP 소켓 열기, 보내기, 블로킹 없이 받기. Windows / Mac 분기 |
 | `Online.bas` (새로) | 온라인 상태 흐름: 연결 → 선택 동기화 → 대전 → 결과 → 다시 선택. 패킷 만들기/해석 |
 | `Lockstep.bas` (새로) | 입력 지연, 입력 버퍼(틱별 양쪽 입력), 상대 입력 대기, 체크섬 |
-| `Profile.bas` (새로) | 닉네임과 비밀 토큰(무작위, `data/profile.txt`에 저장). 랭크전 본인 확인용 |
+| `Profile.bas` (새로) | 닉네임과 비밀 토큰(무작위, `profile.txt`(Windows `%APPDATA%\PixelMurim\`, Mac 엑셀 보관 폴더)에 저장). 랭크전 본인 확인용 |
 | `GameLoop.bas` | 온라인 대전이면 매 틱 "양쪽 입력이 있을 때만 진행" |
 | `Fighter.FeedInput` | 지금도 입력을 외부에서 넣을 수 있음. 온라인 상대 입력도 이걸로 넣는다 |
 | `Screens.bas` | ONLINE 메뉴, IP·코드 입력, 대기 화면, 순위표 |
@@ -163,8 +163,8 @@ BYE    <match_id> <reason>                 나가기
 | DIRECT IP | 서버 없이 IP로 직접 연결 (위의 M2) |
 | RANKING | 상위 10명과 내 순위 |
 
-- 처음 서버 메뉴를 쓰면 **대전 이름**을 묻습니다 (영문·숫자 10자). 이름과 비밀 토큰이 `data/profile.txt`에 저장되고, 이 토큰이 서버에서 "나"를 알아보는 열쇠입니다. 다른 컴퓨터로 옮기려면 이 파일을 복사합니다.
-- 서버 주소 기본값은 `Online.DEFAULT_SERVER`. 다른 서버를 쓰려면 `data/profile.txt`에 `server=1.2.3.4` 줄을 넣습니다.
+- 처음 서버 메뉴를 쓰면 **대전 이름**을 묻습니다 (영문·숫자 10자). 이름과 비밀 토큰이 `profile.txt`에 저장되고, 이 토큰이 서버에서 "나"를 알아보는 열쇠입니다. 다른 컴퓨터로 옮기려면 이 파일을 복사합니다.
+- 서버 주소 기본값은 `Online.DEFAULT_SERVER`. 다른 서버를 쓰려면 `profile.txt`에 `server=1.2.3.4` 줄을 넣습니다.
 - 공유기 설정이나 Tailscale이 필요 없습니다. 두 엑셀 모두 서버로 나가는 연결만 합니다.
 - 결과는 양쪽 엑셀이 각각 서버에 보고하고, 둘이 같을 때만 점수에 반영됩니다.
 

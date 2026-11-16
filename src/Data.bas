@@ -369,6 +369,58 @@ Public Function FilePath(ByVal fileName As String) As String
     FilePath = DataPath(fileName)
 End Function
 
+' Player files (arcade unlock, online profile, key config) live OUTSIDE the game folder, so replacing the
+' game folder with a new version keeps them (Mac Finder replaces a dropped folder instead of merging):
+'   Windows: %APPDATA%\PixelMurim\       Mac: Excel's own container folder (always writable, no prompt)
+' A copy left in data\ by older versions is moved over on first read. The harness keeps using BaseDir.
+Public Function UserFilePath(ByVal fileName As String) As String
+    If Len(BaseDir) > 0 Then
+        UserFilePath = BaseDir & fileName
+    Else
+        UserFilePath = UserDir() & fileName
+    End If
+End Function
+
+Public Function ReadUserLines(ByVal fileName As String) As Variant
+    Dim p As String, old As String
+    p = UserFilePath(fileName)
+    If Len(Dir(p)) = 0 And Len(BaseDir) = 0 Then
+        old = DataPath(fileName)
+        If Len(Dir(old)) > 0 Then
+            On Error Resume Next
+            FileCopy old, p                           ' move the old copy out of the game folder
+            On Error GoTo 0
+            If Len(Dir(p)) = 0 Then p = old           ' could not copy: read it where it is
+        End If
+    End If
+    ReadUserLines = ReadLines(p)
+End Function
+
+Private Function UserDir() As String
+    Static d As String
+    Dim sep As String
+    If Len(d) > 0 Then
+        UserDir = d
+        Exit Function
+    End If
+    sep = Application.PathSeparator
+    On Error Resume Next
+    If InStr(1, Application.OperatingSystem, "Mac", vbTextCompare) > 0 Then
+        d = Environ$("HOME")                          ' Mac Excel: its sandbox container
+    Else
+        d = Environ$("APPDATA")
+    End If
+    If Len(d) > 0 Then
+        d = d & sep & "PixelMurim"
+        If Len(Dir(d, vbDirectory)) = 0 Then MkDir d
+        If Len(Dir(d, vbDirectory)) = 0 Then d = ""
+    End If
+    On Error GoTo 0
+    If Len(d) = 0 Then d = ThisWorkbook.Path & sep & DATA_DIR   ' fallback: the old place
+    d = d & sep
+    UserDir = d
+End Function
+
 Public Function ReadFileLines(ByVal fileName As String) As Variant
     ReadFileLines = ReadLines(DataPath(fileName))
 End Function

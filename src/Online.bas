@@ -29,7 +29,7 @@ Private Const OS_ROOMWAIT As Long = 8       ' server: room made, waiting for the
 Private Const OS_QUEUE As Long = 9          ' server: quick match search
 Private Const OS_RANKING As Long = 10       ' server: top 10 screen
 
-Public Const DEFAULT_SERVER As String = "161.33.45.170"   ' Pixel Murim game server (data/profile.txt "server=" overrides)
+Public Const DEFAULT_SERVER As String = "161.33.45.170"   ' Pixel Murim game server (profile.txt "server=" overrides)
 Private Const SRV_PROTO As String = "PM4"
 Private Const ACT_QUICK As Long = 1, ACT_ROOM As Long = 2, ACT_JOINROOM As Long = 3, ACT_TOP As Long = 4
 Private Const PROFILE_FILE As String = "profile.txt"
@@ -69,7 +69,7 @@ Private mRatingDelta As String             ' "+16" after a ranked game, "" = non
 Private mGameNo As Long                    ' games played in this match (result reports)
 Private mTopN As Long, mMyRank As Long
 Private mTopName(0 To 9) As String, mTopRating(0 To 9) As Long
-Private mName As String, mToken As String, mServerIp As String   ' data/profile.txt
+Private mName As String, mToken As String, mServerIp As String   ' profile.txt (Data.UserFilePath)
 
 Public Property Get Active() As Boolean
     Active = (mState <> OS_OFF)
@@ -141,13 +141,13 @@ Private Sub BeginServer(ByVal action As Long, ByVal code As String)
     SetState OS_SRV_CONNECT
 End Sub
 
-' Fighter name + secret token (identifies this player to the server), in data/profile.txt.
+' Fighter name + secret token (identifies this player to the server), in profile.txt (Data.UserFilePath).
 Private Function EnsureProfile() As Boolean
     Dim lines As Variant, k As Long, ln As String, n As String
     If Len(mToken) = 0 Then
         mServerIp = DEFAULT_SERVER
         On Error Resume Next
-        lines = Data.ReadFileLines(PROFILE_FILE)
+        lines = Data.ReadUserLines(PROFILE_FILE)
         If Err.Number = 0 Then
             For k = LBound(lines) To UBound(lines)
                 ln = Trim$(lines(k))
@@ -198,7 +198,7 @@ Private Sub SaveProfile()
     Dim f As Integer
     On Error Resume Next
     f = FreeFile
-    Open Data.FilePath(PROFILE_FILE) For Output As #f
+    Open Data.UserFilePath(PROFILE_FILE) For Output As #f
     Print #f, "name=" & mName
     Print #f, "token=" & mToken
     If mServerIp <> DEFAULT_SERVER Then Print #f, "server=" & mServerIp
