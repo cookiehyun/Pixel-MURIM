@@ -18,7 +18,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 SRC = os.path.join(ROOT, "src")
 OUT = os.path.join(HERE, "out")
-SKIP = {"GameLoop", "DevTools", "Gallery", "KeyInput", "WinApi"}
+SKIP = {"GameLoop", "DevTools", "Gallery", "KeyInput", "WinApi", "Net"}
 W, H = 192, 100
 PIPE = os.environ.get("HARNESS_PIPE", "xlfighter")      # run several harnesses in parallel with different pipes
 
@@ -119,6 +119,7 @@ def modules():
             mods[fn[:-4]] = vba_source(os.path.join(SRC, fn))
     mods["KeyInput"] = keyinput_stub()
     mods["WinApi"] = vba_source(os.path.join(HERE, "WinApiStub.bas"))
+    mods["Net"] = vba_source(os.path.join(HERE, "NetStub.bas"))
     mods["HarnessRunner"] = vba_source(os.path.join(HERE, "HarnessRunner.bas"))
     return mods
 

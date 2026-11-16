@@ -41,6 +41,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | SINGLE PLAYER | TRAINING | 시간 제한 없음. 콤보가 끝나면 체력이 다시 차고, 내공과 게이지는 항상 가득 |
 | MULTIPLAYER | VERSUS | 키보드 하나로 1P와 2P가 1대1로 대결 |
 | MULTIPLAYER | TAG VERSUS | 1P 팀 2명 대 2P 팀 2명. 각자 교체 키로 교체 |
+| MULTIPLAYER | ONLINE | 온라인 1:1 대전. **HOST GAME**: 내 IP가 화면에 나오고 친구를 기다림. **JOIN GAME**: 친구(방장) IP를 입력. 각자 캐릭터를 고르고(A = 준비) 방장이 무대를 고르면 시작. Esc = 나가기. 자세한 내용은 [docs/ONLINE.md](docs/ONLINE.md) |
 | MULTIPLAYER | KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
 
 ### 아케이드
@@ -162,6 +163,7 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 | SINGLE PLAYER | TRAINING | No timer. Health refills after a combo; inner energy and super gauge stay full |
 | MULTIPLAYER | VERSUS | 1P vs 2P on one keyboard |
 | MULTIPLAYER | TAG VERSUS | 1P's two-fighter team against 2P's, each with their own tag key |
+| MULTIPLAYER | ONLINE | Online 1 vs 1. **HOST GAME** shows your IP and waits; **JOIN GAME** asks for the host's IP. Both pick a fighter (A = ready), the host picks the stage. Esc = leave. See [docs/ONLINE.md](docs/ONLINE.md) |
 | MULTIPLAYER | KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
 
 ### Arcade

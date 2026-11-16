@@ -68,6 +68,10 @@ Public Property Get Phase() As Long
     Phase = mPhase
 End Property
 
+Public Property Get PhaseTicks() As Long
+    PhaseTicks = mT
+End Property
+
 Public Property Get Wins(ByVal i As Long) As Long
     Wins = mWins(i)
 End Property
@@ -145,7 +149,9 @@ Public Sub Tick(ByVal frozen As Boolean)
         End If
 
     Case MP_MATCHEND
-        If Game.AutoRestart Then
+        If Lockstep.Active Then
+            ' online: the Online module takes both players back to the lobby
+        ElseIf Game.AutoRestart Then
             If mT >= 30 Then
                 Game.HarnessSeed = (Game.HarnessSeed + 7919) Mod 30011
                 Game.StartMatch Game.HarnessSeed
@@ -258,7 +264,7 @@ Public Sub Draw()
             t = "YOU LOSE"
         End If
         Banner t, 28, RGB(255, 204, 92), 3
-        If Not Game.AutoRestart And Game.GameMode <> MODE_ARCADE Then PixelFont.DrawText "A = REMATCH   S = MENU", cx, 54, RGB(220, 210, 230), 1, 1
+        If Not Game.AutoRestart And Game.GameMode <> MODE_ARCADE And Not Lockstep.Active Then PixelFont.DrawText "A = REMATCH   S = MENU", cx, 54, RGB(220, 210, 230), 1, 1
     End Select
 End Sub
 

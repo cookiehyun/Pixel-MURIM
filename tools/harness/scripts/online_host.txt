@@ -1,0 +1,2 @@
+# online lobby + match + rematch lobby + BYE, this machine hosts
+CMD onlinetest 1 7 6000

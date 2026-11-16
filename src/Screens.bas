@@ -17,7 +17,8 @@ Private rHeadX(0 To ROSTER - 1) As Long           ' head centre in idle_0, relat
 Private rHeadY(0 To ROSTER - 1) As Long           ' (from docs/<name>_points.txt) - centres the portrait
 
 Private mCursor As Long          ' title menu
-Private mMenuLevel As Long       ' 0 = SINGLE / MULTI, 1 = single modes, 2 = multi modes, 3 = controls chart
+Private mMenuLevel As Long       ' 0 = SINGLE / MULTI, 1 = single modes, 2 = multi modes, 3 = key config, 4 = online host / join
+Private mLastIp As String        ' online: address typed last time
 Private mMenuTick As Long
 Private mPhase As Long           ' select: 0 = player, 1 = opponent
 Private mSel(0 To 3) As Long     ' cursor per phase (tag mode: 0-1 = player team, 2-3 = CPU team)
@@ -139,6 +140,9 @@ Public Sub TitleTick()
     If KeyInput.IsPressed(BTN_QUIT) Or KeyInput.IsPressed(BTN_HP) Then
         If mMenuLevel = 0 Then
             If KeyInput.IsPressed(BTN_QUIT) Then Game.QuitRequested = True     ' Esc on the top menu = quit
+        ElseIf mMenuLevel = 4 Then
+            mMenuLevel = 2                                  ' back to the multiplayer list, on ONLINE
+            mCursor = 2
         Else
             mCursor = mMenuLevel - 1                        ' back to SINGLE / MULTI
             mMenuLevel = 0
@@ -159,16 +163,36 @@ Public Sub TitleTick()
         Case Else: Game.GameMode = MODE_TRAINING
         End Select
         SelectBegin
-    Case 2                                                  ' multi: VERSUS / TAG VERSUS / KEY CONFIG
+    Case 2                                                  ' multi: VERSUS / TAG VERSUS / ONLINE / KEY CONFIG
         If mCursor <= 1 Then
             Game.Multi = True
             Game.WatchMode = False
             If mCursor = 0 Then Game.GameMode = MODE_VSCPU Else Game.GameMode = MODE_TAG   ' rounds, both sides human
             SelectBegin
+        ElseIf mCursor = 2 Then
+            mMenuLevel = 4
+            mCursor = 0
         Else
             mMenuLevel = 3
             KeyConfig.Begin
         End If
+    Case 4                                                  ' online: HOST / JOIN
+        mMenuLevel = 2
+        If mCursor = 0 Then
+            Online.BeginHost
+        Else
+            Dim ip As String
+            If Len(mLastIp) = 0 Then mLastIp = "192.168.0."
+            ip = InputBox("Host's IP address (shown on the host's screen):", "Pixel Murim Online", mLastIp)
+            KeyInput.Init                                   ' forget the keys typed into the box
+            If Len(Trim$(ip)) > 0 Then
+                mLastIp = Trim$(ip)
+                Online.BeginJoin mLastIp
+            Else
+                mMenuLevel = 4
+            End If
+        End If
+        mCursor = 2
     End Select
 End Sub
 
@@ -176,7 +200,8 @@ Private Function MenuCount() As Long
     Select Case mMenuLevel
     Case 0: MenuCount = 2
     Case 1: MenuCount = 3
-    Case Else: MenuCount = 3
+    Case 4: MenuCount = 2
+    Case Else: MenuCount = 4
     End Select
 End Function
 
@@ -185,7 +210,8 @@ Private Function MenuLabel(ByVal k As Long) As String
     Select Case mMenuLevel
     Case 0: t = Array("SINGLE PLAYER", "MULTIPLAYER")
     Case 1: t = Array("ARCADE", "VS CPU", "TRAINING")
-    Case Else: t = Array("VERSUS", "TAG VERSUS", "KEY CONFIG")
+    Case 4: t = Array("HOST GAME", "JOIN GAME")
+    Case Else: t = Array("VERSUS", "TAG VERSUS", "ONLINE", "KEY CONFIG")
     End Select
     MenuLabel = t(k)
 End Function
@@ -211,7 +237,7 @@ Public Sub TitleRender()
     ' menu
     n = MenuCount()
     For k = 0 To n - 1
-        y = 54 + k * 11
+        If n >= 4 Then y = 52 + k * 9 Else y = 54 + k * 11      ' 4 items: tighter so the hint line stays free
         lbl = MenuLabel(k)
         If k = mCursor Then
             Renderer.FillRect cx - 36, y - 2, 72, 9, RGB(40, 28, 20)

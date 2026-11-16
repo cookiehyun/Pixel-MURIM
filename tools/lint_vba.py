@@ -1,6 +1,6 @@
 """Flag VBA constructs the LibreOffice harness cannot parse, and Excel-only errors LibreOffice accepts.
 usage: python3 tools/lint_vba.py"""
-import glob, re, sys
+import glob, os, re, sys
 bad = 0
 for p in sorted(glob.glob("src/*.bas")):
     in_proc = False
@@ -35,4 +35,16 @@ for p in sorted(glob.glob("src/*.bas")):
             v = re.match(r"\s*(?:WithEvents )?(\w+)", part)
             if v and v.group(1).lower() in procs:
                 print(f"{p}:{n}: variable '{v.group(1)}' has the same name as procedure '{procs[v.group(1).lower()]}' (VBA ignores case)"); bad += 1
+# a variable named like a module: "Dim online" hides the Online module ("Online.Active" breaks)
+modules = {os.path.basename(m)[:-4].lower() for m in glob.glob("src/*.bas")}
+for p in sorted(glob.glob("src/*.bas")):
+    for n, line in enumerate(open(p, encoding="ascii"), 1):
+        code = line.split("'")[0]
+        m = re.match(r"\s*(?:Dim|Static|Private|Public) (?!Sub|Function|Property|Const|Declare|Type|Enum)(.*)", code)
+        if not m:
+            continue
+        for part in m.group(1).split(","):
+            v = re.match(r"\s*(?:WithEvents )?(\w+)", part)
+            if v and v.group(1).lower() in modules:
+                print(f"{p}:{n}: variable '{v.group(1)}' has the name of module '{v.group(1)}' (VBA ignores case)"); bad += 1
 sys.exit(1 if bad else 0)

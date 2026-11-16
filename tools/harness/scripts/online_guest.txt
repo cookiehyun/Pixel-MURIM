@@ -1,0 +1,2 @@
+# same, this machine joins
+CMD onlinetest 0 7 6000

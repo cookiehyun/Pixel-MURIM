@@ -13,6 +13,9 @@ Option Explicit
 '                       online lockstep against a simulated remote over a fake network; inputs for both
 '                       sides come from a per-frame generator, so every run must give the same
 '                       "N <frame> <hash>" lines whatever the network does
+'   CMD onlinetest <host 1 / guest 0> <seed> <max ticks>
+'                       the real Online module (lobby, START, lockstep, result, BYE) against a scripted
+'                       remote player over the stub network; logs "S" state changes and "E" at the end
 ' Output file: "T <tick> <paintCalls> <runs> <hitstop> | <fighter0> | <fighter1>" per tick,
 '              "F <tick>" + SCREEN_H rows of hex BGR pixels for dumped frames.
 
@@ -77,6 +80,8 @@ Public Function RunScript(ByVal dataDir As String, ByVal script As String, ByVal
                 Case "place"
                     Fighter.F(0).x = CDbl(p(2))
                     Fighter.F(1).x = CDbl(p(3))
+                Case "onlinetest"
+                    OnlineTest f, (p(2) = "1"), CLng(p(3)), CLng(p(4))
                 Case "nettest"
                     k = -1
                     If UBound(p) >= 9 Then k = CLng(p(9))
@@ -218,6 +223,89 @@ Private Sub NetTest(ByVal f As Integer, ByVal seed As Long, ByVal localIdx As Lo
               " sent=" & sent & " lost=" & lost & " desync=" & Lockstep.DesyncFrame & _
               " p0hp=" & Fighter.F(0).health & " p1hp=" & Fighter.F(1).health & " round=" & Match.Wins(0) & "-" & Match.Wins(1)
     Lockstep.Finish
+    Game.NetExternalLocal = False
+End Sub
+
+' Scripted remote player speaking the online protocol; this machine's player presses A when needed.
+Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed As Long, ByVal maxTicks As Long)
+    Const PIP As String = "10.0.0.2"
+    Dim wall As Long, msg As String, p() As String, q() As String, lastSt As Long, lastGs As Long
+    Dim rStarted As Boolean, rDelay As Long, rNext As Long, rFrame0 As Long, s As String, g As Long, rs As Long
+    Dim pport As Long, matches As Long, sentBye As Boolean
+    Net.StubClear
+    Game.NetExternalLocal = True
+    If asHost Then
+        pport = 50123
+        Online.BeginHost
+    Else
+        pport = 47700
+        Online.BeginJoin PIP
+    End If
+    rs = IIf(asHost, 1, 0)                                  ' fighter index of the remote player
+    lastSt = -1: lastGs = -1
+    For wall = 1 To maxTicks
+        KeyInput.ClearNext
+        ' --- remote player ---
+        If asHost And wall = 3 Then Net.StubInject PIP, pport, "HELLO PM2"
+        If asHost And wall = 4 Then Net.StubInject "10.0.0.9", 999, "PICK 3 1"      ' stranger: must be ignored
+        Do
+            s = Net.StubTakeOut()
+            If Len(s) = 0 Then Exit Do
+            q = Split(s, "|")
+            p = Split(q(2), " ")
+            Select Case p(0)
+            Case "HELLO": Net.StubInject PIP, pport, "WELCOME PM2"
+            Case "PING": Net.StubInject PIP, pport, "PONG " & p(1)
+            Case "PICK"
+                If Not rStarted Then Net.StubInject PIP, pport, "PICK 2 1"        ' remote: Muyeong, ready
+            Case "START"
+                If Not rStarted Then rStarted = True: rDelay = CLng(p(4)): rNext = rDelay
+            End Select
+        Loop
+        If Not asHost And Online.StateCode = 3 And Not rStarted And wall Mod 20 = 0 Then
+            ' remote host: picks, then starts the match (stage 1, delay 3)
+            Net.StubInject PIP, pport, "PICK 2 1"
+            If wall >= 60 Then
+                Net.StubInject PIP, pport, "START 2 0 1 3"
+                rStarted = True: rDelay = 3: rNext = 3
+            End If
+        End If
+        If rStarted And Online.StateCode = 4 Then
+            ' remote inputs: frames up to its own progress (it runs in step with us), last 8 each time
+            If rNext <= Lockstep.Frame + rDelay Then
+                s = "I " & IIf(rNext - 7 < 0, 0, rNext - 7) & " 0"
+                For g = IIf(rNext - 7 < 0, 0, rNext - 7) To rNext
+                    s = s & " " & Right$("00" & Hex$(GenInput(seed, rs, g)), 3)
+                Next g
+                rNext = rNext + 1
+                Net.StubInject PIP, pport, s
+            End If
+        End If
+        If Online.StateCode = 5 And rStarted Then
+            rStarted = False                                 ' next round of the lobby
+            matches = matches + 1
+        End If
+        If matches >= 1 And Online.StateCode = 3 And Not sentBye And wall Mod 40 = 0 Then
+            Net.StubInject PIP, pport, "BYE"
+            sentBye = True
+        End If
+        ' --- this machine's player: ready up, (host) start ---
+        If Online.StateCode = 3 And wall Mod 7 = 0 Then KeyInput.SetNextByName "A"
+        If Lockstep.Active And Online.StateCode = 4 Then Lockstep.CaptureLocal GenInput(seed, 1 - rs, Lockstep.NextLocalFrame)
+        Game.GameTick
+        If wall = 2 Or wall = 9 Or wall = 13 Or wall = 300 Or wall = 1740 Or wall = 3559 Then
+            Game.GameRender
+            DumpFrame f, wall                                 ' screenshots: waiting, lobby, stage, fight, result, error
+        End If
+        If Online.StateCode <> lastSt Or Game.GameState <> lastGs Then
+            Print #f, "S " & wall & " online=" & Online.StateCode & " game=" & Game.GameState & _
+                      " frame=" & Lockstep.Frame & " p1=" & Game.P1Char & " p2=" & Game.P2Char & " err=" & Online.ErrorText
+            lastSt = Online.StateCode: lastGs = Game.GameState
+        End If
+        If Online.StateCode = 6 And sentBye Then Exit For
+    Next wall
+    Print #f, "E wall=" & wall & " online=" & Online.StateCode & " matches=" & matches & " frame=" & Lockstep.Frame & _
+              " hp=" & Fighter.F(0).health & "/" & Fighter.F(1).health & " err=" & Online.ErrorText
     Game.NetExternalLocal = False
 End Sub
 

@@ -12,6 +12,7 @@ Public Const GS_STAGE As Long = 4
 Public Const GS_LADDER As Long = 5     ' arcade: next opponent
 Public Const GS_CONTINUE As Long = 6   ' arcade: lost -> continue countdown
 Public Const GS_ENDING As Long = 7     ' arcade: cleared
+Public Const GS_ONLINE As Long = 8     ' online: waiting / lobby / result screens (Online module)
 
 Public Const MODE_TRAINING As Long = 0
 Public Const MODE_VSCPU As Long = 1
@@ -78,12 +79,22 @@ Public Sub StartMatch(Optional ByVal seed As Long = 0)
 End Sub
 
 Public Sub GameTick()
-    Dim i As Long, frozen As Boolean, online As Boolean
+    Dim i As Long, frozen As Boolean, netFight As Boolean
     KeyInput.Poll
-    online = Lockstep.Active And GameState = GS_FIGHT
-    If online Then
+    If Online.Active Then Online.Pump                     ' network: read what arrived
+    If GameState = GS_ONLINE Then
+        Online.LobbyTick
+        Exit Sub
+    End If
+    netFight = Lockstep.Active And GameState = GS_FIGHT
+    If netFight Then
         ' online fight: no pause; run this tick only when both players' inputs for it are known
+        If Online.Active And KeyInput.IsPressed(BTN_QUIT) Then
+            Online.Leave                                   ' Esc = leave the online match
+            Exit Sub
+        End If
         If Not NetExternalLocal Then Lockstep.CaptureLocal Fighter.RawLocal(0)
+        If Online.Active Then Online.SendFightPackets
         If Not Lockstep.Ready Then
             Lockstep.NoteStall
             Exit Sub
@@ -124,7 +135,7 @@ Public Sub GameTick()
     For i = 0 To 1
         If Not Match.InputAllowed Then
             Fighter.FeedInput i, 5, 0, 0                ' intro / round over: nobody moves
-        ElseIf online Then
+        ElseIf netFight Then
             If i = 0 Then Lockstep.FeedFrame            ' both fighters from the exchanged inputs
         ElseIf Multi Then
             Fighter.FeedHuman i, 1 + i                  ' 1P / 2P key sets
@@ -154,7 +165,10 @@ Public Sub GameTick()
     Hud.Update
     frozen = (Combat.SuperFreeze > 0 Or Combat.HitStop > 0)
     Match.Tick frozen
-    If online Then Lockstep.EndFrame
+    If netFight Then
+        Lockstep.EndFrame
+        If Online.Active Then Online.AfterFrame
+    End If
 End Sub
 
 Public Function IsCpu(ByVal i As Long) As Boolean
@@ -169,7 +183,10 @@ End Function
 
 Public Sub GameRender()
     Dim dark As Boolean
-    If GameState = GS_MENU Then
+    If GameState = GS_ONLINE Then
+        Online.Render                                     ' flushes itself
+        Exit Sub
+    ElseIf GameState = GS_MENU Then
         Screens.TitleRender
     ElseIf GameState = GS_SELECT Then
         Screens.SelectRender
@@ -187,6 +204,7 @@ Public Sub GameRender()
         FX.Draw
         Hud.Draw
         Match.Draw
+        If Online.Active Then Online.RenderOverlay
         If mPaused Then PauseRender
     End If
     Renderer.Flush
