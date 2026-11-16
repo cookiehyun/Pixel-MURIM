@@ -6,8 +6,8 @@ Mac은 Microsoft 365 또는 Excel 2019 이후 버전이 필요합니다.
 ## 0. 받기
 1. 열려 있는 엑셀 창을 **모두 닫는다**.
 2. GitHub 저장소 페이지에서 **Code → Download ZIP** → 압축을 푼다.
-   (git을 쓴다면 `git clone https://github.com/cookiehyun/pixel-murim.git`)
-3. 압축 푼 폴더(`pixel-murim-main` 등)를 열어 확인한다.
+   (git을 쓴다면 `git clone https://github.com/cookiehyun/Pixel-MURIM.git`)
+3. 압축 푼 폴더(`Pixel-MURIM-main` 등)를 열어 확인한다.
    - `src` 폴더: `.bas` 파일들 (DevTools, GameLoop, KeyInput, WinApi ...)
    - `data` 폴더: 캐릭터·무대 `.txt` 파일들
 4. 폴더 위치
