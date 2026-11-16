@@ -488,7 +488,8 @@ Public Sub LobbyTick()
 End Sub
 
 Private Sub LobbyInput()
-    Dim k As Long
+    Dim k As Long, n As Long
+    Screens.TickMenu                                        ' blinking arrows on the stage page
     If KeyInput.IsPressed(BTN_QUIT) Then
         Leave
         Exit Sub
@@ -507,11 +508,13 @@ Private Sub LobbyInput()
     End If
     If mMyStep < 2 Then                                     ' pick the tag team: 1st fighter, then the 2nd
         k = mMySlot
-        If KeyInput.IsPressed(BTN_LEFT) Then k = (k + ROSTER_ON - 1) Mod ROSTER_ON
-        If KeyInput.IsPressed(BTN_RIGHT) Then k = (k + 1) Mod ROSTER_ON
+        n = OpenCount()
+        If k >= n Then k = 0
+        If KeyInput.IsPressed(BTN_LEFT) Then k = (k + n - 1) Mod n
+        If KeyInput.IsPressed(BTN_RIGHT) Then k = (k + 1) Mod n
         If KeyInput.IsPressed(BTN_UP) Or KeyInput.IsPressed(BTN_DOWN) Then
             k = (k + 4) Mod 8
-            If k >= ROSTER_ON Then k = k - 4
+            If k >= n Then k = k - 4
         End If
         mMySlot = k
         If KeyInput.IsPressed(BTN_LP) And SlotOpen(k) And Not (mMyStep = 1 And k = mMyPick(0)) Then
@@ -525,6 +528,22 @@ Private Sub LobbyInput()
     End If
     mMyReady = (mMyStep >= 2)
     If mHost And mMyReady And mPeerReady Then mStageChoosing = True
+End Sub
+
+' Fighters on this machine's grid: the six, plus Cheonma once arcade is cleared here.
+Private Function OpenCount() As Long
+    If Arcade.BossUnlocked Then OpenCount = ROSTER_ON Else OpenCount = ROSTER_ON - 1
+End Function
+
+' Grid position of slot k: 4 on top, the rest centred below.
+Private Sub GridPos(ByVal k As Long, ByRef x As Long, ByRef y As Long)
+    Dim below As Long
+    If k < 4 Then
+        x = 64 + k * 16: y = 22
+    Else
+        below = OpenCount() - 4
+        x = 64 + (4 - below) * 8 + (k - 4) * 16: y = 44
+    End If
 End Sub
 
 Private Function ClampSlot(ByVal k As Long) As Long
@@ -719,6 +738,14 @@ End Function
 Private Sub LobbyRender()
     Dim cx As Long, k As Long, x As Long, y As Long, c As Long, me_ As Long, other As Long, t As String, blink As Boolean
     cx = SCREEN_W \ 2
+    ' both teams picked: the stage page (the host chooses, the guest sees the host's choice)
+    If mStageChoosing Then
+        Screens.DrawStagePage mStage, "LEFT RIGHT = SELECT  A = FIGHT  S = BACK", True
+        Exit Sub
+    ElseIf Not mHost And mMyReady And mPeerReady Then
+        Screens.DrawStagePage mStage, "THE HOST IS CHOOSING THE STAGE  S = BACK", False
+        Exit Sub
+    End If
     blink = ((mT \ 5) Mod 2 = 0)
     Renderer.FillRect 0, 10, 64, 90, RGB(14, 20, 40)
     Renderer.FillRect 128, 10, 64, 90, RGB(40, 14, 18)
@@ -743,18 +770,9 @@ Private Sub LobbyRender()
     PixelFont.DrawText TeamLine(mHost), 3, 25, RGB(255, 236, 190)
     PixelFont.DrawText TeamLine(Not mHost), SCREEN_W - 3, 25, RGB(255, 236, 190), 1, 2
     ' grid: 4 + 3
-    For k = 0 To ROSTER_ON - 1
-        If k < 4 Then
-            x = 64 + k * 16: y = 22
-        Else
-            x = 72 + (k - 4) * 16: y = 44
-        End If
-        If SlotOpen(k) Or k = mPeerSlot Then
-            Screens.DrawPortraitAt k, x, y, 15
-        Else
-            Renderer.FillRect x, y, 15, 20, RGB(26, 22, 36)
-            PixelFont.DrawBig "?", x + 8, y + 3, RGB(70, 64, 90), 2
-        End If
+    For k = 0 To OpenCount() - 1                            ' only fighters this machine can pick (no "?" slot)
+        GridPos k, x, y
+        Screens.DrawPortraitAt k, x, y, 15
         c = RGB(70, 60, 90)
         If k = mPeerSlot Then c = RGB(255, 90, 80)
         If (mMyStep >= 1 And k = mMyPick(0)) Or (mMyStep >= 2 And k = mMyPick(1)) Then c = RGB(180, 140, 60)   ' already picked

@@ -405,7 +405,7 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
         If Online.StateCode = 3 And wall Mod 7 = 3 Then KeyInput.SetNextByName "R"
         If Lockstep.Active And Online.StateCode = 4 Then Lockstep.CaptureLocal GenInput(seed, 1 - rs, Lockstep.NextLocalFrame)
         Game.GameTick
-        If wall = 2 Or wall = 9 Or wall = 13 Or wall = 300 Or wall = 1740 Or wall = 3559 Then
+        If wall = 2 Or wall = 9 Or wall = 13 Or wall = 16 Or wall = 19 Or wall = 300 Or wall = 1740 Or wall = 3559 Then
             Game.GameRender
             DumpFrame f, wall                                 ' screenshots: waiting, lobby, stage, fight, result, error
         End If

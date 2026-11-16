@@ -605,7 +605,13 @@ Public Sub StageTick()
 End Sub
 
 Public Sub StageRender()
+    DrawStagePage mStageSel, "LEFT RIGHT = SELECT  A = FIGHT  S = BACK", True
+End Sub
+
+' The stage select page (also used by online play: the guest watches the host's choice).
+Public Sub DrawStagePage(ByVal sel As Long, ByVal hint As String, ByVal arrows As Boolean)
     Dim k As Long, cx As Long, x0 As Long, y0 As Long, c As Long, blink As Boolean
+    mStageSel = sel
     cx = SCREEN_W \ 2
     Renderer.FillRect 0, 0, SCREEN_W, SCREEN_H, RGB(12, 10, 22)
     PixelFont.DrawBig "SELECT STAGE", cx, 2, cGold, 1
@@ -617,13 +623,15 @@ Public Sub StageRender()
     ' arrows
     blink = ((mMenuTick \ 6) Mod 2 = 0)
     If blink Then c = cGold Else c = RGB(120, 90, 40)
-    PixelFont.DrawBig "<", x0 - 12, y0 + SCREEN_H \ 4 - 7, c, 2
-    PixelFont.DrawBig ">", x0 + SCREEN_W \ 2 + 12, y0 + SCREEN_H \ 4 - 7, c, 2
+    If arrows Then
+        PixelFont.DrawBig "<", x0 - 12, y0 + SCREEN_H \ 4 - 7, c, 2
+        PixelFont.DrawBig ">", x0 + SCREEN_W \ 2 + 12, y0 + SCREEN_H \ 4 - 7, c, 2
+    End If
     ' name + position dots
     PixelFont.DrawBig Data.StageName(mStageSel), cx, 70, RGB(255, 240, 210), 1
     For k = 0 To Data.StageCount - 1
         If k = mStageSel Then c = cGold Else c = RGB(60, 52, 76)
         Renderer.FillRect cx - (Data.StageCount * 6) \ 2 + k * 6 + 1, 81, 4, 3, c
     Next k
-    PixelFont.DrawText "LEFT RIGHT = SELECT  A = FIGHT  S = BACK", cx, 92, RGB(110, 100, 130), 1, 1
+    PixelFont.DrawText hint, cx, 92, RGB(110, 100, 130), 1, 1
 End Sub
