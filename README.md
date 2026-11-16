@@ -114,7 +114,7 @@ P는 A 또는 S, K는 Z 또는 X입니다. →는 상대가 있는 쪽입니다.
 | 설화 | 발차기 | ↓↙←K 연환비각 (3연타 돌진) | →↓↘K 선풍각 (공중제비 대공) | ↓→↓→K 낙화유수 (연속 차기) |
 | 흑림 | 견제 | ↓↘→P 흑사침 (독침) | ↓↙←K 귀영보 (등 뒤로 순간이동) | ↓→↓→P 천마강림 (순간이동 장법) |
 | 홍련 | 부채 | ↓↘→P 부채 던지기 (돌아오는 부채) | →↓↘K 연화선 (회전 차기) | ↓→↓→P 홍련업화 (상대 발밑 불기둥) |
-| 천마 | 근거리 압박 (아케이드를 깨면 열림) | ↓↘→P 마공장 (돌진 장법) | →↓←P 흡성대법 (커맨드 잡기: 내공을 빼앗고 체력 회복) | ↓→↓→P 천마군림 (앞에 마기 폭발 4연타) |
+| 천마 | 근거리 압박 (아케이드를 깨면 열림) | ↓↘→P 마공장 (빨간 손바닥을 뻗는 돌진 장법) | →↓←P 흡성대법 (가까운 상대를 그 자리에 묶어 기를 빨아들임: 데미지, 내공 흡수, 체력 회복) | ↓→↓→P 천마군림 (상대 몸 주변에서 마기 폭발 4연타) |
 
 - 내공(초록 바): 필살기 1·2를 쓰면 줄고 시간이 지나면 다시 찹니다. 모자라면 커맨드를 넣어도 일반 공격이 나가고 바가 빨갛게 깜빡입니다.
 - 궁극기 게이지(파란 바): 때리거나 맞으면 찹니다.
@@ -235,7 +235,7 @@ P is A or S, K is Z or X. → means toward the opponent.
 | Seolhwa | Kicker | ↓↙←K Yeonhwan Bigak (3-hit rush) | →↓↘K Seonpunggak (flip kick) | ↓→↓→K Nakhwa Yusu (kick barrage) |
 | Heukrim | Zoner | ↓↘→P Heuksachim (poison needles) | ↓↙←K Gwiyeongbo (teleport behind) | ↓→↓→P Cheonma Gangrim (teleport palm) |
 | Hongryeon | Fans | ↓↘→P Fan throw (comes back) | →↓↘K Yeonhwaseon (spinning kick) | ↓→↓→P Hongryeon Eophwa (fire pillar under the opponent) |
-| Cheonma | Close-range pressure (unlocked by clearing arcade) | ↓↘→P Demon palm (lunging palm) | →↓←P Heupseong daebeop (command grab: steals naegong, heals) | ↓→↓→P Cheonma Gunrim (4-hit demon burst in front) |
+| Cheonma | Close-range pressure (unlocked by clearing arcade) | ↓↘→P Demon palm (lunging palm with a red palm projection) | →↓←P Heupseong daebeop (holds a nearby opponent stunned and drains damage, naegong and health) | ↓→↓→P Cheonma Gunrim (4 demon blasts around the opponent's body) |
 
 - Inner energy (green bar): specials 1 and 2 use it and it refills over time. Without enough of it you get a normal attack instead, and the bar flashes red.
 - Super gauge (blue bar): fills when you hit or get hit.

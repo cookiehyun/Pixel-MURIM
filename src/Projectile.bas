@@ -21,6 +21,7 @@ Private mAnimBig As Long
 Private Const BOOM_OUT As Long = 14   ' ticks before a thrown fan turns back
 Private Const FIRE_DELAY As Long = 4  ' fire pillar: ticks of warning before it hurts
 Private mAnimOwn(0 To 1) As Long      ' per-character projectile art (fx.proj_<name>) or -1
+Private mLinger(0 To 1) As Long       ' Cheonma's bursts: ticks the last blast keeps showing after the final hit
 
 Private Function OwnAnim(ByVal owner As Long) As Long
     OwnAnim = -1
@@ -29,6 +30,7 @@ End Function
 
 Public Sub Init()
     mOn(0) = False: mOn(1) = False
+    mLinger(0) = 0: mLinger(1) = 0
     mAnimSmall = Data.AnimId("fx.wind")
     mAnimBig = Data.AnimId("fx.bigwind")
     mAnimOwn(0) = OwnAnim(0)
@@ -82,6 +84,10 @@ End Function
 Public Sub Update()
     Dim k As Long
     For k = 0 To 1
+        If mLinger(k) > 0 Then
+            mLinger(k) = mLinger(k) - 1
+            mAge(k) = mAge(k) + 1
+        End If
         If mOn(k) Then
             If mStall(k) > 0 Then
                 mStall(k) = mStall(k) - 1
@@ -137,6 +143,7 @@ Private Sub CheckHit(ByVal k As Long)
     Combat.ApplyAttack k, d, mMv(k), Int(mX(k)), Int(mY(k)), True, lastHit
     If lastHit Then
         mOn(k) = False
+        If IsBurst(k) Then mLinger(k) = 5
     ElseIf mType(k) = MT_PROJ_BOOM Then
         mCD(k) = 999                                  ' one hit per direction
     Else
@@ -148,8 +155,12 @@ End Sub
 Public Sub Draw()
     Dim k As Long, a As Long
     For k = 0 To 1
+        If mLinger(k) > 0 And Not mOn(k) Then DemonBursts k
         If mOn(k) Then
-            If mType(k) = MT_SUPER_FIRE Then
+            If IsBurst(k) Then
+                DemonBursts k
+                a = -1
+            ElseIf mType(k) = MT_SUPER_FIRE Then
                 FirePillar k
                 a = -1
             ElseIf Data.MvType(mMv(k)) = MT_SUPER_PROJ Then
@@ -162,6 +173,66 @@ Public Sub Draw()
             If a >= 0 Then Renderer.DrawSprite Data.AnimFrame(a, mAge(k)), Int(mX(k)), Int(mY(k)), (mVX(k) < 0)
         End If
     Next k
+End Sub
+
+' Cheonma's super: the "fire pillar" engine, drawn as demon blasts around the opponent's body.
+Private Function IsBurst(ByVal k As Long) As Boolean
+    IsBurst = (mType(k) = MT_SUPER_FIRE And Fighter.F(k).prefix = "cheonma")
+End Function
+
+' Before the first hit dark sparks gather; then one blast per hit at a different spot on the body
+' (each hit lands 3 ticks after the previous one), a red core inside a violet ring that grows and fades.
+Private Sub DemonBursts(ByVal k As Long)
+    Dim j As Long, a As Long, cx As Long, cy As Long, r As Long, ox As Variant, oy As Variant, x As Long, y As Long
+    ox = Array(-7, 8, -3, 6)                              ' around the torso and head
+    oy = Array(-20, -30, -12, -24)
+    cx = Int(mX(k)): cy = GROUND_Y
+    If mAge(k) < FIRE_DELAY Then
+        For j = 0 To 5                                    ' sparks drawn in toward the target
+            a = FIRE_DELAY - mAge(k)
+            Renderer.PutPixel cx + (j - 3) * (2 + a), cy - 16 + ((j Mod 3) - 1) * (2 + a), RGB(200, 40, 80)
+        Next j
+        Exit Sub
+    End If
+    For j = 0 To 3
+        a = mAge(k) - FIRE_DELAY - j * 3                  ' age of blast j
+        If a >= 0 And a < 6 Then
+            x = cx + ox(j): y = cy + oy(j)
+            r = 4 + a * 2                                 ' 4 .. 14 px
+            If a < 4 Then
+                Disc x, y, r - 1, RGB(200, 30, 60)        ' crimson blast ...
+                Disc x, y, r \ 2, RGB(255, 110, 120)      ' ... hot centre
+                If a < 2 Then Disc x, y, r \ 4, RGB(255, 235, 235)
+                Ring x, y, r, RGB(120, 30, 140)           ' violet edge
+                Ring x, y, r + 1, RGB(60, 10, 50)
+            Else
+                Ring x, y, r, RGB(90, 25, 80)             ' smoke ring fading out
+            End If
+        End If
+    Next j
+End Sub
+
+' Filled circle.
+Private Sub Disc(ByVal x As Long, ByVal y As Long, ByVal r As Long, ByVal c As Long)
+    Dim dy As Long, dx As Long
+    If r < 1 Then
+        Renderer.PutPixel x, y, c
+        Exit Sub
+    End If
+    For dy = -r To r
+        dx = Int(Sqr(r * r - dy * dy) + 0.5)
+        Renderer.FillRect x - dx, y + dy, dx * 2 + 1, 1, c
+    Next dy
+End Sub
+
+' One-pixel circle outline.
+Private Sub Ring(ByVal x As Long, ByVal y As Long, ByVal r As Long, ByVal c As Long)
+    Dim t As Long, px As Long, py As Long
+    If r < 1 Then Exit Sub
+    For t = 0 To 47
+        px = x + CLng(r * Cos(t * 0.1309)): py = y + CLng(r * Sin(t * 0.1309))
+        Renderer.PutPixel px, py, c
+    Next t
 End Sub
 
 ' Flickering fire column: embers first (warning), then a tall pillar of flame.
@@ -180,16 +251,7 @@ Private Sub FirePillar(ByVal k As Long)
         wob = Int(2 * Sin((y + mAge(k) * 3) * 0.5))
         w = 9 - y \ 6
         If w < 2 Then w = 2
-        If Fighter.F(k).prefix = "cheonma" Then          ' demon qi: wider, crimson and violet
-            w = w + 4
-            If y < h \ 3 Then
-                c = RGB(255, 170, 190)
-            ElseIf y < (h * 2) \ 3 Then
-                c = RGB(200, 40, 70)
-            Else
-                c = RGB(90, 20, 70)
-            End If
-        ElseIf y < h \ 3 Then
+        If y < h \ 3 Then
             c = RGB(255, 240, 160)
         ElseIf y < (h * 2) \ 3 Then
             c = RGB(255, 160, 50)

@@ -105,8 +105,8 @@ cheonma  jp  A  4  4  0  70  8  6  O  0  7  -22  7  6  jump  jp  N  0  0  -
 cheonma  jk  A  5  5  0  90  9  7  O  0  11  -12  8  6  jump  jk  N  0  0  -
 cheonma  throw  S  3  1  8  125  0  0  H  1  0  -30  16  10  throw_0  throw_1  T  0  0  -
 cheonma  sp1  S  4  4  14  100  14  12  H  0  10  -30  12  14  palm_0  palm_1  R  4.0  0  26P  300
-cheonma  sp2  S  3  1  18  120  0  0  H  1  0  -34  20  12  throw_0  throw_1  G  0  0  624P  300
-cheonma    super S    6       1      18       340    10      6         H     1  0   0   30  36  sp_a       palm_1    SF   22   4  2626P
+cheonma  sp2  S  3  1  24  120  0  0  H  1  0  -34  26  12  throw_0  throw_1  G  0  0  624P  300
+cheonma    super S    6       1      18       340    10      6         H     1  0   0   30  36  sp_a       palm_1    SF   0    4  2626P
 cheonma  ovh  S  8  2  10  85  11  6  O  0  11  -33  9  13  ovh_0  ovh_1  N  1.0  0  -
 # hongryeon (fan dancer): mid-range fans, returning fan throw, lotus spin anti-air, fire-pillar super
 hongryeon  lp    S    3       2      5        28     6       4         H     0  10  -28 9   7   lp_0       lp_1      N    0    0  -

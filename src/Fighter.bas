@@ -63,7 +63,11 @@ Private Const GETUP_TICKS As Long = 4
 Private Const ROLL_TICKS As Long = 8       ' wake-up roll: invulnerable, then the normal get-up
 Private Const ROLL_SPEED As Double = 3.5   ' px / tick (8 ticks = 28 px)
 Private Const WAKE_THROW_INV As Long = 6   ' after getting up: cannot be thrown for this many ticks
-Private Const DRAIN_NG As Long = 400       ' Cheonma's grab steals up to this much naegong
+Private Const DRAIN_NG As Long = 400       ' heupseong daebeop steals up to this much naegong in total
+Private Const DRAIN_FIRST As Long = 4      ' drain pulses: first at this tick of the move ...
+Private Const DRAIN_EVERY As Long = 5      ' ... then every 5 ticks
+Private Const DRAIN_PULSES As Long = 4
+Private Const DRAIN_RELEASE As Long = 26   ' the opponent is let go here (Cheonma recovers at 28: +2 for him)
 Private Const DUMMY_INTERVAL As Long = 30
 Private Const BUF_TICKS As Long = 5
 Private Const MAX_CHAIN As Long = 3
@@ -823,9 +827,10 @@ Private Sub UpdateFighter(ByVal i As Long)
                 SuperGrabStep i
             ElseIf Data.MvType(.mv) = MT_SUPER_RUSH Or Data.MvType(.mv) = MT_SUPER_TELE Then
                 SuperSlashStep i
+            ElseIf IsDrain(i) Then
+                DrainStep i
             ElseIf .stTick = Data.MvStartup(.mv) Then
                 Combat.DealDamage 1 - i, Data.MvDamage(.mv)
-                If Data.MvType(.mv) = MT_GRAB And .prefix = "cheonma" Then DrainGrab i
                 Combat.AddMeter i, 80
                 ApplyHit 1 - i, 0, 2.5, True
                 FX.Spawn Int(F(1 - i).x + 0.5), Int(F(1 - i).footY) - 18, FX_HEAVY
@@ -1048,7 +1053,7 @@ Private Function TryGrab(ByVal i As Long, ByVal mv As Long) As Boolean
     SetState o, ST_THROWN
     F(o).crouch = False
     F(o).bufAtk = -1
-    If Data.MvType(mv) <> MT_SUPER_GRAB Then F(o).x = F(i).x + F(i).facing * (F(i).halfW + F(o).halfW - 2)
+    If Data.MvType(mv) <> MT_SUPER_GRAB And Not IsDrain(i) Then F(o).x = F(i).x + F(i).facing * (F(i).halfW + F(o).halfW - 2)
     If Data.MvType(mv) = MT_SUPER_GRAB Then FX.Spawn Int(F(o).x + 0.5), Int(F(o).footY) - 20, FX_HEAVY
     TryGrab = True
 End Function
@@ -1399,10 +1404,17 @@ End Function
 ' ======================================================================
 
 Public Sub Draw()
+    Dim i As Long
     DrawGhosts 1 - mControl
     DrawGhosts mControl
     DrawOne 1 - mControl
     DrawOne mControl
+    For i = 0 To 1                                         ' Cheonma's effects over both bodies
+        If IsDrain(i) Then DrawDrainOrbs i
+        If F(i).prefix = "cheonma" And F(i).state = ST_ATTACK Then
+            If F(i).mv = F(i).moves(MV_SP1) Then DrawDemonPalm i
+        End If
+    Next i
     If mShowBoxes Then
         DrawBoxes 0
         DrawBoxes 1
@@ -1537,7 +1549,9 @@ Private Function CurrentSprite(ByVal i As Long) As Long
             End If
         Case ST_THROWN
             CurrentSprite = .sHit0
-            If F(1 - i).state = ST_THROW Then
+            If IsDrain(1 - i) Then
+                If (t \ 3) Mod 2 = 1 Then CurrentSprite = .sHit1     ' stunned, shuddering as it is drained
+            ElseIf F(1 - i).state = ST_THROW Then
                 If Data.MvType(F(1 - i).mv) = MT_SUPER_GRAB Then
                     If F(1 - i).stTick >= 22 Then
                         CurrentSprite = .sDown0                 ' held overhead
@@ -1574,13 +1588,13 @@ Private Sub DrawOne(ByVal i As Long)
     tint = -1
     If F(i).flash > 0 Then tint = RGB(255, 255, 255)
     With F(i)
-        If DemonAwake(i) And tint < 0 Then                 ' red aura: flickering outline one pixel around the body
-            If (mFrame \ 2) Mod 2 = 0 Then
+        If (DemonAwake(i) Or DrainLinked(i)) And tint < 0 Then   ' red aura: outline one pixel around the body
+            If (mFrame \ 2) Mod 2 = 0 Or DrainLinked(i) Then
                 Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5) - 1, Int(.footY + 0.5), (.facing < 0), RGB(200, 30, 50)
                 Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5) + 1, Int(.footY + 0.5), (.facing < 0), RGB(200, 30, 50)
                 Renderer.DrawSprite CurrentSprite(i), Int(.x + 0.5), Int(.footY + 0.5) - 1, (.facing < 0), RGB(200, 30, 50)
             End If
-            If Not mAwakeShown(i) Then
+            If DemonAwake(i) And Not mAwakeShown(i) Then
                 mAwakeShown(i) = True
                 Combat.ShowText "CHEONMA SIMGONG", 40, i
             End If
@@ -1591,20 +1605,90 @@ Private Sub DrawOne(ByVal i As Long)
     End With
 End Sub
 
-' Cheonma's command grab (heupseong daebeop): steals the victim's naegong and heals half the damage.
-Private Sub DrainGrab(ByVal i As Long)
-    Dim o As Long, steal As Long
+' Cheonma's heupseong daebeop: the opponent close by is held stunned where it stands while red
+' orbs of its energy flow into Cheonma. Four pulses each take damage / 4, naegong and heal Cheonma.
+Public Function IsDrain(ByVal i As Long) As Boolean
+    If F(i).state <> ST_THROW Or F(i).prefix <> "cheonma" Then Exit Function
+    IsDrain = (Data.MvType(F(i).mv) = MT_GRAB)
+End Function
+
+Private Sub DrainStep(ByVal i As Long)
+    Dim o As Long, steal As Long, t As Long, dmg As Long
     o = 1 - i
-    steal = F(o).naegong
-    If steal > DRAIN_NG Then steal = DRAIN_NG
-    F(o).naegong = F(o).naegong - steal
-    F(i).naegong = F(i).naegong + steal
-    If F(i).naegong > NAEGONG_MAX Then F(i).naegong = NAEGONG_MAX
-    F(i).health = F(i).health + Data.MvDamage(F(i).mv) \ 2
-    If F(i).health > F(i).maxHealth Then F(i).health = F(i).maxHealth
-    If F(i).health > F(i).healthShown Then F(i).healthShown = F(i).health
-    FX.Spawn Int(F(i).x + 0.5), Int(F(i).footY) - 20, FX_DARK
+    t = F(i).stTick
+    If t >= DRAIN_FIRST And (t - DRAIN_FIRST) Mod DRAIN_EVERY = 0 And (t - DRAIN_FIRST) \ DRAIN_EVERY < DRAIN_PULSES Then
+        dmg = Data.MvDamage(F(i).mv) \ DRAIN_PULSES
+        Combat.DealDamage o, dmg
+        steal = F(o).naegong
+        If steal > DRAIN_NG \ DRAIN_PULSES Then steal = DRAIN_NG \ DRAIN_PULSES
+        F(o).naegong = F(o).naegong - steal
+        F(i).naegong = F(i).naegong + steal
+        If F(i).naegong > NAEGONG_MAX Then F(i).naegong = NAEGONG_MAX
+        F(i).health = F(i).health + dmg \ 2
+        If F(i).health > F(i).maxHealth Then F(i).health = F(i).maxHealth
+        If F(i).health > F(i).healthShown Then F(i).healthShown = F(i).health
+        F(o).flash = 1
+        Combat.AddMeter i, 20
+        If F(o).health <= 0 Then ApplyHit o, 0, 1.5, True           ' drained out: KO
+    End If
+    If t = DRAIN_RELEASE And F(o).state = ST_THROWN Then ApplyHit o, 4, 0, False   ' let go, still a little dazed
 End Sub
+
+' Red orbs drawn from all around the drained opponent into Cheonma's chest.
+Private Sub DrawDrainOrbs(ByVal i As Long)
+    Dim o As Long, k As Long, ph As Double, sx As Double, sy As Double, tx As Double, ty As Double
+    Dim px As Long, py As Long, ang As Double
+    o = 1 - i
+    tx = F(i).x + F(i).facing * 3: ty = F(i).footY - 22
+    For k = 0 To 7
+        ang = k * 0.785398
+        sx = F(o).x + 13 * Cos(ang): sy = F(o).footY - 18 + 13 * Sin(ang)
+        ph = ((F(i).stTick + k * 3) Mod 8) / 8#
+        px = CLng(sx + (tx - sx) * ph): py = CLng(sy + (ty - sy) * ph)
+        Renderer.FillRect px - 1, py, 3, 1, RGB(255, 60, 70)
+        Renderer.FillRect px, py - 1, 1, 3, RGB(255, 60, 70)
+        Renderer.PutPixel px, py, RGB(255, 200, 200)
+    Next k
+End Sub
+
+' Big red palm thrown out in front of Cheonma's hands during the demon palm (sp1).
+Private Sub DrawDemonPalm(ByVal i As Long)
+    Dim rows As Variant, r As Long, c As Long, w As Long, x0 As Long, y0 As Long, t As Long, ch As String
+    Dim px As Long, ink As Long, edge As Boolean
+    t = F(i).stTick - Data.MvStartup(F(i).mv)
+    If t < -1 Or t > Data.MvActive(F(i).mv) + 1 Then Exit Sub
+    rows = Array("....XX.XX.XX....", "....XX.XX.XX.XX.", "....XX.XX.XX.XX.", "....XX.XX.XX.XX.", _
+                 "....XXXXXXXXXXX.", "XX..XXXXXXXXXXX.", ".XX.XXXXXXXXXXX.", "..XXXXXXXXXXXXX.", _
+                 "...XXXXXXXXXXXX.", "....XXXXXXXXXX..", "....XXXXXXXXXX..", ".....XXXXXXXX...", ".....XXXXXXXX...")
+    w = 16
+    x0 = CLng(F(i).x) + F(i).facing * 16                    ' drawn x2: 32 x 26 px, fingers up, in front of the hands
+    y0 = CLng(F(i).footY) - 42
+    For r = 0 To UBound(rows)
+        For c = 0 To w - 1
+            If Mid$(rows(r), c + 1, 1) = "X" Then
+                edge = (r = 0 Or r = UBound(rows) Or c = 0 Or c = w - 1)
+                If Not edge Then
+                    edge = Mid$(rows(r - 1), c + 1, 1) <> "X" Or Mid$(rows(r + 1), c + 1, 1) <> "X" Or _
+                           Mid$(rows(r), c, 1) <> "X" Or Mid$(rows(r), c + 2, 1) <> "X"
+                End If
+                If edge Then
+                    ink = RGB(110, 10, 25)
+                ElseIf t >= 0 And t <= Data.MvActive(F(i).mv) Then
+                    If r >= 5 And r <= 9 And c >= 6 And c <= 11 Then ink = RGB(255, 170, 170) Else ink = RGB(235, 40, 55)
+                Else
+                    ink = RGB(170, 25, 40)                              ' fading in / out
+                End If
+                If F(i).facing > 0 Then px = x0 + c * 2 Else px = x0 - c * 2 - 1
+                Renderer.FillRect px, y0 + r * 2, 2, 2, ink
+            End If
+        Next c
+    Next r
+End Sub
+
+' Fighter i is in Cheonma's drain, either side of it (both get the red outline).
+Private Function DrainLinked(ByVal i As Long) As Boolean
+    DrainLinked = IsDrain(i) Or (IsDrain(1 - i) And F(i).state = ST_THROWN)
+End Function
 
 ' Cheonma simgong: below 30% health Cheonma's hits do 15% more damage (red aura).
 Public Function DemonAwake(ByVal i As Long) As Boolean
