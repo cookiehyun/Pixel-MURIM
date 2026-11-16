@@ -30,7 +30,7 @@ use std::io::Write;
 use std::net::{SocketAddr, UdpSocket};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-const PROTO: &str = "PM3";
+const PROTO: &str = "PM4";
 const DEFAULT_PORT: u16 = 47700;
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_MSG: usize = 600;

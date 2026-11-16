@@ -22,7 +22,7 @@ class P:
                 return m
         raise AssertionError(f"{self.name}: no {want} within {timeout}s")
     def hello(self):
-        self.send(f"HELLO PM3 {self.name} {self.token}")
+        self.send(f"HELLO PM4 {self.name} {self.token}")
         return self.recv("WELCOME")
 
 def check(cond, what):
@@ -37,9 +37,9 @@ def main():
     time.sleep(0.3)
     try:
         a = P(port, "alice", "A" * 20); b = P(port, "bob", "B" * 20); c = P(port, "carol", "C" * 20)
-        check(a.hello() == "WELCOME PM3 1000 0", "login, new player starts at 1000")
+        check(a.hello() == "WELCOME PM4 1000 0", "login, new player starts at 1000")
         b.hello(); c.hello()
-        x = P(port, "x", "short"); x.send("HELLO PM3 x short"); check(x.recv("ERROR") == "ERROR NAME", "bad token refused")
+        x = P(port, "x", "short"); x.send("HELLO PM4 x short"); check(x.recv("ERROR") == "ERROR NAME", "bad token refused")
         x.send("HELLO PM2 x " + "X" * 20); check(x.recv("ERROR") == "ERROR VERSION", "old version refused")
         x.send("ROOM"); check(x.recv("ERROR") == "ERROR LOGIN", "commands need a login")
 

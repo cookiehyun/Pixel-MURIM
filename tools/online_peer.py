@@ -9,12 +9,13 @@ on a machine before trying two machines.
   This program hosts, Excel joins (type this computer's IP, or 127.0.0.1 on the same computer):
       python3 tools/online_peer.py host
 
-Options: --fighter N (0-5, default 2 = Muyeong), --idle (stand still), --stage N (when hosting).
+Options: --fighter N --partner M (0-5, default 2 + 4 = Muyeong + Heukrim), --idle (stand still),
+--stage N (when hosting). Online fights are tag battles: it also tags now and then.
 Stop with Ctrl+C (it tells Excel it left).
 """
 import argparse, random, socket, sys, time
 
-PROTO = "PM2"
+PROTO = "PM4"
 PORT = 47700
 TICK = 0.05            # 20 ticks per second, like the game
 
@@ -24,6 +25,7 @@ def main():
     ap.add_argument("mode", choices=["host", "join"])
     ap.add_argument("ip", nargs="?", default="127.0.0.1")
     ap.add_argument("--fighter", type=int, default=2)
+    ap.add_argument("--partner", type=int, default=4)
     ap.add_argument("--stage", type=int, default=0)
     ap.add_argument("--idle", action="store_true")
     a = ap.parse_args()
@@ -40,7 +42,7 @@ def main():
         print(f"joining {a.ip}:{PORT}: in Excel choose MULTIPLAYER > ONLINE > HOST GAME first")
 
     state = "wait"            # wait -> lobby -> fight
-    excel_slot, excel_ready = 0, False
+    excel_team, excel_ready = (0, 1), False
     delay, nxt, need_from_excel = 3, 0, 0
     inputs = {}
     t = 0
@@ -62,8 +64,10 @@ def main():
             if rnd.random() < 0.4:
                 b = 1 << rnd.randrange(4)
             cur = d | (b << 4) | (b << 8)
+            if frame % 120 == 60:
+                cur |= 0x1000                       # tag
             return cur
-        return cur & 0xF0F          # keep holding, no new press
+        return cur & 0xF0F          # keep holding, no new press / tag
 
     try:
         while True:
@@ -92,11 +96,12 @@ def main():
                     if state == "fight":                 # Excel is back in the lobby: match over
                         print("match over, back in the lobby")
                         state, inputs, need_from_excel = "lobby", {}, 0
-                    excel_slot, excel_ready = int(p[1]), p[2] == "1"
+                    if len(p) >= 5:                       # PICK <cursor> <1st> <2nd> <step>
+                        excel_team, excel_ready = (int(p[2]), int(p[3])), p[4] == "2"
                 elif p[0] == "PING":
                     send("PONG " + p[1])
                 elif p[0] == "START" and state != "fight":
-                    delay = int(p[4])
+                    delay = int(p[6])
                     state, nxt = "fight", delay
                     print("fight started, input delay", delay)
                 elif p[0] == "I":
@@ -111,12 +116,12 @@ def main():
                 send("HELLO " + PROTO)
             if state == "lobby":
                 if t % 5 == 1:
-                    send(f"PICK {a.fighter} 1")
+                    send(f"PICK {a.fighter} {a.fighter} {a.partner} 2")
                 if a.mode == "host" and excel_ready and t % 10 == 0:
-                    start = f"START {a.fighter} {excel_slot} {a.stage} {delay}"
+                    start = f"START {a.fighter} {a.partner} {excel_team[0]} {excel_team[1]} {a.stage} {delay}"
                     send(start)
                     state, nxt = "fight", delay
-                    print("fight started (we host), Excel plays slot", excel_slot)
+                    print("fight started (we host), Excel's team", excel_team)
                     s_start = start
             if state == "fight":
                 # stay at most a little ahead of what Excel has confirmed
@@ -124,7 +129,7 @@ def main():
                     inputs[nxt] = my_input(nxt)
                     nxt += 1
                 first = max(0, nxt - 8)
-                send(f"I {first} 0 " + " ".join(f"{inputs.get(f, 0):03X}" for f in range(first, nxt)))
+                send(f"I {first} 0 " + " ".join(f"{inputs.get(f, 0):04X}" for f in range(first, nxt)))
                 if a.mode == "host" and t % 10 == 0 and need_from_excel <= delay and s_start:
                     send(s_start)                            # START may have been lost
             time.sleep(TICK)

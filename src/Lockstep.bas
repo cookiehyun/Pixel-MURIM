@@ -9,7 +9,7 @@ Option Explicit
 ' Transport-free: Online / the harness send OutPacket() and pass received text to Receive().
 '
 ' Packets (plain text):
-'   I <first frame> <ack> <hex3> <hex3> ...   local inputs for frames first, first+1, ...
+'   I <first frame> <ack> <hex4> <hex4> ...   local inputs for frames first, first+1, ...
 '                                              ack = next remote frame we still need
 '   H <frame> <hash>                           state hash after running <frame>
 
@@ -112,7 +112,7 @@ End Function
 Public Sub CaptureLocal(ByVal raw As Long)
     If Not mOn Then Exit Sub
     If mNextLocal > mFrame + mDelay Then
-        mPendPress = mPendPress Or (raw And &HF0&)          ' keep taps made while waiting
+        mPendPress = mPendPress Or (raw And &H10F0&)        ' keep taps (buttons, tag) made while waiting
         Exit Sub
     End If
     Store mLocal, mNextLocal, raw Or mPendPress
@@ -140,6 +140,11 @@ Public Sub FeedFrame()
     Fighter.FeedRaw 0, mIn(0, mFrame Mod BUF)
     Fighter.FeedRaw 1, mIn(1, mFrame Mod BUF)
 End Sub
+
+' Raw input bits of fighter side for the frame being simulated (tag key, see Fighter.RawLocal).
+Public Function CurrentRaw(ByVal side As Long) As Long
+    CurrentRaw = mIn(side, mFrame Mod BUF)
+End Function
 
 ' After the simulation of the current frame: record the hash every HASH_EVERY frames, advance.
 Public Sub EndFrame()
@@ -174,7 +179,7 @@ Public Function OutPacket() As String
     Else
         s = "I " & f0 & " " & mRemoteNeed
         For f = f0 To mNextLocal - 1
-            s = s & " " & Right$("00" & Hex$(mIn(mLocal, f Mod BUF)), 3)
+            s = s & " " & Right$("000" & Hex$(mIn(mLocal, f Mod BUF)), 4)
         Next f
     End If
     OutPacket = s

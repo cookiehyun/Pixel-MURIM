@@ -9,11 +9,13 @@ Option Explicit
 '   lobby:  both pick a fighter (A = ready), the host picks the stage, the fight starts
 '   fight:  Lockstep exchanges inputs; Game.GameTick runs a frame only when both are known
 '   result: back to the lobby for a rematch; Esc leaves (BYE tells the other side)
-' Messages (text):  HELLO <ver> | WELCOME <ver> | PICK <slot> <ready> | STAGE <k> |
-'                   START <p1 slot> <p2 slot> <stage> <delay> | PING <t> | PONG <t> | BYE | I ... | H ...
+' Online fights are tag battles (each player picks 2 fighters, tag key C).
+' Messages (text):  HELLO <ver> | WELCOME <ver> | PICK <cursor> <1st> <2nd> <step 0-2> | STAGE <k> |
+'                   START <host 1st> <host 2nd> <guest 1st> <guest 2nd> <stage> <delay> |
+'                   PING <t> | PONG <t> | BYE | I ... | H ...
 
 Public Const NET_PORT As Long = 47700
-Private Const PROTO As String = "PM2"
+Private Const PROTO As String = "PM4"                 ' direct: tag teams (PM2 was 1 vs 1)
 
 Private Const OS_OFF As Long = 0
 Private Const OS_HOSTWAIT As Long = 1
@@ -28,7 +30,7 @@ Private Const OS_QUEUE As Long = 9          ' server: quick match search
 Private Const OS_RANKING As Long = 10       ' server: top 10 screen
 
 Public Const DEFAULT_SERVER As String = "161.33.45.170"   ' Pixel Murim game server (data/profile.txt "server=" overrides)
-Private Const SRV_PROTO As String = "PM3"
+Private Const SRV_PROTO As String = "PM4"
 Private Const ACT_QUICK As Long = 1, ACT_ROOM As Long = 2, ACT_JOINROOM As Long = 3, ACT_TOP As Long = 4
 Private Const PROFILE_FILE As String = "profile.txt"
 
@@ -42,8 +44,10 @@ Private mPeerPort As Long
 Private mT As Long                         ' ticks in the current state
 Private mSilent As Long                    ' ticks since the last packet
 Private mMsg As String                     ' error / status text
-Private mMySlot As Long, mMyReady As Boolean
+Private mMySlot As Long, mMyReady As Boolean          ' my cursor; ready = both fighters picked
 Private mPeerSlot As Long, mPeerReady As Boolean
+Private mMyPick(0 To 1) As Long, mMyStep As Long      ' tag team: step 0 = picking the 1st, 1 = the 2nd, 2 = done
+Private mPeerPick(0 To 1) As Long, mPeerStep As Long
 Private mStage As Long
 Private mStageChoosing As Boolean          ' host: both ready, choosing the stage
 Private mRtt As Double                     ' smoothed round trip in ms (-1 = unknown)
@@ -248,6 +252,7 @@ Private Sub Reset()
     Lockstep.Finish
     mPeerIp = "": mPeerPort = 0: mMsg = ""
     mMySlot = 0: mMyReady = False: mPeerSlot = 1: mPeerReady = False
+    mMyStep = 0: mPeerStep = 0: mMyPick(0) = 0: mMyPick(1) = 1: mPeerPick(0) = 1: mPeerPick(1) = 0
     mStage = 0: mStageChoosing = False
     mRtt = -1: mDelay = 3: mStartMsg = "": mHeardInput = False
     mSilent = 0
@@ -335,8 +340,12 @@ Private Sub Handle(ByVal p As Variant, ByVal raw As String)
         End If
     Case "PICK"
         If UBound(p) >= 2 And mState = OS_LOBBY Then
-            mPeerSlot = CLng(p(1)): mPeerReady = (p(2) = "1")
-            If mPeerSlot < 0 Or mPeerSlot >= ROSTER_ON Then mPeerSlot = 0
+            ' PICK <cursor> <1st> <2nd> <step>
+            If UBound(p) >= 4 Then
+                mPeerSlot = ClampSlot(CLng(p(1))): mPeerPick(0) = ClampSlot(CLng(p(2))): mPeerPick(1) = ClampSlot(CLng(p(3)))
+                mPeerStep = CLng(p(4))
+                mPeerReady = (mPeerStep >= 2)
+            End If
         End If
     Case "STAGE"
         If UBound(p) >= 1 And Not mHost Then mStage = CLng(p(1)) Mod Data.StageCount
@@ -345,8 +354,8 @@ Private Sub Handle(ByVal p As Variant, ByVal raw As String)
     Case "PONG"
         If UBound(p) >= 1 Then NoteRtt CDbl(p(1))
     Case "START"
-        If Not mHost And UBound(p) >= 4 And (mState = OS_LOBBY Or mState = OS_RESULT) Then
-            StartFight CLng(p(1)), CLng(p(2)), CLng(p(3)), CLng(p(4))
+        If Not mHost And UBound(p) >= 6 And (mState = OS_LOBBY Or mState = OS_RESULT) Then
+            StartFight ClampSlot(CLng(p(1))), ClampSlot(CLng(p(2))), ClampSlot(CLng(p(3))), ClampSlot(CLng(p(4))), CLng(p(5)), CLng(p(6))
         End If
     Case "BYE"
         Fail "OPPONENT LEFT", ""
@@ -399,6 +408,7 @@ Private Function HandleServer(ByVal p As Variant) As Boolean
         mOppName = p(4): mOppRating = CLng(p(5))
         mGameNo = 0: mRatingDelta = ""
         mMyReady = False: mPeerReady = False: mStageChoosing = False
+        mMyStep = 0: mPeerStep = 0
         mPeerSlot = IIf(mMySlot = 1, 0, 1)
         SetState OS_LOBBY
     Case "RATING"
@@ -453,7 +463,7 @@ Public Sub LobbyTick()
         If KeyInput.IsPressed(BTN_QUIT) Or KeyInput.IsPressed(BTN_HP) Then Leave
     Case OS_LOBBY
         LobbyInput
-        If mT Mod 5 = 1 Then Send "PICK " & mMySlot & " " & IIf(mMyReady, "1", "0")
+        If mT Mod 5 = 1 Then Send "PICK " & mMySlot & " " & mMyPick(0) & " " & mMyPick(1) & " " & mMyStep
         If mT Mod 10 = 3 Then Send "PING " & NowMs()
         If mHost And mStageChoosing And mT Mod 10 = 5 Then Send "STAGE " & mStage
     Case OS_RESULT
@@ -466,6 +476,7 @@ Public Sub LobbyTick()
         If mResultT >= IIf(mRanked, 80, 60) Then
             Lockstep.Finish
             mMyReady = False: mPeerReady = False: mStageChoosing = False
+            mMyStep = 0: mPeerStep = 0: mMySlot = mMyPick(0)     ' rematch: pick again, cursor on the last team
             SetState OS_LOBBY
         End If
     Case OS_ERROR
@@ -488,12 +499,13 @@ Private Sub LobbyInput()
         If KeyInput.IsPressed(BTN_HP) Then
             mStageChoosing = False
             mMyReady = False
+            mMyStep = 1
         End If
         If KeyInput.IsPressed(BTN_LP) Then HostStart
         If Not mPeerReady Then mStageChoosing = False      ' the guest changed its mind
         Exit Sub
     End If
-    If Not mMyReady Then
+    If mMyStep < 2 Then                                     ' pick the tag team: 1st fighter, then the 2nd
         k = mMySlot
         If KeyInput.IsPressed(BTN_LEFT) Then k = (k + ROSTER_ON - 1) Mod ROSTER_ON
         If KeyInput.IsPressed(BTN_RIGHT) Then k = (k + 1) Mod ROSTER_ON
@@ -502,12 +514,22 @@ Private Sub LobbyInput()
             If k >= ROSTER_ON Then k = k - 4
         End If
         mMySlot = k
-        If KeyInput.IsPressed(BTN_LP) And SlotOpen(k) Then mMyReady = True
+        If KeyInput.IsPressed(BTN_LP) And SlotOpen(k) And Not (mMyStep = 1 And k = mMyPick(0)) Then
+            mMyPick(mMyStep) = k
+            mMyStep = mMyStep + 1
+        ElseIf KeyInput.IsPressed(BTN_HP) And mMyStep > 0 Then
+            mMyStep = mMyStep - 1
+        End If
     ElseIf KeyInput.IsPressed(BTN_HP) Then
-        mMyReady = False
+        mMyStep = 1
     End If
+    mMyReady = (mMyStep >= 2)
     If mHost And mMyReady And mPeerReady Then mStageChoosing = True
 End Sub
+
+Private Function ClampSlot(ByVal k As Long) As Long
+    If k < 0 Or k >= ROSTER_ON Then ClampSlot = 0 Else ClampSlot = k
+End Function
 
 ' Cheonma needs the arcade clear on this machine; everyone else is always open.
 Private Function SlotOpen(ByVal k As Long) As Boolean
@@ -518,16 +540,17 @@ Private Sub HostStart()
     If mRtt < 0 Then mDelay = 3 Else mDelay = Int(mRtt / 50#) + 2
     If mDelay < 2 Then mDelay = 2
     If mDelay > 6 Then mDelay = 6
-    mStartMsg = "START " & mMySlot & " " & mPeerSlot & " " & mStage & " " & mDelay
+    mStartMsg = "START " & mMyPick(0) & " " & mMyPick(1) & " " & mPeerPick(0) & " " & mPeerPick(1) & " " & mStage & " " & mDelay
     Send mStartMsg
-    StartFight mMySlot, mPeerSlot, mStage, mDelay
+    StartFight mMyPick(0), mMyPick(1), mPeerPick(0), mPeerPick(1), mStage, mDelay
 End Sub
 
-Private Sub StartFight(ByVal p1 As Long, ByVal p2 As Long, ByVal stage As Long, ByVal delay As Long)
-    Game.P1Char = Screens.RosterPrefix(p1)
-    Game.P2Char = Screens.RosterPrefix(p2)
+' Online fights are always tag battles: host's team on the left (h1 starts), guest's on the right.
+Private Sub StartFight(ByVal h1 As Long, ByVal h2 As Long, ByVal g1 As Long, ByVal g2 As Long, ByVal stage As Long, ByVal delay As Long)
+    Game.P1Char = Screens.RosterPrefix(h1): Game.P1Char2 = Screens.RosterPrefix(h2)
+    Game.P2Char = Screens.RosterPrefix(g1): Game.P2Char2 = Screens.RosterPrefix(g2)
     Game.StageIndex = stage Mod Data.StageCount
-    Game.GameMode = MODE_VSCPU
+    Game.GameMode = MODE_TAG
     Game.Multi = False
     Game.WatchMode = False
     Game.AutoRestart = False
@@ -668,8 +691,33 @@ Private Sub RankingRender()
     PixelFont.DrawText "A = BACK", cx, 93, RGB(110, 100, 130), 1, 1
 End Sub
 
+' Fighter shown big for my side (mine = True) or the opponent's: the one being picked, else the 1st pick.
+Private Function ShownSlot(ByVal mine As Boolean) As Long
+    If mine Then
+        If mMyStep = 0 Then ShownSlot = mMySlot Else ShownSlot = mMyPick(0)
+    Else
+        If mPeerStep = 0 Then ShownSlot = mPeerSlot Else ShownSlot = mPeerPick(0)
+    End If
+End Function
+
+' "DANWOO + MUYEONG" style line for the host's (host = True) or the guest's team; READY when done.
+Private Function TeamLine(ByVal host As Boolean) As String
+    Dim mine As Boolean, stp As Long, a As Long, b As Long, cur As Long
+    mine = (host = mHost)
+    If mine Then
+        stp = mMyStep: a = mMyPick(0): b = mMyPick(1): cur = mMySlot
+    Else
+        stp = mPeerStep: a = mPeerPick(0): b = mPeerPick(1): cur = mPeerSlot
+    End If
+    Select Case stp
+    Case 0: TeamLine = ""
+    Case 1: TeamLine = "+ " & Screens.RosterName(cur) & "?"
+    Case Else: TeamLine = "+ " & Screens.RosterName(b) & " READY"
+    End Select
+End Function
+
 Private Sub LobbyRender()
-    Dim cx As Long, k As Long, x As Long, y As Long, c As Long, me_ As Long, t As String, blink As Boolean
+    Dim cx As Long, k As Long, x As Long, y As Long, c As Long, me_ As Long, other As Long, t As String, blink As Boolean
     cx = SCREEN_W \ 2
     blink = ((mT \ 5) Mod 2 = 0)
     Renderer.FillRect 0, 10, 64, 90, RGB(14, 20, 40)
@@ -688,12 +736,12 @@ Private Sub LobbyRender()
         PixelFont.DrawText IIf(mHost, "YOU", "HOST"), 3, 13, RGB(90, 170, 255)
         PixelFont.DrawText IIf(mHost, "GUEST", "YOU"), SCREEN_W - 3, 13, RGB(255, 90, 80), 1, 2
     End If
-    ' left = host's fighter, right = guest's
-    Screens.DrawBigView Screens.RosterPrefix(IIf(mHost, mMySlot, mPeerSlot)), 32, False, 0, 63
-    Screens.DrawBigView Screens.RosterPrefix(IIf(mHost, mPeerSlot, mMySlot)), 160, True, 129, SCREEN_W - 1, _
-                        (mMySlot = mPeerSlot)
-    If (mHost And mMyReady) Or (Not mHost And mPeerReady) Then PixelFont.DrawText "READY", 3, 25, RGB(255, 236, 190)
-    If (mHost And mPeerReady) Or (Not mHost And mMyReady) Then PixelFont.DrawText "READY", SCREEN_W - 3, 25, RGB(255, 236, 190), 1, 2
+    ' left = host's team, right = guest's: big view = the fighter being picked (or the 1st pick)
+    me_ = ShownSlot(True): other = ShownSlot(False)
+    Screens.DrawBigView Screens.RosterPrefix(IIf(mHost, me_, other)), 32, False, 0, 63
+    Screens.DrawBigView Screens.RosterPrefix(IIf(mHost, other, me_)), 160, True, 129, SCREEN_W - 1, (me_ = other)
+    PixelFont.DrawText TeamLine(mHost), 3, 25, RGB(255, 236, 190)
+    PixelFont.DrawText TeamLine(Not mHost), SCREEN_W - 3, 25, RGB(255, 236, 190), 1, 2
     ' grid: 4 + 3
     For k = 0 To ROSTER_ON - 1
         If k < 4 Then
@@ -709,11 +757,13 @@ Private Sub LobbyRender()
         End If
         c = RGB(70, 60, 90)
         If k = mPeerSlot Then c = RGB(255, 90, 80)
+        If (mMyStep >= 1 And k = mMyPick(0)) Or (mMyStep >= 2 And k = mMyPick(1)) Then c = RGB(180, 140, 60)   ' already picked
         If k = mMySlot And (blink Or mMyReady) Then c = RGB(240, 190, 80)
         Renderer.DrawRectOutline x, y, 15, 20, c
         If k = mMySlot Then Renderer.DrawRectOutline x - 1, y - 1, 17, 22, c
     Next k
     PixelFont.DrawBig UCase$(Screens.RosterName(mMySlot)), cx, 68, RGB(255, 240, 210), 1
+    If mMyStep < 2 Then PixelFont.DrawText "PICK FIGHTER " & (mMyStep + 1) & " OF 2", cx, 78, RGB(200, 190, 210), 1, 1
     If mStageChoosing Then
         t = "< " & UCase$(Data.StageName(mStage)) & " >"
         PixelFont.DrawText t, cx, 78, RGB(255, 236, 190), 1, 1
@@ -724,8 +774,10 @@ Private Sub LobbyRender()
     ElseIf mMyReady Then
         PixelFont.DrawText "WAITING FOR OPPONENT", cx, 78, RGB(255, 236, 190), 1, 1
         PixelFont.DrawText "S = CHANGE", cx, 93, RGB(150, 140, 170), 1, 1
+    ElseIf mMyStep = 1 Then
+        PixelFont.DrawText "A = OK  S = BACK", cx, 93, RGB(150, 140, 170), 1, 1
     Else
-        PixelFont.DrawText "A = READY  ESC = LEAVE", cx, 93, RGB(150, 140, 170), 1, 1
+        PixelFont.DrawText "A = OK  ESC = LEAVE", cx, 93, RGB(150, 140, 170), 1, 1
     End If
     If mRtt >= 0 Then PixelFont.DrawText "PING " & CLng(mRtt) & "MS", cx, 86, RGB(110, 100, 130), 1, 1
 End Sub

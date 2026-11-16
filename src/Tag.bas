@@ -99,7 +99,9 @@ Public Sub Inputs(ByVal allowed As Boolean)
     Dim i As Long
     If Not mOn Or Not allowed Then Exit Sub
     For i = 0 To 1
-        If Game.Multi Then
+        If Lockstep.Active Then
+            If (Lockstep.CurrentRaw(i) And &H1000&) <> 0 Then TryTag i      ' online: the exchanged tag key
+        ElseIf Game.Multi Then
             If KeyInput.IsPressed(KeyInput.KeyOf(1 + i, 8)) Then TryTag i     ' each player's own tag key
         ElseIf Game.IsCpu(i) Then
             If CpuWantsTag(i) Then TryTag i

@@ -1,6 +1,8 @@
 Attribute VB_Name = "HarnessRunner"
 Option Explicit
 
+Private mNetTag As Boolean            ' CMD nettag: the next nettest is a tag battle
+
 ' Drives the real game modules tick by tick from a text script (headless).
 ' Script lines:
 '   <ticks> <keys>      keys joined with "+": L R U D A S Z X TAB H J DD F1, "-" = none
@@ -86,6 +88,8 @@ Public Function RunScript(ByVal dataDir As String, ByVal script As String, ByVal
                     ServerTest f, CLng(p(2)), CLng(p(3)), CLng(p(4))
                 Case "onlinetest"
                     OnlineTest f, (p(2) = "1"), CLng(p(3)), CLng(p(4))
+                Case "nettag"
+                    mNetTag = True
                 Case "nettest"
                     k = -1
                     If UBound(p) >= 9 Then k = CLng(p(9))
@@ -149,6 +153,7 @@ Private Function GenInput(ByVal seed As Long, ByVal side As Long, ByVal frame As
         b = 2 ^ Int(LcgNext(x) / 2147483647# * 4)              ' one of LP HP LK HK
         r = r Or (b * 16) Or (b * 256)
     End If
+    If frame Mod 60 = 30 And x / 2147483647# < 0.6 Then r = r Or &H1000&   ' tag now and then (tag mode)
     GenInput = r
 End Function
 
@@ -166,6 +171,10 @@ Private Sub NetTest(ByVal f As Integer, ByVal seed As Long, ByVal localIdx As Lo
     Dim rnd_ As Double, sent As Long, lost As Long, h As Long
 
     Game.GameMode = MODE_VSCPU
+    If mNetTag Then                                        ' online fights are tag battles
+        Game.GameMode = MODE_TAG
+        Game.P1Char = "danwoo": Game.P1Char2 = "seolhwa": Game.P2Char = "cheolsan": Game.P2Char2 = "hongryeon"
+    End If
     Game.Multi = False
     Game.WatchMode = False
     Game.AutoRestart = True
@@ -183,7 +192,7 @@ Private Sub NetTest(ByVal f As Integer, ByVal seed As Long, ByVal localIdx As Lo
         If rNext <= wall + delay Then
             s = "I " & IIf(rNext - 7 < 0, 0, rNext - 7) & " 0"
             For g = IIf(rNext - 7 < 0, 0, rNext - 7) To rNext
-                s = s & " " & Right$("00" & Hex$(GenInput(seed, rs, g)), 3)
+                s = s & " " & Right$("000" & Hex$(GenInput(seed, rs, g)), 4)
             Next g
             rNext = rNext + 1
             rnd_ = LcgNext(rnd_)
@@ -225,7 +234,7 @@ Private Sub NetTest(ByVal f As Integer, ByVal seed As Long, ByVal localIdx As Lo
     Next wall
     Print #f, "E frames=" & Lockstep.Frame & " wall=" & wall & " stalls=" & Lockstep.Stalls & _
               " sent=" & sent & " lost=" & lost & " desync=" & Lockstep.DesyncFrame & _
-              " p0hp=" & Fighter.F(0).health & " p1hp=" & Fighter.F(1).health & " round=" & Match.Wins(0) & "-" & Match.Wins(1)
+              " p0hp=" & Fighter.F(0).health & " p1hp=" & Fighter.F(1).health & " round=" & Match.Wins(0) & "-" & Match.Wins(1) & " tags=" & Tag.TagCount(0) & "/" & Tag.TagCount(1) & " tagmode=" & Tag.Active
     Lockstep.Finish
     Game.NetExternalLocal = False
 End Sub
@@ -256,7 +265,7 @@ Private Sub ServerTest(ByVal f As Integer, ByVal mode As Long, ByVal seed As Lon
             p = Split(q(2), " ")
             Print #f, "O " & wall & " " & q(2)
             Select Case p(0)
-            Case "HELLO": Net.StubInject SIP, 47700, "WELCOME PM3 1000 0"
+            Case "HELLO": Net.StubInject SIP, 47700, "WELCOME PM4 1000 0"
             Case "KEEP": Net.StubInject SIP, 47700, "KEPT"
             Case "QUEUE"
                 Net.StubInject SIP, 47700, "QUEUED"
@@ -275,7 +284,7 @@ Private Sub ServerTest(ByVal f As Integer, ByVal mode As Long, ByVal seed As Lon
             Case "TOP": Net.StubInject SIP, 47700, "TOP 3 KIM 1100 TESTER 1040 LEE 990 ME 2 1040 5"
             Case "PING": Net.StubInject SIP, 47700, "PONG " & p(1)
             Case "PICK"
-                If matched And Not rStarted Then Net.StubInject SIP, 47700, "PICK 4 1"   ' opponent: Heukrim, ready
+                If matched And Not rStarted Then Net.StubInject SIP, 47700, "PICK 4 4 5 2"   ' opponent: Heukrim + Hongryeon, ready
             Case "START"
                 If Not rStarted Then rStarted = True: rDelay = CLng(p(4)): rNext = rDelay
             Case "RESULT"
@@ -293,14 +302,14 @@ Private Sub ServerTest(ByVal f As Integer, ByVal mode As Long, ByVal seed As Lon
         rs = IIf(weHost, 1, 0)
         ' opponent hosting: starts once we are ready
         If matched And Not weHost And Not startSent And Online.StateCode = 3 And wall Mod 20 = 0 Then
-            Net.StubInject SIP, 47700, "START 4 0 2 3"
+            Net.StubInject SIP, 47700, "START 4 5 0 1 2 3"
             startSent = True: rStarted = True: rDelay = 3: rNext = 3
         End If
         If rStarted And Online.StateCode = 4 Then
             If rNext <= Lockstep.Frame + rDelay Then
                 s = "I " & IIf(rNext - 7 < 0, 0, rNext - 7) & " 0"
                 For g = IIf(rNext - 7 < 0, 0, rNext - 7) To rNext
-                    s = s & " " & Right$("00" & Hex$(GenInput(seed, rs, g)), 3)
+                    s = s & " " & Right$("000" & Hex$(GenInput(seed, rs, g)), 4)
                 Next g
                 rNext = rNext + 1
                 Net.StubInject SIP, 47700, s
@@ -309,6 +318,7 @@ Private Sub ServerTest(ByVal f As Integer, ByVal mode As Long, ByVal seed As Lon
         If Online.StateCode = 3 And results >= 1 And byeAt < 0 Then byeAt = wall + 30
         If wall = byeAt Then Net.StubInject SIP, 47700, "BYE"
         If Online.StateCode = 3 And wall Mod 7 = 0 Then KeyInput.SetNextByName "A"
+        If Online.StateCode = 3 And wall Mod 7 = 3 Then KeyInput.SetNextByName "R"
         If Lockstep.Active And Online.StateCode = 4 Then Lockstep.CaptureLocal GenInput(seed, 1 - rs, Lockstep.NextLocalFrame)
         If mode = 4 And wall = 40 Then KeyInput.SetNextByName "A"         ' leave the ranking screen
         Game.GameTick
@@ -347,7 +357,7 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
     For wall = 1 To maxTicks
         KeyInput.ClearNext
         ' --- remote player ---
-        If asHost And wall = 3 Then Net.StubInject PIP, pport, "HELLO PM2"
+        If asHost And wall = 3 Then Net.StubInject PIP, pport, "HELLO PM4"
         If asHost And wall = 4 Then Net.StubInject "10.0.0.9", 999, "PICK 3 1"      ' stranger: must be ignored
         Do
             s = Net.StubTakeOut()
@@ -355,19 +365,19 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
             q = Split(s, "|")
             p = Split(q(2), " ")
             Select Case p(0)
-            Case "HELLO": Net.StubInject PIP, pport, "WELCOME PM2"
+            Case "HELLO": Net.StubInject PIP, pport, "WELCOME PM4"
             Case "PING": Net.StubInject PIP, pport, "PONG " & p(1)
             Case "PICK"
-                If Not rStarted Then Net.StubInject PIP, pport, "PICK 2 1"        ' remote: Muyeong, ready
+                If Not rStarted Then Net.StubInject PIP, pport, "PICK 2 2 4 2"    ' remote team: Muyeong + Heukrim, ready
             Case "START"
                 If Not rStarted Then rStarted = True: rDelay = CLng(p(4)): rNext = rDelay
             End Select
         Loop
         If Not asHost And Online.StateCode = 3 And Not rStarted And wall Mod 20 = 0 Then
             ' remote host: picks, then starts the match (stage 1, delay 3)
-            Net.StubInject PIP, pport, "PICK 2 1"
+            Net.StubInject PIP, pport, "PICK 2 2 4 2"
             If wall >= 60 Then
-                Net.StubInject PIP, pport, "START 2 0 1 3"
+                Net.StubInject PIP, pport, "START 2 4 0 1 1 3"
                 rStarted = True: rDelay = 3: rNext = 3
             End If
         End If
@@ -376,7 +386,7 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
             If rNext <= Lockstep.Frame + rDelay Then
                 s = "I " & IIf(rNext - 7 < 0, 0, rNext - 7) & " 0"
                 For g = IIf(rNext - 7 < 0, 0, rNext - 7) To rNext
-                    s = s & " " & Right$("00" & Hex$(GenInput(seed, rs, g)), 3)
+                    s = s & " " & Right$("000" & Hex$(GenInput(seed, rs, g)), 4)
                 Next g
                 rNext = rNext + 1
                 Net.StubInject PIP, pport, s
@@ -390,8 +400,9 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
             Net.StubInject PIP, pport, "BYE"
             sentBye = True
         End If
-        ' --- this machine's player: ready up, (host) start ---
+        ' --- this machine's player: pick two fighters (A, right, A), (host) start ---
         If Online.StateCode = 3 And wall Mod 7 = 0 Then KeyInput.SetNextByName "A"
+        If Online.StateCode = 3 And wall Mod 7 = 3 Then KeyInput.SetNextByName "R"
         If Lockstep.Active And Online.StateCode = 4 Then Lockstep.CaptureLocal GenInput(seed, 1 - rs, Lockstep.NextLocalFrame)
         Game.GameTick
         If wall = 2 Or wall = 9 Or wall = 13 Or wall = 300 Or wall = 1740 Or wall = 3559 Then
@@ -400,7 +411,7 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
         End If
         If Online.StateCode <> lastSt Or Game.GameState <> lastGs Then
             Print #f, "S " & wall & " online=" & Online.StateCode & " game=" & Game.GameState & _
-                      " frame=" & Lockstep.Frame & " p1=" & Game.P1Char & " p2=" & Game.P2Char & " err=" & Online.ErrorText
+                      " frame=" & Lockstep.Frame & " p1=" & Game.P1Char & "+" & Game.P1Char2 & " p2=" & Game.P2Char & "+" & Game.P2Char2 & " tag=" & Tag.Active & " err=" & Online.ErrorText
             lastSt = Online.StateCode: lastGs = Game.GameState
         End If
         If Online.StateCode = 6 And sentBye Then Exit For

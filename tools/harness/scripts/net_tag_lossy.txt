@@ -1,0 +1,3 @@
+# online lockstep in a tag battle (tag key exchanged too), lossy network, right side
+CMD nettag
+CMD nettest 9 1 3 4 4 25 1500

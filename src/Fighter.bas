@@ -473,7 +473,8 @@ Private Function BackHop(ByVal t As Long) As Double
 End Function
 
 ' Keyboard -> absolute input bits (online play sends these; facing is applied when the tick runs):
-'   bit 0 left, 1 right, 2 up, 3 down, bits 4-7 pressed LP HP LK HK, bits 8-11 held LP HP LK HK.
+'   bit 0 left, 1 right, 2 up, 3 down, bits 4-7 pressed LP HP LK HK, bits 8-11 held LP HP LK HK,
+'   bit 12 tag pressed (tag mode).
 Public Function RawLocal(Optional ByVal ks As Long = 0) As Long
     Dim r As Long, k As Long
     If KeyInput.IsDown(KeyInput.KeyOf(ks, 0)) Then r = r Or 1
@@ -484,6 +485,7 @@ Public Function RawLocal(Optional ByVal ks As Long = 0) As Long
         If KeyInput.IsPressed(KeyInput.KeyOf(ks, 4 + k)) Then r = r Or (16 * 2 ^ k)
         If KeyInput.IsDown(KeyInput.KeyOf(ks, 4 + k)) Then r = r Or (256 * 2 ^ k)
     Next k
+    If KeyInput.IsPressed(BTN_TAG) Then r = r Or &H1000&
     RawLocal = r
 End Function
 
@@ -511,6 +513,11 @@ Public Function StateHash() As Long
             h = HashMix(h, .mv): h = HashMix(h, .downPhase): h = HashMix(h, .stun)
         End With
     Next i
+    If Tag.Active Then                                     ' resting partners too
+        For i = 2 To 3
+            h = HashMix(h, F(i).health): h = HashMix(h, F(i).naegong): h = HashMix(h, F(i).redCap): h = HashMix(h, Len(F(i).prefix))
+        Next i
+    End If
     h = HashMix(h, Projectile.HashPart())
     h = HashMix(h, Combat.HitStop): h = HashMix(h, Combat.SuperFreeze)
     h = HashMix(h, Match.HashPart())
