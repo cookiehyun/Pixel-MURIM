@@ -45,7 +45,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 
 ### 아케이드
 - 상대 5명은 매번 순서가 섞입니다. 그다음 6번째는 **내 분신**(같은 캐릭터, 다른 색)입니다. 4번째 상대부터 CPU가 한 단계 강해지고, 보스는 항상 HARD입니다.
-- 아케이드를 한 번 깨면 **천마를 고를 수 있게 됩니다** (선택 화면 7번째 칸). 기록은 `data/save.txt`에 저장됩니다. 플레이어용 천마는 체력 1000이고, 천마로 아케이드를 하면 마지막 상대는 분신 천마(보스)입니다.
+- 아케이드를 한 번 깨면 **천마를 고를 수 있게 됩니다** (선택 화면 7번째 칸). 기록은 `data/save.txt`에 저장됩니다. TRAINING에서는 깨지 않아도 천마를 고를 수 있습니다. 플레이어용 천마는 체력 1000이고, 천마로 아케이드를 하면 마지막 상대는 분신 천마(보스)입니다.
 - 선택 화면 8번째 칸 **?** 는 랜덤입니다.
 - 지면 CONTINUE? 화면이 뜹니다. 9초 안에 A를 누르면 같은 상대와 다시 싸우고, S를 누르거나 시간이 지나면 게임 오버입니다.
 - 보스 천마는 체력 1400입니다. 장풍 없이 다가와서 마공장, 흡성대법, 천마군림으로 압박합니다.
@@ -166,7 +166,7 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 
 ### Arcade
 - The five opponents come in a random order, then your **shadow** (the same fighter in other colors). From the fourth fight the CPU gets one level harder; the boss is always HARD.
-- Clearing arcade once **unlocks Cheonma** (7th slot on the select screen), saved in `data/save.txt`. Playable Cheonma has 1000 HP; as Cheonma, the last fight is a shadow Cheonma boss.
+- Clearing arcade once **unlocks Cheonma** (7th slot on the select screen), saved in `data/save.txt`. In TRAINING Cheonma is always available. Playable Cheonma has 1000 HP; as Cheonma, the last fight is a shadow Cheonma boss.
 - The 8th slot **?** picks a random fighter.
 - Lose and you get CONTINUE?. Press A within 9 seconds to retry the same fight; press S or let it run out and it's game over.
 - Boss Cheonma has 1400 HP. No projectile: he closes in with the demon palm, the draining grab and Cheonma Gunrim.

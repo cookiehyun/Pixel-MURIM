@@ -1,0 +1,22 @@
+# TRAINING: Cheonma (7th slot) can be picked without clearing arcade
+4 -
+1 A
+3 -
+1 D
+2 -
+1 D
+2 -
+1 A
+4 -
+1 D
+2 -
+1 R
+2 -
+1 R
+2 -
+1 A
+6 -
+1 A
+40 -
+1 A
+30 -

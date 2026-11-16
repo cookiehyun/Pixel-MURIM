@@ -107,7 +107,8 @@ Public Property Get MenuTick() As Long
 End Property
 
 Private Function Locked(ByVal k As Long) As Boolean
-    If k = SLOT_CHEONMA Then Locked = Not Arcade.BossUnlocked
+    ' Cheonma: unlocked by clearing arcade; always open in TRAINING to try him out
+    If k = SLOT_CHEONMA Then Locked = Not Arcade.BossUnlocked And Game.GameMode <> MODE_TRAINING
 End Function
 
 Private Function IsRandom(ByVal k As Long) As Boolean
