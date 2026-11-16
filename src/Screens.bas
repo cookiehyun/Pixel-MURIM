@@ -17,7 +17,8 @@ Private rHeadX(0 To ROSTER - 1) As Long           ' head centre in idle_0, relat
 Private rHeadY(0 To ROSTER - 1) As Long           ' (from docs/<name>_points.txt) - centres the portrait
 
 Private mCursor As Long          ' title menu
-Private mMenuLevel As Long       ' 0 = SINGLE / MULTI, 1 = single modes, 2 = multi modes, 3 = key config, 4 = online host / join
+Private mMenuLevel As Long       ' 0 = SINGLE / MULTI, 1 = single modes, 2 = multi: 2P / ONLINE, 3 = key config,
+                                 ' 4 = online: host / join, 5 = 2P: start / key config
 Private mLastIp As String        ' online: address typed last time
 Private mMenuTick As Long
 Private mPhase As Long           ' select: 0 = player, 1 = opponent
@@ -131,7 +132,7 @@ Public Sub TitleTick()
     Dim n As Long
     mMenuTick = mMenuTick + 1
     If mMenuLevel = 3 Then                                  ' key config screen
-        If KeyConfig.Tick() Then mMenuLevel = 2
+        If KeyConfig.Tick() Then mMenuLevel = 5           ' back to the 2P list
         Exit Sub
     End If
     n = MenuCount()
@@ -140,9 +141,9 @@ Public Sub TitleTick()
     If KeyInput.IsPressed(BTN_QUIT) Or KeyInput.IsPressed(BTN_HP) Then
         If mMenuLevel = 0 Then
             If KeyInput.IsPressed(BTN_QUIT) Then Game.QuitRequested = True     ' Esc on the top menu = quit
-        ElseIf mMenuLevel = 4 Then
-            mMenuLevel = 2                                  ' back to the multiplayer list, on ONLINE
-            mCursor = 2
+        ElseIf mMenuLevel = 4 Or mMenuLevel = 5 Then
+            If mMenuLevel = 4 Then mCursor = 1 Else mCursor = 0     ' back to the multiplayer list
+            mMenuLevel = 2
         Else
             mCursor = mMenuLevel - 1                        ' back to SINGLE / MULTI
             mMenuLevel = 0
@@ -163,15 +164,15 @@ Public Sub TitleTick()
         Case Else: Game.GameMode = MODE_TRAINING
         End Select
         SelectBegin
-    Case 2                                                  ' multi: VERSUS / TAG VERSUS / ONLINE / KEY CONFIG
-        If mCursor <= 1 Then
+    Case 2                                                  ' multi: 2P / ONLINE
+        If mCursor = 0 Then mMenuLevel = 5 Else mMenuLevel = 4
+        mCursor = 0
+    Case 5                                                  ' 2P on one keyboard: START (tag versus) / KEY CONFIG
+        If mCursor = 0 Then
             Game.Multi = True
             Game.WatchMode = False
-            If mCursor = 0 Then Game.GameMode = MODE_VSCPU Else Game.GameMode = MODE_TAG   ' rounds, both sides human
+            Game.GameMode = MODE_TAG                        ' 2 vs 2, both sides human
             SelectBegin
-        ElseIf mCursor = 2 Then
-            mMenuLevel = 4
-            mCursor = 0
         Else
             mMenuLevel = 3
             KeyConfig.Begin
@@ -192,7 +193,7 @@ Public Sub TitleTick()
                 mMenuLevel = 4
             End If
         End If
-        mCursor = 2
+        mCursor = 1
     End Select
 End Sub
 
@@ -200,8 +201,7 @@ Private Function MenuCount() As Long
     Select Case mMenuLevel
     Case 0: MenuCount = 2
     Case 1: MenuCount = 3
-    Case 4: MenuCount = 2
-    Case Else: MenuCount = 4
+    Case Else: MenuCount = 2
     End Select
 End Function
 
@@ -211,7 +211,8 @@ Private Function MenuLabel(ByVal k As Long) As String
     Case 0: t = Array("SINGLE PLAYER", "MULTIPLAYER")
     Case 1: t = Array("ARCADE", "VS CPU", "TRAINING")
     Case 4: t = Array("HOST GAME", "JOIN GAME")
-    Case Else: t = Array("VERSUS", "TAG VERSUS", "ONLINE", "KEY CONFIG")
+    Case 5: t = Array("START", "KEY CONFIG")
+    Case Else: t = Array("2P", "ONLINE")
     End Select
     MenuLabel = t(k)
 End Function

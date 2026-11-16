@@ -1,16 +1,22 @@
-# title: SINGLE / MULTI, into MULTIPLAYER, CONTROLS chart, back, back, into SINGLE PLAYER list
+# title menu: MULTIPLAYER > 2P (back) > ONLINE (back) > back, then SINGLE PLAYER
 6 -
 1 D
 4 -
 1 A
 4 -
-1 D
-4 -
-1 A
-12 -
 1 A
 4 -
 1 S
+4 -
+1 D
+4 -
+1 A
+4 -
+1 S
+4 -
+1 S
+4 -
+1 U
 4 -
 1 A
 8 -

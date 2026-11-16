@@ -39,10 +39,10 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | SINGLE PLAYER | ARCADE | 캐릭터와 난이도를 고르고 나머지 5명, 내 분신, 최종 보스 천마와 차례로 대결(7판). 이기면 캐릭터별 엔딩 |
 | SINGLE PLAYER | VS CPU | 2명씩 팀을 짜서 CPU 팀과 싸웁니다. C 키로 교체 |
 | SINGLE PLAYER | TRAINING | 시간 제한 없음. 콤보가 끝나면 체력이 다시 차고, 내공과 게이지는 항상 가득 |
-| MULTIPLAYER | VERSUS | 키보드 하나로 1P와 2P가 1대1로 대결 |
-| MULTIPLAYER | TAG VERSUS | 1P 팀 2명 대 2P 팀 2명. 각자 교체 키로 교체 |
-| MULTIPLAYER | ONLINE | 온라인 1:1 대전. **HOST GAME**: 내 IP가 화면에 나오고 친구를 기다림. **JOIN GAME**: 친구(방장) IP를 입력. 각자 캐릭터를 고르고(A = 준비) 방장이 무대를 고르면 시작. Esc = 나가기. 자세한 내용은 [docs/ONLINE.md](docs/ONLINE.md) |
-| MULTIPLAYER | KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
+| MULTIPLAYER | 2P → START | 키보드 하나로 1P 팀 2명 대 2P 팀 2명 태그 대전. 각자 교체 키로 교체 |
+| MULTIPLAYER | 2P → KEY CONFIG | 1P·2P 키 바꾸기. `data/keys.txt`에 저장됩니다 |
+| MULTIPLAYER | ONLINE → HOST GAME | 온라인 1:1 대전 방 만들기. 내 IP가 화면에 나오고 친구를 기다림. 방장은 왼쪽, 무대를 고름 |
+| MULTIPLAYER | ONLINE → JOIN GAME | 친구가 만든 방에 들어가기. 친구 화면의 IP를 입력. 각자 캐릭터를 고르고 A = 준비. Esc = 나가기. 자세한 내용은 [docs/ONLINE.md](docs/ONLINE.md) |
 
 ### 아케이드
 - 상대 5명은 매번 순서가 섞입니다. 그다음 6번째는 **내 분신**(같은 캐릭터, 다른 색)입니다. 4번째 상대부터 CPU가 한 단계 강해지고, 보스는 항상 HARD입니다.
@@ -161,10 +161,10 @@ Pick SINGLE PLAYER or MULTIPLAYER on the title screen. In menus, ↑↓ moves, A
 | SINGLE PLAYER | ARCADE | Pick a fighter and a level, then beat the other five, your own shadow and the final boss Cheonma (7 fights). Each fighter has an ending |
 | SINGLE PLAYER | VS CPU | Two-fighter teams against a CPU team. Press C to switch |
 | SINGLE PLAYER | TRAINING | No timer. Health refills after a combo; inner energy and super gauge stay full |
-| MULTIPLAYER | VERSUS | 1P vs 2P on one keyboard |
-| MULTIPLAYER | TAG VERSUS | 1P's two-fighter team against 2P's, each with their own tag key |
-| MULTIPLAYER | ONLINE | Online 1 vs 1. **HOST GAME** shows your IP and waits; **JOIN GAME** asks for the host's IP. Both pick a fighter (A = ready), the host picks the stage. Esc = leave. See [docs/ONLINE.md](docs/ONLINE.md) |
-| MULTIPLAYER | KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
+| MULTIPLAYER | 2P > START | Tag versus on one keyboard: 1P's two-fighter team against 2P's, each with their own tag key |
+| MULTIPLAYER | 2P > KEY CONFIG | Change 1P / 2P keys. Saved to `data/keys.txt` |
+| MULTIPLAYER | ONLINE > HOST GAME | Make an online 1 vs 1 room: your IP is shown and the game waits for a friend. The host is on the left and picks the stage |
+| MULTIPLAYER | ONLINE > JOIN GAME | Join a friend's room by typing the IP on their screen. Both pick a fighter, A = ready. Esc = leave. See [docs/ONLINE.md](docs/ONLINE.md) |
 
 ### Arcade
 - The five opponents come in a random order, then your **shadow** (the same fighter in other colors). From the fourth fight the CPU gets one level harder; the boss is always HARD.
