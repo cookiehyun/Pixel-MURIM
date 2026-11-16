@@ -81,7 +81,7 @@ Windows 엑셀과 Mac 엑셀(Microsoft 365 / 2019 이후) 모두에서 돌아갑
 | → + S | 중단기. 느리지만 앉아서 막으면 못 막음 (서서 막아야 함) |
 | 상대 반대쪽 | 가드. 앉은 발차기는 앉아서, 점프 공격과 중단기는 서서 막아야 함. 상대 공격이 닿는 거리에서만 막기 자세가 됨 |
 | →→ / ←← | 대시 / 백대시. 대시 중 ↑ = 멀리 뛰는 대시 점프 |
-| 넘어져 누운 상태에서 → 또는 ← | 앞 / 뒤 구르기 (넘어지기 전부터 누르고 있던 방향은 무시, 새로 눌러야 구름) (구르는 동안 무적, 앞구르기는 상대를 지나갈 수 있음). 일어난 직후 잠깐은 잡히지 않습니다 |
+| 넘어져 누운 상태에서 → 또는 ← | 앞 / 뒤 구르기 (구르는 동안 무적, 앞구르기는 상대를 지나갈 수 있음. 넘어지기 전부터 누르고 있던 방향은 무시하니 새로 눌러야 함). 일어난 직후 잠깐은 잡히지 않습니다 |
 | C | 교체 (VS CPU) |
 | Esc | 경기 중에는 일시정지, 시작 화면에서는 게임 종료 |
 
@@ -202,7 +202,7 @@ Single-player keys. Two-player keys are in the second table.
 | → + S | Overhead. Slow, but it can't be blocked crouching (block it standing) |
 | Away from the opponent | Block. Crouching kicks must be blocked low; jump attacks and overheads high. You only stop to block when the attack can actually reach |
 | →→ / ←← | Dash / back dash. ↑ during a dash = long dash jump |
-| → or ← while knocked down | Forward / back roll (a direction already held before the fall does not count; press it again) (invulnerable; a forward roll can pass the opponent). Right after getting up you cannot be thrown for a moment |
+| → or ← while knocked down | Forward / back roll (invulnerable; a forward roll can pass the opponent; a direction already held before the fall does not count, press it again). Right after getting up you cannot be thrown for a moment |
 | C | Switch (VS CPU) |
 | Esc | Pause during a fight, quit on the title screen |
 
