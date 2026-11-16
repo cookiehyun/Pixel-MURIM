@@ -21,6 +21,8 @@ Private Declare PtrSafe Function m_getsockname Lib "/usr/lib/libc.dylib" Alias "
 Private Declare PtrSafe Function m_sendto Lib "/usr/lib/libc.dylib" Alias "sendto" (ByVal fd As Long, ByRef buf As Byte, ByVal length As LongPtr, ByVal flags As Long, ByRef addr As Byte, ByVal addrlen As Long) As LongPtr
 Private Declare PtrSafe Function m_recvfrom Lib "/usr/lib/libc.dylib" Alias "recvfrom" (ByVal fd As Long, ByRef buf As Byte, ByVal length As LongPtr, ByVal flags As Long, ByRef addr As Byte, ByRef addrlen As Long) As LongPtr
 Private Declare PtrSafe Function m_close Lib "/usr/lib/libc.dylib" Alias "close" (ByVal fd As Long) As Long
+Private Declare PtrSafe Function m_errptr Lib "/usr/lib/libc.dylib" Alias "__error" () As LongPtr
+Private Declare PtrSafe Function m_memcpy Lib "/usr/lib/libc.dylib" Alias "memcpy" (ByRef dst As Long, ByVal src As LongPtr, ByVal n As LongPtr) As LongPtr
 Private Const MSG_DONTWAIT As Long = &H80
 Private mSock As Long
 #ElseIf VBA7 Then
@@ -104,12 +106,16 @@ Public Function OpenSocket(ByVal port As Long) As Boolean
     On Error GoTo Fail
     #If Mac Then
         mSock = m_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
-        If mSock < 0 Then mErr = "socket() failed": Exit Function
-        MakeAddr a, "", port
-        If m_bind(mSock, a(0), 16) <> 0 Then
-            mErr = "port " & port & " is in use or not allowed"
-            m_close mSock
-            Exit Function
+        If mSock < 0 Then mErr = "socket() failed (errno " & MacErrno() & ")": Exit Function
+        ' Only a host binds a fixed port. A client (port 0) does not bind at all: the first sendto picks a
+        ' port by itself, and Mac Excel's sandbox may refuse an explicit bind.
+        If port > 0 Then
+            MakeAddr a, "", port
+            If m_bind(mSock, a(0), 16) <> 0 Then
+                mErr = "port " & port & " not allowed (errno " & MacErrno() & ")"
+                m_close mSock
+                Exit Function
+            End If
         End If
     #Else
         Dim wsa(0 To 511) As Byte, nb As Long
@@ -189,6 +195,16 @@ Public Function Receive(ByRef msg As String, ByRef fromIp As String, ByRef fromP
 Fail:
     mErr = "receive error " & Err.Number
 End Function
+
+#If Mac Then
+' errno of the last failed libc call (1 = not permitted, 13 = denied, 48 = port in use).
+Private Function MacErrno() As Long
+    Dim e As Long
+    On Error Resume Next
+    m_memcpy e, m_errptr(), 4
+    MacErrno = e
+End Function
+#End If
 
 ' This machine's address on the local network (the one a friend on the same Wi-Fi would use).
 ' Found by "connecting" a throwaway UDP socket toward a public address: nothing is sent.
