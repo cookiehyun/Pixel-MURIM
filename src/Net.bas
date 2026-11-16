@@ -21,6 +21,7 @@ Private Declare PtrSafe Function m_getsockname Lib "/usr/lib/libc.dylib" Alias "
 Private Declare PtrSafe Function m_sendto Lib "/usr/lib/libc.dylib" Alias "sendto" (ByVal fd As Long, ByRef buf As Byte, ByVal length As LongPtr, ByVal flags As Long, ByRef addr As Byte, ByVal addrlen As Long) As LongPtr
 Private Declare PtrSafe Function m_recvfrom Lib "/usr/lib/libc.dylib" Alias "recvfrom" (ByVal fd As Long, ByRef buf As Byte, ByVal length As LongPtr, ByVal flags As Long, ByRef addr As Byte, ByRef addrlen As Long) As LongPtr
 Private Declare PtrSafe Function m_close Lib "/usr/lib/libc.dylib" Alias "close" (ByVal fd As Long) As Long
+Private Declare PtrSafe Function m_send Lib "/usr/lib/libc.dylib" Alias "send" (ByVal fd As Long, ByRef buf As Byte, ByVal length As LongPtr, ByVal flags As Long) As LongPtr
 Private Declare PtrSafe Function m_errptr Lib "/usr/lib/libc.dylib" Alias "__error" () As LongPtr
 Private Declare PtrSafe Function m_memcpy Lib "/usr/lib/libc.dylib" Alias "memcpy" (ByRef dst As Long, ByVal src As LongPtr, ByVal n As LongPtr) As LongPtr
 Private Const MSG_DONTWAIT As Long = &H80
@@ -57,6 +58,7 @@ Private mOpen As Boolean
 Private mErr As String
 ' diagnostics (shown on online error screens): packets sent / refused, last errors, packets received
 Private mSentOk As Long, mSentFail As Long, mSendErr As Long, mRecvOk As Long, mRecvErr As Long
+Private mConnected As Boolean        ' Mac: socket connected to the one peer (see ConnectTo)
 Private mBuf(0 To BUFLEN - 1) As Byte
 
 Public Property Get LastError() As String
@@ -110,6 +112,7 @@ Public Function OpenSocket(ByVal port As Long) As Boolean
     Dim a() As Byte
     CloseSocket
     mErr = ""
+    mConnected = False
     mSentOk = 0: mSentFail = 0: mSendErr = 0: mRecvOk = 0: mRecvErr = 0
     On Error GoTo Fail
     #If Mac Then
@@ -159,6 +162,23 @@ Public Sub CloseSocket()
     mOpen = False
 End Sub
 
+' Talk only to ip:port from now on (client side: the game server, or the host of a direct game).
+' Mac: required. Excel's sandbox refuses to receive on an unconnected UDP socket (errno 1),
+' but a connected socket is outgoing "client" traffic and its replies are allowed. Windows: nothing to do.
+Public Function ConnectTo(ByVal ip As String, ByVal port As Long) As Boolean
+    #If Mac Then
+        Dim a() As Byte
+        If Not mOpen Then Exit Function
+        MakeAddr a, ip, port
+        If m_connect(mSock, a(0), 16) <> 0 Then
+            mErr = "connect failed (errno " & MacErrno() & ")"
+            Exit Function
+        End If
+        mConnected = True
+    #End If
+    ConnectTo = True
+End Function
+
 Public Sub SendTo(ByVal ip As String, ByVal port As Long, ByVal msg As String)
     Dim a() As Byte, b() As Byte
     If Not mOpen Or Len(msg) = 0 Then Exit Sub
@@ -167,7 +187,11 @@ Public Sub SendTo(ByVal ip As String, ByVal port As Long, ByVal msg As String)
     On Error Resume Next
     Dim n As Long
     #If Mac Then
-        n = CLng(m_sendto(mSock, b(0), UBound(b) + 1, 0, a(0), 16))
+        If mConnected Then
+            n = CLng(m_send(mSock, b(0), UBound(b) + 1, 0))     ' connected: the address is fixed
+        Else
+            n = CLng(m_sendto(mSock, b(0), UBound(b) + 1, 0, a(0), 16))
+        End If
         If n < 0 Then mSendErr = MacErrno()
     #Else
         n = w_sendto(mSock, b(0), UBound(b) + 1, 0, a(0), 16)

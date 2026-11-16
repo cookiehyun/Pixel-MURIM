@@ -134,6 +134,10 @@ Private Sub BeginServer(ByVal action As Long, ByVal code As String)
     End If
     mPeerIp = mServerIp
     mPeerPort = NET_PORT
+    If Not Net.ConnectTo(mPeerIp, mPeerPort) Then
+        Fail "NETWORK ERROR", Net.LastError
+        Exit Sub
+    End If
     SetState OS_SRV_CONNECT
 End Sub
 
@@ -232,6 +236,10 @@ Public Sub BeginJoin(ByVal ip As String)
     End If
     mPeerIp = ip
     mPeerPort = NET_PORT
+    If Not Net.ConnectTo(mPeerIp, mPeerPort) Then
+        Fail "NETWORK ERROR", Net.LastError
+        Exit Sub
+    End If
     SetState OS_JOINING
 End Sub
 

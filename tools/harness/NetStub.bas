@@ -33,6 +33,10 @@ Public Sub CloseSocket()
     mOpen = False
 End Sub
 
+Public Function ConnectTo(ByVal ip As String, ByVal port As Long) As Boolean
+    ConnectTo = True
+End Function
+
 Public Sub SendTo(ByVal ip As String, ByVal port As Long, ByVal msg As String)
     If mOpen And Len(msg) > 0 Then mOut.Add ip & "|" & port & "|" & msg
 End Sub
