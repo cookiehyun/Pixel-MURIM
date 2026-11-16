@@ -1651,35 +1651,38 @@ Private Sub DrawDrainOrbs(ByVal i As Long)
     Next k
 End Sub
 
-' Big red palm thrown out in front of Cheonma's hands during the demon palm (sp1).
+' Red palm thrown out in front of Cheonma's hands during the demon palm (sp1): an open hand, fingers
+' up, tilted forward toward the opponent, the side facing the opponent lit (tools: hand-drawn, 18x22).
+'   o outline  d shadow  r red  l light  w hot centre  g glow rim on the opponent side
 Private Sub DrawDemonPalm(ByVal i As Long)
-    Dim rows As Variant, r As Long, c As Long, w As Long, x0 As Long, y0 As Long, t As Long, ch As String
-    Dim px As Long, ink As Long, edge As Boolean
+    Dim rows As Variant, r As Long, c As Long, x0 As Long, y0 As Long, t As Long, ch As String
+    Dim px As Long, ink As Long, lit As Boolean
     t = F(i).stTick - Data.MvStartup(F(i).mv)
-    If t < -1 Or t > Data.MvActive(F(i).mv) + 1 Then Exit Sub
-    rows = Array("....XX.XX.XX....", "....XX.XX.XX.XX.", "....XX.XX.XX.XX.", "....XX.XX.XX.XX.", _
-                 "....XXXXXXXXXXX.", "XX..XXXXXXXXXXX.", ".XX.XXXXXXXXXXX.", "..XXXXXXXXXXXXX.", _
-                 "...XXXXXXXXXXXX.", "....XXXXXXXXXX..", "....XXXXXXXXXX..", ".....XXXXXXXX...", ".....XXXXXXXX...")
-    w = 16
-    x0 = CLng(F(i).x) + F(i).facing * 16                    ' drawn x2: 32 x 26 px, fingers up, in front of the hands
-    y0 = CLng(F(i).footY) - 42
+    If t < 0 Or t > Data.MvActive(F(i).mv) + 1 Then Exit Sub   ' only once the arms are out
+    lit = (t <= Data.MvActive(F(i).mv))                        ' dimmer on the last frame (fading)
+    rows = Array("........ooo.......", ".......oolooog....", "....oooorloloog...", "....oloorlorlog...", _
+                 "....orlorlorlooog.", "....orlorlorloloog", "...oorlorlorlorlog", "...orlorlorlorloog", _
+                 "...orlorlorlorlog.", ".ooorlorlorlorlog.", ".odorlorlorlorloog", "oodrddrrrrrrrrllog", _
+                 "odrddrrlllllrlloog", "oorrdrrlwwwlrllog.", ".orrdrrlwwwlrllog.", ".ooddrrlllllrllog.", _
+                 "..oddrrrrrrrrllog.", "..odrrrrrrrrlooog.", "..ooodrrrrlooog...", "....odrrrrlog.....", _
+                 "....odrrrrlo......", "....oooooooo......")
+    x0 = CLng(F(i).x) + F(i).facing * 11
+    y0 = CLng(F(i).footY) - 41
     For r = 0 To UBound(rows)
-        For c = 0 To w - 1
-            If Mid$(rows(r), c + 1, 1) = "X" Then
-                edge = (r = 0 Or r = UBound(rows) Or c = 0 Or c = w - 1)
-                If Not edge Then
-                    edge = Mid$(rows(r - 1), c + 1, 1) <> "X" Or Mid$(rows(r + 1), c + 1, 1) <> "X" Or _
-                           Mid$(rows(r), c, 1) <> "X" Or Mid$(rows(r), c + 2, 1) <> "X"
-                End If
-                If edge Then
-                    ink = RGB(110, 10, 25)
-                ElseIf t >= 0 And t <= Data.MvActive(F(i).mv) Then
-                    If r >= 5 And r <= 9 And c >= 6 And c <= 11 Then ink = RGB(255, 170, 170) Else ink = RGB(235, 40, 55)
-                Else
-                    ink = RGB(170, 25, 40)                              ' fading in / out
-                End If
-                If F(i).facing > 0 Then px = x0 + c * 2 Else px = x0 - c * 2 - 1
-                Renderer.FillRect px, y0 + r * 2, 2, 2, ink
+        For c = 1 To Len(rows(r))
+            ch = Mid$(rows(r), c, 1)
+            ink = -1
+            Select Case ch
+            Case "o": ink = RGB(90, 8, 22)
+            Case "d": ink = RGB(150, 20, 38)
+            Case "r": If lit Then ink = RGB(220, 40, 58) Else ink = RGB(150, 20, 38)
+            Case "l": If lit Then ink = RGB(255, 120, 130) Else ink = RGB(220, 40, 58)
+            Case "w": If lit Then ink = RGB(255, 215, 215) Else ink = RGB(255, 120, 130)
+            Case "g": If lit Then ink = RGB(255, 70, 90)
+            End Select
+            If ink >= 0 Then
+                If F(i).facing > 0 Then px = x0 + c - 1 Else px = x0 - c + 1
+                Renderer.PutPixel px, y0 + r, ink
             End If
         Next c
     Next r
