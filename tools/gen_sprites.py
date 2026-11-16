@@ -522,8 +522,9 @@ HEUKRIM_OVERRIDES = {
     "walk_2": P(lean=16, lf=(-16, -26), lb=(22, 5), af=CLAW_F, ab=(55, 130), open_hand=True),
     "walk_3": P(lean=16, lf=(-5, -40), lb=(8, 0), af=CLAW_F, ab=(55, 130), open_hand=True),
     # light: claw swipe across, poison streak
-    "lp_0": P(lean=8, af=(140, 150), ab=(55, 130), open_hand=True),
-    "lp_1": P(lean=22, lf=(26, 2), lb=(-24, -30), af=(96, 80), ab=(50, 120), open_hand=True, trail=("arm", 70)),
+    # light punch: a quick straight palm jab (was an overhead swing that read as a chop); Cheonma inherits it
+    "lp_0": P(lean=6, af=(35, 115), ab=(50, 125), open_hand=True),
+    "lp_1": P(lean=18, lf=(28, 2), lb=(-26, -28), af=(92, 88), ab=(45, 120), open_hand=True, trail=("palm", 3)),
     # heavy: claws crossed high, torn down and outward in a big X
     "hp_0": P(lean=-6, lf=(22, 4), lb=(-20, -30), af=(165, 175), ab=(160, 170), open_hand=True),
     "hp_1": P(lean=30, lf=(42, 0), lb=(-42, -40), af=(105, 60), ab=(80, 40), open_hand=True, trail=("arm", 115)),
