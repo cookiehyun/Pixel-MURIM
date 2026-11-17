@@ -635,7 +635,7 @@ End Sub
 Public Sub AfterFrame()
     If mState <> OS_FIGHT Then Exit Sub
     If Lockstep.DesyncFrame >= 0 Then
-        Fail "SYNC ERROR", "THE TWO GAMES DIFFER FROM FRAME " & Lockstep.DesyncFrame
+        Fail "SYNC ERROR", "THE TWO GAMES DIFFER FROM FRAME " & Lockstep.DesyncFrame & "|" & Lockstep.DesyncDetail
         Exit Sub
     End If
     If Match.Phase = MP_MATCHEND And Match.PhaseTicks >= 50 Then
@@ -721,6 +721,7 @@ Public Sub Render()
         PixelFont.DrawBig p(0), cx, 30, RGB(255, 90, 70), 1
         If UBound(p) >= 1 Then PixelFont.DrawText p(1), cx, 46, RGB(200, 190, 210), 1, 1
         If UBound(p) >= 2 Then PixelFont.DrawText p(2), cx, 56, RGB(200, 190, 210), 1, 1
+        If UBound(p) >= 3 Then PixelFont.DrawText p(3), cx, 66, RGB(200, 190, 210), 1, 1
         PixelFont.DrawText "A = MENU", cx, 92, RGB(110, 100, 130), 1, 1
     End Select
     Renderer.Flush

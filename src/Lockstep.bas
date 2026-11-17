@@ -30,6 +30,9 @@ Private mMyHash(0 To BUF - 1) As Long
 Private mMyHashF(0 To BUF - 1) As Long
 Private mTheirHash(0 To BUF - 1) As Long
 Private mTheirHashF(0 To BUF - 1) As Long
+Private mMyDet(0 To BUF - 1) As String     ' readable state with each hash (desync screen)
+Private mTheirDet(0 To BUF - 1) As String
+Private mDesyncMine As String, mDesyncTheirs As String
 Private mHashOut As String                ' hash packet waiting to be sent
 Private mDesyncFrame As Long              ' first frame whose hashes differ (-1 = none)
 Private mStalls As Long                   ' ticks spent waiting for the remote
@@ -44,6 +47,7 @@ Public Sub Begin(ByVal localIndex As Long, ByVal delay As Long)
     If delay > 10 Then delay = 10
     mDelay = delay
     mFrame = 0: mRemoteNeed = 0: mRemoteAck = 0
+    mDesyncMine = "": mDesyncTheirs = ""
     mDesyncFrame = -1: mStalls = 0: mLastHeard = 0: mHashOut = "": mPendPress = 0
     For s = 0 To 1
         For k = 0 To BUF - 1
@@ -52,6 +56,7 @@ Public Sub Begin(ByVal localIndex As Long, ByVal delay As Long)
     Next s
     For k = 0 To BUF - 1
         mMyHashF(k) = -1: mTheirHashF(k) = -1
+        mMyDet(k) = "": mTheirDet(k) = ""
     Next k
     ' the first DELAY frames are empty input on both sides
     For k = 0 To mDelay - 1
@@ -88,6 +93,10 @@ End Property
 
 Public Property Get Stalls() As Long
     Stalls = mStalls
+End Property
+
+Public Property Get DesyncDetail() As String
+    DesyncDetail = "ME " & mDesyncMine & "|PEER " & mDesyncTheirs
 End Property
 
 Public Property Get DesyncFrame() As Long
@@ -153,7 +162,8 @@ Public Sub EndFrame()
         h = Fighter.StateHash()
         mMyHash(mFrame Mod BUF) = h
         mMyHashF(mFrame Mod BUF) = mFrame
-        mHashOut = "H " & mFrame & " " & h
+        mMyDet(mFrame Mod BUF) = Fighter.StateDetail()
+        mHashOut = "H " & mFrame & " " & h & " " & mMyDet(mFrame Mod BUF)
         CompareHash mFrame
     End If
     mFrame = mFrame + 1
@@ -163,7 +173,10 @@ Private Sub CompareHash(ByVal f As Long)
     Dim k As Long
     k = f Mod BUF
     If mMyHashF(k) = f And mTheirHashF(k) = f Then
-        If mMyHash(k) <> mTheirHash(k) And mDesyncFrame < 0 Then mDesyncFrame = f
+        If mMyHash(k) <> mTheirHash(k) And mDesyncFrame < 0 Then
+            mDesyncFrame = f
+            mDesyncMine = mMyDet(k): mDesyncTheirs = mTheirDet(k)
+        End If
     End If
 End Sub
 
@@ -216,6 +229,7 @@ Public Sub Receive(ByVal pkt As String)
         f = CLng(p(1))
         mTheirHash(f Mod BUF) = CLng(p(2))
         mTheirHashF(f Mod BUF) = f
+        If UBound(p) >= 3 Then mTheirDet(f Mod BUF) = p(3) Else mTheirDet(f Mod BUF) = "?"
         CompareHash f
     End Select
 End Sub

@@ -524,6 +524,20 @@ Public Function StateHash() As Long
     StateHash = CLng(h)
 End Function
 
+' Short readable state (both sides compare it on the online desync screen): fighter initials,
+' health and position, resting partners, match clock, freezes.
+Public Function StateDetail() As String
+    Dim i As Long, s As String, n As Long
+    n = 1
+    If Tag.Active Then n = 3
+    For i = 0 To n
+        s = s & Left$(F(i).prefix, 2) & F(i).health
+        If i < 2 Then s = s & "X" & CLng(F(i).x) & "S" & F(i).state
+        s = s & ","
+    Next i
+    StateDetail = s & Match.DetailPart() & "H" & Combat.HitStop & "F" & Combat.SuperFreeze
+End Function
+
 Public Function HashMix(ByVal h As Double, ByVal v As Long) As Double
     HashMix = h * 31# + v
     HashMix = HashMix - Int(HashMix / 1000000007#) * 1000000007#

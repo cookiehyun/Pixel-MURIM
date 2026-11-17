@@ -86,6 +86,11 @@ Public Property Get RoundsOn() As Boolean
 End Property
 
 ' Part of Fighter.StateHash (online sync check).
+' Short readable state for the online desync screen.
+Public Function DetailPart() As String
+    DetailPart = "P" & mPhase & "T" & mT & "R" & mTime
+End Function
+
 Public Function HashPart() As Long
     Dim h As Double
     h = Fighter.HashMix(h, mPhase): h = Fighter.HashMix(h, mT): h = Fighter.HashMix(h, mRound)
