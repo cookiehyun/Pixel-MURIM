@@ -31,6 +31,7 @@ Private Const OS_RANKING As Long = 10       ' server: top 10 screen
 
 Public Const DEFAULT_SERVER As String = "161.33.45.170"   ' Pixel Murim game server (profile.txt "server=" overrides)
 Private Const SRV_PROTO As String = "PM4"
+Private Const GAME_BUILD As Long = 20261117          ' bump whenever fighting code changes: both players must match
 Private Const ACT_QUICK As Long = 1, ACT_ROOM As Long = 2, ACT_JOINROOM As Long = 3, ACT_TOP As Long = 4
 Private Const PROFILE_FILE As String = "profile.txt"
 
@@ -293,6 +294,21 @@ Private Sub Send(ByVal msg As String)
     Net.SendTo mPeerIp, mPeerPort, msg
 End Sub
 
+' Version tag sent in the lobby: the build number plus a checksum of the move data, so two copies
+' with different moves.txt (or different code builds) refuse to start instead of desyncing.
+Public Function BuildTag() As String
+    Dim k As Long, h As Double
+    h = GAME_BUILD
+    For k = 0 To Data.MvCount - 1
+        h = Fighter.HashMix(h, Data.MvStartup(k) + 37 * Data.MvActive(k) + 1009 * Data.MvRecovery(k))
+        h = Fighter.HashMix(h, Data.MvDamage(k) + 31 * Data.MvHitstun(k) + 997 * Data.MvBlockstun(k))
+        h = Fighter.HashMix(h, Data.MvHbX(k) + 7 * Data.MvHbY(k) + 101 * Data.MvHbW(k) + 1013 * Data.MvHbH(k))
+        h = Fighter.HashMix(h, Data.MvType(k) + 17 * Data.MvLevel(k) + 409 * Data.MvCost(k))
+        h = Fighter.HashMix(h, CLng(Data.MvP1(k) * 10) + 503 * CLng(Data.MvP2(k) * 10))
+    Next k
+    BuildTag = GAME_BUILD & "-" & Hex$(CLng(h))
+End Function
+
 ' ---------------------------------------------------------------- every game tick
 
 ' Read everything that arrived and react. Called at the start of every Game.GameTick while online.
@@ -358,6 +374,14 @@ Private Sub Handle(ByVal p As Variant, ByVal raw As String)
                 mPeerSlot = ClampSlot(CLng(p(1))): mPeerPick(0) = ClampSlot(CLng(p(2))): mPeerPick(1) = ClampSlot(CLng(p(3)))
                 mPeerStep = CLng(p(4))
                 mPeerReady = (mPeerStep >= 2)
+            End If
+            ' different game versions desync on the first frame: stop here with a clear message
+            If UBound(p) < 5 Then
+                Fail "UPDATE NEEDED", "THE OTHER PLAYER HAS AN OLD VERSION|BOTH GET THE LATEST ZIP AND IMPORT"
+                Exit Sub
+            ElseIf p(5) <> BuildTag() Then
+                Fail "UPDATE NEEDED", "YOUR GAME VERSIONS DIFFER|BOTH GET THE LATEST ZIP AND IMPORT"
+                Exit Sub
             End If
         End If
     Case "STAGE"
@@ -476,7 +500,7 @@ Public Sub LobbyTick()
         If KeyInput.IsPressed(BTN_QUIT) Or KeyInput.IsPressed(BTN_HP) Then Leave
     Case OS_LOBBY
         LobbyInput
-        If mT Mod 5 = 1 Then Send "PICK " & mMySlot & " " & mMyPick(0) & " " & mMyPick(1) & " " & mMyStep
+        If mT Mod 5 = 1 Then Send "PICK " & mMySlot & " " & mMyPick(0) & " " & mMyPick(1) & " " & mMyStep & " " & BuildTag()
         If mT Mod 10 = 3 Then Send "PING " & NowMs()
         If mHost And mStageChoosing And mT Mod 10 = 5 Then Send "STAGE " & mStage
     Case OS_RESULT
@@ -696,6 +720,7 @@ Public Sub Render()
         p = Split(mMsg, "|")
         PixelFont.DrawBig p(0), cx, 30, RGB(255, 90, 70), 1
         If UBound(p) >= 1 Then PixelFont.DrawText p(1), cx, 46, RGB(200, 190, 210), 1, 1
+        If UBound(p) >= 2 Then PixelFont.DrawText p(2), cx, 56, RGB(200, 190, 210), 1, 1
         PixelFont.DrawText "A = MENU", cx, 92, RGB(110, 100, 130), 1, 1
     End Select
     Renderer.Flush

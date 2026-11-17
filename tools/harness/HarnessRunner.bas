@@ -284,7 +284,7 @@ Private Sub ServerTest(ByVal f As Integer, ByVal mode As Long, ByVal seed As Lon
             Case "TOP": Net.StubInject SIP, 47700, "TOP 3 KIM 1100 TESTER 1040 LEE 990 ME 2 1040 5"
             Case "PING": Net.StubInject SIP, 47700, "PONG " & p(1)
             Case "PICK"
-                If matched And Not rStarted Then Net.StubInject SIP, 47700, "PICK 4 4 5 2"   ' opponent: Heukrim + Hongryeon, ready
+                If matched And Not rStarted Then Net.StubInject SIP, 47700, "PICK 4 4 5 2 " & p(5)   ' opponent: Heukrim + Hongryeon, ready, same build
             Case "START"
                 If Not rStarted Then rStarted = True: rDelay = CLng(p(4)): rNext = rDelay
             Case "RESULT"
@@ -368,14 +368,14 @@ Private Sub OnlineTest(ByVal f As Integer, ByVal asHost As Boolean, ByVal seed A
             Case "HELLO": Net.StubInject PIP, pport, "WELCOME PM4"
             Case "PING": Net.StubInject PIP, pport, "PONG " & p(1)
             Case "PICK"
-                If Not rStarted Then Net.StubInject PIP, pport, "PICK 2 2 4 2"    ' remote team: Muyeong + Heukrim, ready
+                If Not rStarted Then Net.StubInject PIP, pport, "PICK 2 2 4 2 " & p(5)    ' remote team: Muyeong + Heukrim, ready, same build
             Case "START"
                 If Not rStarted Then rStarted = True: rDelay = CLng(p(4)): rNext = rDelay
             End Select
         Loop
         If Not asHost And Online.StateCode = 3 And Not rStarted And wall Mod 20 = 0 Then
             ' remote host: picks, then starts the match (stage 1, delay 3)
-            Net.StubInject PIP, pport, "PICK 2 2 4 2"
+            Net.StubInject PIP, pport, "PICK 2 2 4 2 " & Online.BuildTag()
             If wall >= 60 Then
                 Net.StubInject PIP, pport, "START 2 4 0 1 1 3"
                 rStarted = True: rDelay = 3: rNext = 3
