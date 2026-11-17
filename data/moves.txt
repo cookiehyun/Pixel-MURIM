@@ -1,14 +1,14 @@
 # Move frame data. 1 tick = 1/20 s. Edit freely; no code change needed.
 #
 # kind   S = standing, C = crouching, A = air
-# level  H = high/mid (stand or crouch guard), L = low (crouch guard only), O = overhead (stand guard only)
+# level  H = high/mid (stand or crouch guard), L = low (crouch guard only), O = overhead (stand guard only), U = unblockable
 # kd     1 = knocks down
 # hb*    hitbox relative to the anchor (ground point under the hip), facing right:
 #        x = left edge (+ forward), y = top edge (negative = up), w, h in pixels.
 #        throws / grabs: hbX + hbW = reach. projectiles: hbW x hbH = projectile hitbox.
 # spr*   sprite shown during startup+recovery / during active frames
 # type   N normal | T throw | P projectile (p1 = speed, p2 = hits) | U rising uppercut (p1 = rise speed, p2 = invincible ticks,
-#        recovery = landing lag) | R rush (p1 = forward speed during active) | G command grab | SP super projectile | SG super grab
+#        recovery = landing lag) | R rush (p1 = forward speed during active) | G command grab | SP super projectile | SG super grab | SQ ground-slam super (hitbox on both sides)
 # cmd    motion relative to facing (numpad: 6 = forward, 2 = down, 4 = back, 3 = down-forward) + P (A or S) / K (Z or X).
 # ng     (optional 22nd column) naegong cost of special moves 1 / 2; the gauge (max 1000) refills 7 per tick.
 #        "-" = plain button. Supers (SP / SG) cost a full gauge.
@@ -25,9 +25,9 @@ danwoo     chk   C    5       3      10       90     12      8         L     1  
 danwoo     jp    A    3       4      0        60     8       6         O     0  6   -19 7   6   jump       jp        N    0    0  -
 danwoo     jk    A    4       5      0        80     9       7         O     0  9   -11 8   6   jump       jk        N    0    0  -
 danwoo     throw S    3       1      8        110    0       0         H     1  0   -30 16  10  throw_0    throw_1   T    0    0  -
-danwoo  sp1  S  4  1  18  70  12  8  H  0  0  0  12  10  sp_0  sp_1  P  3  1  26P  300
-danwoo  sp2  S  1  6  10  110  14  8  H  1  -2  -40  10  30  dp_0  dp_1  U  -5.5  4  623P  300
-danwoo     super S    4       1      12       300    10      6         H     1  0   0   20  16  sp_0       sp_1      SP   3.5  5  2626P
+danwoo  sp1  S  4  4  14  85  14  12  H  0  10  -30  12  14  palm_0  palm_1  R  4.0  0  26P  300
+danwoo  sp2  S  8  3  15  110  16  0  U  1  6  -30  16  12  spin_0  spin_1  R  1.5  0  623P  400
+danwoo  super  S  10  3  16  300  0  0  L  1  -48  -22  96  22  slam_0  slam_1  SQ  0  0  2626P
 danwoo  ovh  S  8  2  10  70  11  6  O  0  9  -29  7  11  ovh_0  ovh_1  N  1.0  0  -
 cheolsan   lp    S    3       2      4        40     6       4         H     0  11  -31 7   5   lp_0       lp_1      N    0    0  -
 cheolsan  hp  S  4  3  8  120  11  8  H  0  12  -30  8  6  hp_0  hp_1  N  1.4  0  -

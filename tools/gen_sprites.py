@@ -337,6 +337,16 @@ DANWOO_OVERRIDES = {
     "dp_4": P(lean=14, lf=TUCK_F, lb=TUCK_B, af=(70, 110), ab=(50, 90), ground="air", open_hand=True),
     # palm blast: gather at the hip first
     "sp_a": P(lean=4, lf=(32, 2), lb=(-32, -18), af=(-40, 60), ab=(-50, 55), open_hand=True),
+    # cheongpungjang (sp1): palm drawn back, then a lunging one-hand palm strike
+    "palm_0": P(lean=-8, lf=(28, 5), lb=(-30, -18), af=(-30, 75), ab=(40, 110), open_hand=True),
+    "palm_1": P(lean=26, lf=(56, 5), lb=(-52, -42), af=(92, 90), ab=(10, 95), open_hand=True, trail=("palm", 5)),
+    # byeokryeokgwon (sp2): fist drawn across the chest, spin with the back to the opponent, spinning backfist
+    "spin_0": P(lean=6, lf=(30, 4), lb=(-30, -14), af=(40, 150), ab=(20, 110)),
+    "spin_t": P(lean=4, lf=(-26, -6), lb=(30, 6), af=(60, 140), ab=(40, 120), flip=True),
+    "spin_1": P(lean=12, lf=(44, 2), lb=(-44, -34), af=(96, 94), ab=(20, 100)),   # blue arc drawn in game
+    # cheongpung jincheon (super): both palms raised overhead, then slammed flat on the ground
+    "slam_0": P(lean=-10, lf=(26, 4), lb=(-28, -12), af=(170, 160), ab=(166, 156), open_hand=True),
+    "slam_1": P(lean=48, lf=CROUCH_F, lb=CROUCH_B, af=(60, 20), ab=(52, 24), open_hand=True, dust=True),
 }
 
 CS_ARMS = dict(af=(70, 108), ab=(42, 118), open_hand=True)     # wide grappler's arms
@@ -624,9 +634,12 @@ ANIMS = [  # name, ticks per frame, frames
 # frames play once and the last one is held (see Data.ResolveMoveAnims)
 MOVE_ANIMS = {
     "danwoo": [
-        ("sp1_pre", 2, ["sp_a", "sp_0"]),
-        ("super_pre", 2, ["sp_a", "sp_0"]),
-        ("sp2_seq", 2, ["dp_1", "dp_1", "dp_2", "dp_2", "dp_3", "dp_4"]),
+        ("sp1_pre", 2, ["palm_0"]),
+        ("sp1_rec", 4, ["palm_1", "sp_0"]),
+        ("sp2_pre", 2, ["spin_0", "spin_0", "spin_t", "spin_t"]),
+        ("sp2_rec", 5, ["spin_1", "spin_1", "idle_0"]),
+        ("super_pre", 2, ["slam_0"]),
+        ("super_rec", 6, ["slam_1", "slam_1", "crouch"]),
     ],
     "cheolsan": [
         ("sp2_seq", 2, ["rush_1", "rush_2", "rush_3"]),

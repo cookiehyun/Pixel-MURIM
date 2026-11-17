@@ -113,7 +113,7 @@ P는 A 또는 S, K는 Z 또는 X입니다. →는 상대가 있는 쪽입니다.
 
 | 캐릭터 | 스타일 | 필살기 1 | 필살기 2 | 궁극기 (게이지 MAX) |
 |---|---|---|---|---|
-| 단우 | 올라운더 | ↓↘→P 청풍장 (장풍) | →↓↘P 학비상 (무적 대공) | ↓→↓→P 천풍만장 (5연타 장풍) |
+| 단우 | 장법가 | ↓↘→P 청풍장 (돌진 장법, 파란 손바닥) | →↓↘P 벽력권 (회전 주먹, 가드 파괴, 맞으면 슬로 모션) | ↓→↓→P 청풍진천 (파란 손바닥으로 바닥을 쳐서 양옆 충격파, 앉아 막기만 가능) |
 | 철산 | 잡기 | →↓←P 금강파쇄 (커맨드 잡기) | ↓↘→P 철산고 (돌진) | ↓→↓→P 나한복마 (4연타 후 내리꽂기) |
 | 무영 | 검객 | ↓↘→P 검기 (칼바람) | ↓↙←P 섬광참 (돌진 베기) | ↓→↓→P 만검귀종 (연속 베기) |
 | 설화 | 발차기 | ↓↙←K 연환비각 (3연타 돌진) | →↓↘K 선풍각 (공중제비 대공) | ↓→↓→K 낙화유수 (연속 차기) |
@@ -137,11 +137,11 @@ P는 A 또는 S, K는 Z 또는 X입니다. →는 상대가 있는 쪽입니다.
 |---|---|---|---|---|---|---|---|
 | A → A → S | 150 | 200 | 135 | 105 | 140 | 136 | 175 |
 | ↓Z → ↓X (다리 쓸기, 다운) | 120 | 150 | 118 | 101 | 132 | 118 | 150 |
-| S → 필살기1 | 160 | - | 145 | 146 | 145 | 150 | 180 |
-| S → 필살기2 | - | 240 | 185 | 150 | - | 170 | - |
-| A → A → 필살기1 | 123 | - | 110 | 112 | 119 | 123 | 138 |
-| A → A → 필살기2 | - | 183 | 140 | 117 | - | 146 | - |
-| S → 궁극기 | 294 | - | 415 | 365 | 400 | 330 | 475 |
+| S → 필살기1 | 175 | - | 145 | 146 | 145 | 150 | 180 |
+| S → 필살기2 | 200 | 240 | 185 | 150 | - | 170 | - |
+| A → A → 필살기1 | 137 | - | 110 | 112 | 119 | 123 | 138 |
+| A → A → 필살기2 | 170 | 183 | 140 | 117 | - | 146 | - |
+| S → 궁극기 | 390 | - | 415 | 365 | 400 | 330 | 475 |
 | 점프 X → (착지) A → S | 170 | - | - | - | - | - | - |
 | → + S (중단기, 1타) | 70 | 95 | 70 | 50 | 70 | 55 | 85 |
 
@@ -237,7 +237,7 @@ P is A or S, K is Z or X. → means toward the opponent.
 
 | Fighter | Style | Special 1 | Special 2 | Super (full gauge) |
 |---|---|---|---|---|
-| Danwoo | All-rounder | ↓↘→P Cheongpungjang (palm blast) | →↓↘P Hakbisang (invincible uppercut) | ↓→↓→P Cheonpung Manjang (5-hit blast) |
+| Danwoo | Palm fighter | ↓↘→P Cheongpungjang (lunging palm, blue hand) | →↓↘P Byeokryeokgwon (spinning backfist, breaks guard, slow motion on hit) | ↓→↓→P Cheongpung Jincheon (blue palm slams the ground, shockwave both sides, block crouching) |
 | Cheolsan | Grappler | →↓←P Geumgang Pashwae (command grab) | ↓↘→P Cheolsango (shoulder rush) | ↓→↓→P Nahan Bokma (4 hits, then a slam) |
 | Muyeong | Swordsman | ↓↘→P Geomgi (sword wave) | ↓↙←P Seomgwangcham (dash slash) | ↓→↓→P Mangeom Gwijong (flurry of cuts) |
 | Seolhwa | Kicker | ↓↙←K Yeonhwan Bigak (3-hit rush) | →↓↘K Seonpunggak (flip kick) | ↓→↓→K Nakhwa Yusu (kick barrage) |
@@ -261,11 +261,11 @@ A light attack (A·Z, standing or crouching) can chain into another normal, up t
 |---|---|---|---|---|---|---|---|
 | A → A → S | 150 | 200 | 135 | 105 | 140 | 136 | 175 |
 | ↓Z → ↓X (sweep, knockdown) | 120 | 150 | 118 | 101 | 132 | 118 | 150 |
-| S → special 1 | 160 | - | 145 | 146 | 145 | 150 | 180 |
-| S → special 2 | - | 240 | 185 | 150 | - | 170 | - |
-| A → A → special 1 | 123 | - | 110 | 112 | 119 | 123 | 138 |
-| A → A → special 2 | - | 183 | 140 | 117 | - | 146 | - |
-| S → super | 294 | - | 415 | 365 | 400 | 330 | 475 |
+| S → special 1 | 175 | - | 145 | 146 | 145 | 150 | 180 |
+| S → special 2 | 200 | 240 | 185 | 150 | - | 170 | - |
+| A → A → special 1 | 137 | - | 110 | 112 | 119 | 123 | 138 |
+| A → A → special 2 | 170 | 183 | 140 | 117 | - | 146 | - |
+| S → super | 390 | - | 415 | 365 | 400 | 330 | 475 |
 | Jump X → (land) A → S | 170 | - | - | - | - | - | - |
 | → + S (overhead, 1 hit) | 70 | 95 | 70 | 50 | 70 | 55 | 85 |
 

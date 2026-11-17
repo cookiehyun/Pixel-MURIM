@@ -154,7 +154,10 @@ Public Sub GameTick()
         Combat.SuperFreeze = Combat.SuperFreeze - 1
     ElseIf Combat.HitStop > 0 Then
         Combat.HitStop = Combat.HitStop - 1
+    ElseIf Combat.SlowMo Mod 2 = 1 Then
+        Combat.SlowMo = Combat.SlowMo - 1                 ' slow motion: every other tick stands still
     Else
+        If Combat.SlowMo > 0 Then Combat.SlowMo = Combat.SlowMo - 1
         Tag.Inputs Match.InputAllowed
         Tag.Tick
         Fighter.Update
@@ -197,7 +200,7 @@ Public Sub GameRender()
     ElseIf GameState >= GS_LADDER Then
         Arcade.ScreenRender
     Else
-        dark = (Combat.SuperFreeze > 0)
+        dark = (Combat.SuperFreeze > 0 Or Combat.ImpactDark > 0)
         Renderer.BeginFrame dark
         Fighter.Draw
         Projectile.Draw

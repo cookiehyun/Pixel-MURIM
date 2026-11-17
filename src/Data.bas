@@ -35,6 +35,7 @@ Public Const MK_AIR As Long = 2
 Public Const LV_HIGH As Long = 0
 Public Const LV_LOW As Long = 1
 Public Const LV_OVERHEAD As Long = 2
+Public Const LV_UNBLOCK As Long = 3       ' breaks through guard
 
 Public MvCount As Long
 Public MvKind() As Long, MvStartup() As Long, MvActive() As Long, MvRecovery() As Long
@@ -59,6 +60,7 @@ Public Const MT_TELEPORT As Long = 9        ' vanish (invincible) and reappear b
 Public Const MT_SUPER_TELE As Long = 10     ' teleport, then a strike; on hit -> sequence
 Public Const MT_PROJ_BOOM As Long = 11      ' projectile that flies out and returns (one hit each way)
 Public Const MT_SUPER_FIRE As Long = 12     ' fire pillar erupting under the opponent (p2 = hits)
+Public Const MT_SUPER_QUAKE As Long = 13    ' ground slam: shockwave on both sides, hurls the opponent away
 
 Private mSprIdx As Collection
 Private mAnimIdx As Collection
@@ -331,6 +333,7 @@ Private Sub LoadMoves()
             Select Case p(9)
                 Case "L": MvLevel(id) = LV_LOW
                 Case "O": MvLevel(id) = LV_OVERHEAD
+                Case "U": MvLevel(id) = LV_UNBLOCK
                 Case Else: MvLevel(id) = LV_HIGH
             End Select
             MvKD(id) = (p(10) = "1")
@@ -350,6 +353,7 @@ Private Sub LoadMoves()
                 Case "ST": MvType(id) = MT_SUPER_TELE
                 Case "PB": MvType(id) = MT_PROJ_BOOM
                 Case "SF": MvType(id) = MT_SUPER_FIRE
+                Case "SQ": MvType(id) = MT_SUPER_QUAKE
                 Case Else: MvType(id) = MT_NORMAL
             End Select
             MvP1(id) = Val(p(18))

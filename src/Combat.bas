@@ -8,6 +8,8 @@ Option Explicit
 Public HitStop As Long              ' ticks the whole game freezes after a hit
 Public SuperFreeze As Long          ' ticks of the super "blackout" freeze
 Public SuperOwner As Long
+Public SlowMo As Long               ' ticks of slow motion (every other tick stands still)
+Public ImpactDark As Long           ' ticks the stage is dimmed after a guard-breaking palm
 
 Private mKoTimer As Long
 Public KoFinished As Boolean        ' set on the tick the KO pause ends
@@ -23,6 +25,8 @@ Private mTextOwner As Long
 Public Sub Init()
     HitStop = 0
     SuperFreeze = 0
+    SlowMo = 0
+    ImpactDark = 0
     mKoTimer = 0
     KoFinished = False
     mCombo(0) = 0: mCombo(1) = 0
@@ -85,6 +89,7 @@ Public Sub TickTimers()
         If mComboShow(a) > 0 Then mComboShow(a) = mComboShow(a) - 1
     Next a
     If mTextTicks > 0 Then mTextTicks = mTextTicks - 1
+    If ImpactDark > 0 Then ImpactDark = ImpactDark - 1
 End Sub
 
 Public Sub Resolve()
@@ -144,6 +149,8 @@ Public Sub ApplyAttack(ByVal a As Long, ByVal d As Long, ByVal mv As Long, ByVal
     heavy = (Data.MvDamage(mv) >= 80)
     If heavy Then push = 2.2 Else push = 0.8      ' light hits push less so chains reach a third hit
     If Not lastHit Then push = 0.4
+    If mt = MT_SUPER_QUAKE Then push = 3.5                  ' the shockwave hurls the opponent away
+    If Data.MvLevel(mv) = LV_UNBLOCK And Fighter.F(d).state = ST_GUARD Then ShowText "GUARD BREAK", 24, a
 
     If (mt = MT_SUPER_RUSH Or mt = MT_SUPER_TELE) And Not Blocks(d, Data.MvLevel(mv)) Then
         FX.Spawn cx, cy, FX_SLASH                           ' super rush connected: slash sequence takes over
@@ -191,6 +198,11 @@ Public Sub ApplyAttack(ByVal a As Long, ByVal d As Long, ByVal mv As Long, ByVal
             mComboShown(a) = mCombo(a)
             mComboShow(a) = 40
         End If
+        If Data.MvLevel(mv) = LV_UNBLOCK Then           ' guard-breaking palm: dark flash, then slow motion
+            HitStop = 8
+            ImpactDark = 8
+            SlowMo = 24
+        End If
         If ko Then HitStop = 10
     End If
 
@@ -207,6 +219,7 @@ Private Function Blocks(ByVal d As Long, ByVal level As Long) As Boolean
         Select Case level
         Case LV_LOW: Blocks = .crouch
         Case LV_OVERHEAD: Blocks = Not .crouch
+        Case LV_UNBLOCK: Blocks = False
         Case Else: Blocks = True
         End Select
     End With

@@ -257,7 +257,7 @@ Private Sub SetupCharacter(ByVal i As Long, ByVal prefix As String, ByVal x As D
         Case "cheonma"
             .superName = "CHEONMA GUNRIM"
             .seqFx = FX_DARK
-        Case Else: .superName = "CHEONPUNG MANJANG"
+        Case Else: .superName = "CHEONGPUNG JINCHEON"
         End Select
     End With
 End Sub
@@ -893,6 +893,11 @@ Private Sub UpdateAttack(ByVal i As Long, ByVal d As Boolean)
             If t = Data.MvStartup(.mv) Then
                 If TryGrab(i, .mv) Then Exit Sub
             End If
+        Case MT_SUPER_QUAKE
+            If t = Data.MvStartup(.mv) Then
+                Combat.ShowText .superName, 40, i
+                FX.Spawn Int(.x + 0.5), Int(.footY) - 4, FX_BLOCK
+            End If
         Case MT_TELEPORT, MT_SUPER_TELE
             If t = 1 Then FX.Spawn Int(.x + 0.5), Int(.footY) - 16, FX_DARK
             If t = Data.MvStartup(.mv) - 1 Then
@@ -1421,6 +1426,11 @@ Public Sub Draw()
         If F(i).prefix = "cheonma" And F(i).state = ST_ATTACK Then
             If F(i).mv = F(i).moves(MV_SP1) Then DrawDemonPalm i
         End If
+        If F(i).prefix = "danwoo" And F(i).state = ST_ATTACK Then        ' Danwoo's blue palms
+            If F(i).mv = F(i).moves(MV_SP1) Then DrawWindPalm i
+            If F(i).mv = F(i).moves(MV_SP2) Then DrawSpinFist i
+            If F(i).mv = F(i).moves(MV_SUPER) Then DrawQuake i
+        End If
     Next i
     If mShowBoxes Then
         DrawBoxes 0
@@ -1693,6 +1703,131 @@ Private Sub DrawDemonPalm(ByVal i As Long)
             End If
         Next c
     Next r
+End Sub
+
+' Danwoo's cheongpungjang (sp1): Cheonma's lunging palm, but a smaller hand in wind blue.
+Private Sub DrawWindPalm(ByVal i As Long)
+    Dim t As Long
+    t = F(i).stTick - Data.MvStartup(F(i).mv)
+    If t < 0 Or t > Data.MvActive(F(i).mv) + 1 Then Exit Sub
+    DrawPalmArt i, SmallPalm(), 10, -31, (t <= Data.MvActive(F(i).mv))
+End Sub
+
+Private Function BigPalm() As Variant
+    BigPalm = Array("........ooo.......", ".......oolooog....", "....oooorloloog...", "....oloorlorlog...", _
+                    "....orlorlorlooog.", "....orlorlorloloog", "...oorlorlorlorlog", "...orlorlorlorloog", _
+                    "...orlorlorlorlog.", ".ooorlorlorlorlog.", ".odorlorlorlorloog", "oodrddrrrrrrrrllog", _
+                    "odrddrrlllllrlloog", "oorrdrrlwwwlrllog.", ".orrdrrlwwwlrllog.", ".ooddrrlllllrllog.", _
+                    "..oddrrrrrrrrllog.", "..odrrrrrrrrlooog.", "..ooodrrrrlooog...", "....odrrrrlog.....", _
+                    "....odrrrrlo......", "....oooooooo......")
+End Function
+
+Private Function SmallPalm() As Variant
+    SmallPalm = Array(".....oo.o...", "...ooloolo..", "...orlorlog.", "...orlorlolo", "..oorlorlolo", _
+                      ".odorlorlolo", "oddorrrrrrlo", "odrdrlllrllo", "oordrlwwlrlo", ".ordrlwwlrlo", _
+                      ".oddrrlllrlo", "..odrrrrrlo.", "..oodrrrlog.", "...odrrrlo..", "...oooooo...")
+End Function
+
+' Danwoo's byeokryeokgwon (sp2): a spinning backfist. A flat blue arc sweeps around him from behind
+' and the fist burns blue (this is the hit that breaks guard).
+Private Sub DrawSpinFist(ByVal i As Long)
+    Dim t As Long, k As Long, th As Double, cx As Double, cy As Double, px As Long, py As Long
+    Dim hx As Long, hy As Long, ink As Long
+    t = F(i).stTick - Data.MvStartup(F(i).mv)
+    If t < -2 Or t > Data.MvActive(F(i).mv) + 2 Then Exit Sub
+    cx = F(i).x + F(i).facing * 2: cy = F(i).footY - 24
+    For k = 0 To 14                                          ' the sweep, brightest at the front
+        th = 3.14159 * (1 - k / 14#)
+        px = CLng(cx + F(i).facing * 13 * Cos(th)): py = CLng(cy + 3 * Sin(th))
+        If k < 5 Then
+            ink = RGB(34, 80, 180)
+        ElseIf k < 10 Then
+            ink = RGB(66, 140, 236)
+        Else
+            ink = RGB(150, 206, 255)
+        End If
+        If t >= 0 Or k < 8 Then Renderer.FillRect px, py, 2, 1, ink
+    Next k
+    If t < 0 Then Exit Sub
+    hx = CLng(F(i).x) + F(i).facing * 13: hy = CLng(F(i).footY) - 24
+    Renderer.FillRect hx - 3, hy - 2, 7, 5, RGB(34, 80, 180)            ' glow around the fist
+    Renderer.FillRect hx - 2, hy - 3, 5, 7, RGB(34, 80, 180)
+    Renderer.FillRect hx - 2, hy - 2, 5, 5, RGB(66, 140, 236)
+    Renderer.FillRect hx - 1, hy - 1, 3, 3, RGB(236, 248, 255)
+    If t <= 1 Then                                           ' sparks flying off the front
+        Renderer.PutPixel hx + F(i).facing * 5, hy - 3, RGB(150, 206, 255)
+        Renderer.PutPixel hx + F(i).facing * 6, hy + 1, RGB(150, 206, 255)
+        Renderer.PutPixel hx + F(i).facing * 4, hy + 4, RGB(150, 206, 255)
+    End If
+End Sub
+
+Private Sub DrawPalmArt(ByVal i As Long, ByVal rows As Variant, ByVal dx As Long, ByVal dy As Long, ByVal lit As Boolean)
+    Dim r As Long, c As Long, x0 As Long, y0 As Long, px As Long, ink As Long, ch As String
+    x0 = CLng(F(i).x) + F(i).facing * dx
+    y0 = CLng(F(i).footY) + dy
+    For r = 0 To UBound(rows)
+        For c = 1 To Len(rows(r))
+            ch = Mid$(rows(r), c, 1)
+            ink = -1
+            Select Case ch
+            Case "o": ink = RGB(14, 34, 96)
+            Case "d": ink = RGB(34, 80, 180)
+            Case "r": If lit Then ink = RGB(66, 140, 236) Else ink = RGB(34, 80, 180)
+            Case "l": If lit Then ink = RGB(150, 206, 255) Else ink = RGB(66, 140, 236)
+            Case "w": If lit Then ink = RGB(236, 248, 255) Else ink = RGB(150, 206, 255)
+            Case "g": If lit Then ink = RGB(110, 190, 255)
+            End Select
+            If ink >= 0 Then
+                If F(i).facing > 0 Then px = x0 + c - 1 Else px = x0 - c + 1
+                Renderer.PutPixel px, y0 + r, ink
+            End If
+        Next c
+    Next r
+End Sub
+
+' Danwoo's super: the palms hit the ground and a blue shockwave rolls out to both sides.
+Private Sub DrawQuake(ByVal i As Long)
+    Dim t As Long, k As Long, rad As Long, h As Long, gx As Long, gy As Long, s As Long, ink As Long
+    t = F(i).stTick - Data.MvStartup(F(i).mv)
+    If t < 0 Or t > Data.MvActive(F(i).mv) + 8 Then Exit Sub
+    gx = CLng(F(i).x): gy = CLng(F(i).footY)
+    For k = 0 To 2                                           ' three rings, each a little behind the last
+        rad = (t - k * 2) * 6 + 6
+        If rad > 6 And rad < 70 Then
+            h = 13 - rad \ 7 - k * 2
+            If h < 3 Then h = 3
+            Select Case k
+            Case 0: ink = RGB(236, 248, 255)
+            Case 1: ink = RGB(120, 196, 255)
+            Case Else: ink = RGB(50, 110, 220)
+            End Select
+            For s = -1 To 1 Step 2
+                Renderer.FillRect gx + s * rad - 2, gy - h, 4, h, ink                ' wave crest
+                Renderer.FillRect gx + s * (rad - 4) - 1, gy - h \ 2 - 1, 3, h \ 2 + 1, RGB(50, 110, 220)
+                Renderer.FillRect gx + s * (rad + 3), gy - h - 3, 1, 2, RGB(150, 206, 255)   ' spray
+                If k = 0 Then Renderer.FillRect IIf(s < 0, gx - rad, gx), gy - 1, rad, 1, RGB(120, 196, 255)
+            Next s
+        End If
+    Next k
+    If t <= Data.MvActive(F(i).mv) + 4 Then DrawGroundPalm i, (t <= Data.MvActive(F(i).mv))
+End Sub
+
+' The big blue palm pressed flat on the ground in front of Danwoo (the palm laid on its back,
+' fingers pointing forward, every other row so it reads as flat).
+Private Sub DrawGroundPalm(ByVal i As Long, ByVal lit As Boolean)
+    Dim rows As Variant, r As Long, c As Long, n As Long, flat() As String, rowTxt As String
+    rows = BigPalm()
+    n = Len(rows(0))
+    ReDim flat(0 To n \ 2 - 1)
+    For c = 0 To n \ 2 - 1                                  ' rotate a quarter turn, keep every other row
+        rowTxt = ""
+        For r = UBound(rows) To 0 Step -1
+            rowTxt = rowTxt & Mid$(rows(r), n - c * 2, 1)
+        Next r
+        flat(c) = rowTxt
+    Next c
+    DrawPalmArt i, flat, 2, -(n \ 2) + 1, lit
+    Renderer.FillRect CLng(F(i).x) - 10, CLng(F(i).footY), 21, 1, RGB(150, 206, 255)   ' impact rowTxt
 End Sub
 
 ' Fighter i is in Cheonma's drain, either side of it (both get the red outline).

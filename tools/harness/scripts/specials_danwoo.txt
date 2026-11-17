@@ -1,23 +1,27 @@
 CMD start 0 1 0 1
 CMD dummy 1
-CMD place 30 90
+CMD place 50 70
 3 -
-# QCF + A (fireball): down, down-forward, forward+A
+# sp1 cheongpungjang: down, down-forward, forward+A (lunging blue palm)
 1 D
 1 D+R
 1 R+A
 40 -
-# DP: forward, down, down-forward + A (rising palm), Cheolsan jumping in
-CMD place 50 66
+# sp2 byeokryeokjang vs a guarding dummy: forward, down, down-forward + A (breaks guard, slow motion)
+CMD dummy 2
+CMD place 50 72
+5 -
 1 R
 1 D
 1 D+R+A
-30 -
-# super: meter full, down forward down forward + S
+80 -
+# super cheongpung jincheon: ground slam, shockwave to both sides hurls the opponent away
+CMD dummy 1
 CMD meter 0 1000
-CMD place 30 80
+CMD place 40 75
+5 -
 1 D
 1 R
 1 D
 1 R+S
-60 -
+70 -
