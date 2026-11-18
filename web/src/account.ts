@@ -61,7 +61,6 @@ async function loadProfile(): Promise<void> {
   const rows = (await call("/rest/v1/profiles?select=name,server_token,save&id=eq." + session!.uid, undefined, "GET", true)) as Profile[];
   if (!rows.length) throw new Error("NO PROFILE");
   profile = rows[0];
-  applySave();
 }
 
 /** Restore the last login in this browser (quietly; stays logged out on any problem). */
@@ -89,9 +88,7 @@ export async function signUp(idRaw: string, pw: string): Promise<void> {
   if (pw.length < 6) throw new Error("PASSWORD: AT LEAST 6 CHARACTERS");
   if (await call("/rest/v1/rpc/name_taken", { n: id })) throw new Error("THIS ID IS TAKEN");
   takeSession(await call("/auth/v1/signup", { email: mailOf(id), password: pw }));
-  // keep the ranking key this browser already played with, if any
-  const old = lsGet("pixelmurim.token");
-  const row = { id: session!.uid, name: id, server_token: old.length >= 16 ? old : newToken(), save: localSave() };
+  const row = { id: session!.uid, name: id, server_token: newToken(), save: {} };   // every account its own ranking
   await call("/rest/v1/profiles", row, "POST", true, { Prefer: "return=minimal" });
   await loadProfile();
 }
@@ -114,15 +111,6 @@ export function logOut(): void {
 }
 
 // ---------------------------------------------------------------- save data (arcade unlock, later story mode)
-
-function localSave(): Record<string, unknown> {
-  return lsGet("pixelmurim.cheonma") === "1" ? { cheonma: true } : {};
-}
-
-/** Account save -> this browser (a clear on another device unlocks here too). */
-function applySave(): void {
-  if (profile?.save?.cheonma) lsSet("pixelmurim.cheonma", "1");
-}
 
 /** Merge keys into the account's save data (fire and forget; also fine when logged out). */
 export function store(patch: Record<string, unknown>): void {

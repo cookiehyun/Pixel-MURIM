@@ -61,12 +61,14 @@ export function matchOver(won: boolean): void {
   } else { mGameOver = false; G.GameState = GS_CONTINUE; }
 }
 
+/** Logged in: the account's own unlock (any device). Logged out: this browser's guest unlock. */
 export function bossUnlocked(): boolean {
+  if (Account.loggedIn()) return Account.saveData().cheonma === true;
   try { return localStorage.getItem("pixelmurim.cheonma") === "1"; } catch { return false; }
 }
 function saveUnlock(): void {
+  if (Account.loggedIn()) { Account.store({ cheonma: true }); return; }
   try { localStorage.setItem("pixelmurim.cheonma", "1"); } catch { /* private mode: not saved */ }
-  Account.store({ cheonma: true });
 }
 
 const countdownSecs = () => 9 - Math.trunc(mT / 20);
