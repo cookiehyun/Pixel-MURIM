@@ -66,16 +66,26 @@ const needsAccount = (lv: number, k: number) => lv === 4 && k < 3 && !Account.lo
 
 let mFormOpen = false;
 
+// account page: a short note on top, then a menu (logged out: CREATE ACCOUNT / LOG IN, logged in: LOG OUT)
+let mAccSel = 0;
+const accItems = () => (Account.loggedIn() ? ["LOG OUT", "BACK"] : ["CREATE ACCOUNT", "LOG IN", "BACK"]);
+
 function accountTick(): void {
   if (mFormOpen) return;
-  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) { mMenuLevel = 0; mCursor = 2; return; }
-  const form = (mode: "create" | "login") => {
+  const items = accItems();
+  if (mAccSel >= items.length) mAccSel = 0;
+  if (K.isPressed(K.BTN_UP)) mAccSel = (mAccSel + items.length - 1) % items.length;
+  if (K.isPressed(K.BTN_DOWN)) mAccSel = (mAccSel + 1) % items.length;
+  const back = () => { mMenuLevel = 0; mCursor = 2; mAccSel = 0; };
+  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) { back(); return; }
+  if (!K.isPressed(K.BTN_LP)) return;
+  const it = items[mAccSel];
+  if (it === "BACK") back();
+  else if (it === "LOG OUT") { Account.logOut(); mAccSel = 0; }
+  else {
     mFormOpen = true;
-    AccountForm.open(mode).then(() => { mFormOpen = false; });
-  };
-  if (Account.loggedIn()) { if (K.isPressed(K.BTN_LK)) Account.logOut(); }
-  else if (K.isPressed(K.BTN_LP)) form("create");
-  else if (K.isPressed(K.BTN_LK)) form("login");
+    AccountForm.open(it === "LOG IN" ? "login" : "create").then((ok) => { mFormOpen = false; if (ok) back(); });
+  }
 }
 
 function accountRender(): void {
@@ -89,18 +99,25 @@ function accountRender(): void {
     return;
   }
   if (Account.loggedIn()) {
-    Font.drawText("LOGGED IN AS", cx, 26, cDim, 1, 1);
-    Font.drawBig(Account.name(), cx, 36, RGB(255, 240, 210), 2);
-    Font.drawText("ONLINE PLAY AND SAVES ARE ON THIS ACCOUNT", cx, 60, cDim, 1, 1);
-    Font.drawText("Z = LOG OUT   S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+    Font.drawText("LOGGED IN AS", cx, 20, cDim, 1, 1);
+    Font.drawBig(Account.name(), cx, 29, RGB(255, 240, 210), 2);
+    Font.drawText("RANKING AND SAVES ARE ON THIS ACCOUNT", cx, 50, cDim, 1, 1);
   } else {
-    Font.drawText("AN ACCOUNT KEEPS YOUR RANKING", cx, 24, RGB(200, 190, 210), 1, 1);
-    Font.drawText("AND SAVES ON ANY DEVICE", cx, 31, RGB(200, 190, 210), 1, 1);
-    Font.drawText("ONLINE PLAY NEEDS AN ACCOUNT", cx, 41, cDim, 1, 1);
-    if (Math.trunc(mMenuTick / 10) % 2 === 0) Font.drawBig("A = CREATE ACCOUNT", cx, 56, RGB(255, 236, 180), 1);
-    Font.drawText("Z = LOG IN (I HAVE AN ACCOUNT)", cx, 74, RGB(200, 190, 210), 1, 1);
-    Font.drawText("S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+    Font.drawText("AN ACCOUNT KEEPS YOUR RANKING", cx, 20, RGB(200, 190, 210), 1, 1);
+    Font.drawText("AND SAVES ON ANY DEVICE", cx, 27, RGB(200, 190, 210), 1, 1);
+    Font.drawText("ONLINE PLAY NEEDS AN ACCOUNT", cx, 37, cDim, 1, 1);
   }
+  const items = accItems(), y0 = Account.loggedIn() ? 62 : 52;
+  for (let k = 0; k < items.length; k++) {
+    const y = y0 + k * 11, on = k === mAccSel;
+    R.fillRect(cx - 40, y - 2, 80, 9, on ? RGB(40, 28, 20) : RGB(20, 16, 26));
+    if (on) {
+      R.drawRectOutline(cx - 40, y - 2, 80, 9, RGB(230, 180, 80));
+      if (Math.trunc(mMenuTick / 6) % 2 === 0) { Font.drawText(">", cx - 36, y, RGB(255, 200, 90)); Font.drawText("<", cx + 34, y, RGB(255, 200, 90)); }
+    }
+    Font.drawText(items[k], cx, y, on ? RGB(255, 236, 180) : RGB(130, 120, 150), 1, 1);
+  }
+  Font.drawText("UP DOWN = SELECT    A = OK    S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
 }
 
 export function titleTick(): void {
@@ -118,7 +135,7 @@ export function titleTick(): void {
   }
   if (!K.isPressed(K.BTN_LP)) return;
   if (mMenuLevel === 0) {
-    if (mCursor === 2) { mMenuLevel = LV_ACCOUNT; return; }
+    if (mCursor === 2) { mMenuLevel = LV_ACCOUNT; mAccSel = 0; return; }
     mMenuLevel = 1 + mCursor; mCursor = 0;
   }
   else if (mMenuLevel === 1) {
