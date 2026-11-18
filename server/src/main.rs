@@ -19,6 +19,8 @@
 //!   LEAVE                            leave the room / match (the partner gets BYE)
 //!   TOP                              -> TOP <n> <name> <rating> ... ME <rank> <rating> <games>
 //!   anything else while matched      relayed to the partner
+//! Web players (browser) connect with WebSocket (--ws-port, 127.0.0.1 only; Caddy adds TLS in front)
+//! and log in with HELLO PW1 ...: the same messages, but they are only ever paired with other web players.
 //! Server -> client
 //!   WELCOME <proto> <rating> <games> | ERROR <code> | ROOMCODE <code> | QUEUED | NOROOM
 //!   MATCHED <match id> <role 0 host / 1 guest> <ranked 0/1> <opponent> <opponent rating>
@@ -27,10 +29,14 @@
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
-use std::net::{SocketAddr, UdpSocket};
+use std::io::Read;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket};
+use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 const PROTO: &str = "PM4";
+const WEB_PROTO: &str = "PW1"; // browser version: separate game data, never paired with Excel players
 const DEFAULT_PORT: u16 = 47700;
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_MSG: usize = 600;
@@ -47,6 +53,7 @@ enum Where {
 }
 
 struct Client {
+    proto: String,
     token: String,
     name: String,
     last_seen: Instant,
@@ -71,8 +78,19 @@ struct Match {
     counted: Vec<u32>,                        // games already settled
 }
 
+enum Event {
+    Msg(SocketAddr, String),
+    Gone(SocketAddr), // a WebSocket closed
+}
+
+type WsMap = Arc<Mutex<HashMap<SocketAddr, TcpStream>>>;
+
 pub struct Server {
     sock: UdpSocket,
+    ws: WsMap,
+    ws_port: u16,
+    tx: Sender<Event>,
+    rx: Receiver<Event>,
     clients: HashMap<SocketAddr, Client>,
     players: HashMap<String, Player>, // by token
     rooms: HashMap<String, SocketAddr>,
@@ -155,13 +173,17 @@ pub fn ranking(players: &HashMap<String, Player>) -> Vec<(&String, &Player)> {
 // ---------------------------------------------------------------- server
 
 impl Server {
-    pub fn new(port: u16, db_path: &str) -> std::io::Result<Server> {
+    pub fn new(port: u16, ws_port: u16, db_path: &str) -> std::io::Result<Server> {
         let sock = UdpSocket::bind(("0.0.0.0", port))?;
-        sock.set_read_timeout(Some(Duration::from_millis(50)))?;
+        let (tx, rx) = channel();
         let players = fs::read_to_string(db_path).map(|t| parse_db(&t)).unwrap_or_default();
         let seed = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos() as u64).unwrap_or(1);
         Ok(Server {
             sock,
+            ws: Arc::new(Mutex::new(HashMap::new())),
+            ws_port,
+            tx,
+            rx,
             clients: HashMap::new(),
             players,
             rooms: HashMap::new(),
@@ -196,7 +218,13 @@ impl Server {
     }
 
     fn send(&self, to: SocketAddr, msg: &str) {
-        let _ = self.sock.send_to(msg.as_bytes(), to);
+        if is_ws(to) {
+            if let Some(st) = self.ws.lock().unwrap().get_mut(&to) {
+                let _ = st.write_all(&ws_frame(msg.as_bytes()));
+            }
+        } else {
+            let _ = self.sock.send_to(msg.as_bytes(), to);
+        }
     }
 
     fn log(&self, s: &str) {
@@ -206,16 +234,39 @@ impl Server {
 
     pub fn run(&mut self) {
         self.log(&format!("pixel murim server {} listening on UDP {}", PROTO, self.local_port()));
-        let mut buf = [0u8; 2048];
-        let mut last_sweep = Instant::now();
-        loop {
-            match self.sock.recv_from(&mut buf) {
-                Ok((n, from)) => {
+        // UDP (Excel players) on its own thread, feeding the same queue as the WebSockets
+        let udp = self.sock.try_clone().expect("udp clone");
+        let tx = self.tx.clone();
+        std::thread::spawn(move || {
+            let mut buf = [0u8; 2048];
+            loop {
+                if let Ok((n, from)) = udp.recv_from(&mut buf) {
                     if n <= MAX_MSG {
                         if let Ok(text) = std::str::from_utf8(&buf[..n]) {
-                            let text = text.trim().to_string();
-                            self.handle(from, &text);
+                            let _ = tx.send(Event::Msg(from, text.trim().to_string()));
                         }
+                    }
+                }
+            }
+        });
+        if self.ws_port > 0 {
+            match TcpListener::bind(("127.0.0.1", self.ws_port)) {
+                Ok(l) => {
+                    self.log(&format!("websocket (web players) on 127.0.0.1:{}", self.ws_port));
+                    let (tx, map) = (self.tx.clone(), self.ws.clone());
+                    std::thread::spawn(move || ws_accept(l, tx, map));
+                }
+                Err(e) => self.log(&format!("cannot open websocket port {}: {}", self.ws_port, e)),
+            }
+        }
+        let mut last_sweep = Instant::now();
+        loop {
+            match self.rx.recv_timeout(Duration::from_millis(250)) {
+                Ok(Event::Msg(from, text)) => self.handle(from, &text),
+                Ok(Event::Gone(a)) => {
+                    if self.clients.contains_key(&a) {
+                        self.leave(a, true);
+                        self.clients.remove(&a);
                     }
                 }
                 Err(_) => {} // timeout: fall through to the periodic work
@@ -281,7 +332,10 @@ impl Server {
             "JOINROOM" if p.len() >= 2 => {
                 let code = p[1].to_ascii_uppercase();
                 match self.rooms.get(&code).copied() {
-                    Some(host) if host != from && self.clients.contains_key(&host) => {
+                    Some(host)
+                        if host != from
+                            && self.clients.get(&host).map(|c| c.proto.as_str()) == Some(self.clients[&from].proto.as_str()) =>
+                    {
                         self.leave(from, false);
                         self.rooms.remove(&code);
                         self.start_match(host, from, false);
@@ -324,10 +378,11 @@ impl Server {
     }
 
     fn hello(&mut self, from: SocketAddr, p: &[&str]) {
-        if p.len() < 4 || p[1] != PROTO {
+        if p.len() < 4 || (p[1] != PROTO && p[1] != WEB_PROTO) || (p[1] == WEB_PROTO) != is_ws(from) {
             self.send(from, "ERROR VERSION");
             return;
         }
+        let proto = p[1].to_string();
         let (name, token) = match (clean_name(p[2]), valid_token(p[3])) {
             (Some(n), true) => (n, p[3].to_string()),
             _ => {
@@ -349,6 +404,7 @@ impl Server {
         let (r, g) = (pl.rating, pl.games);
         let now = Instant::now();
         let c = self.clients.entry(from).or_insert(Client {
+            proto: proto.clone(),
             token: token.clone(),
             name: name.clone(),
             last_seen: now,
@@ -358,7 +414,7 @@ impl Server {
         });
         c.last_seen = now;
         c.name = name;
-        self.send(from, &format!("WELCOME {} {:.0} {}", PROTO, r, g));
+        self.send(from, &format!("WELCOME {} {:.0} {}", proto, r, g));
     }
 
     fn rating_of(&self, a: SocketAddr) -> f64 {
@@ -495,6 +551,7 @@ impl Server {
             .iter()
             .filter_map(|(a, c)| if let Where::Queued(t) = c.at { Some((*a, t, 0.0)) } else { None })
             .collect();
+        let proto_of = |s: &Server, a: &SocketAddr| s.clients.get(a).map(|c| c.proto.clone()).unwrap_or_default();
         for e in q.iter_mut() {
             e.2 = self.rating_of(e.0);
         }
@@ -510,7 +567,8 @@ impl Server {
                     continue;
                 }
                 let (wa, wb) = (q[i].1.elapsed().as_secs_f64(), q[j].1.elapsed().as_secs_f64());
-                if can_pair(q[i].2, q[j].2, wa, wb)
+                if proto_of(self, &q[i].0) == proto_of(self, &q[j].0)
+                    && can_pair(q[i].2, q[j].2, wa, wb)
                     && best.is_none_or(|b| (q[j].2 - q[i].2).abs() < (q[b].2 - q[i].2).abs()) {
                         best = Some(j);
                     }
@@ -526,6 +584,7 @@ impl Server {
 
 fn main() {
     let mut port = DEFAULT_PORT;
+    let mut ws_port: u16 = 0;
     let mut db = String::from("players.tsv");
     let args: Vec<String> = std::env::args().collect();
     let mut i = 1;
@@ -533,6 +592,10 @@ fn main() {
         match args[i].as_str() {
             "--port" if i + 1 < args.len() => {
                 port = args[i + 1].parse().unwrap_or(DEFAULT_PORT);
+                i += 1;
+            }
+            "--ws-port" if i + 1 < args.len() => {
+                ws_port = args[i + 1].parse().unwrap_or(0);
                 i += 1;
             }
             "--db" if i + 1 < args.len() => {
@@ -543,16 +606,205 @@ fn main() {
         }
         i += 1;
     }
-    let mut s = Server::new(port, &db).unwrap_or_else(|e| {
+    let mut s = Server::new(port, ws_port, &db).unwrap_or_else(|e| {
         eprintln!("cannot open UDP port {}: {}", port, e);
         std::process::exit(1)
     });
     s.run();
 }
 
+// ---------------------------------------------------------------- WebSocket (RFC 6455, text frames only)
+
+/// WebSocket players get a made-up address 0.x.y.z:1 so the rest of the server can treat them like UDP ones.
+fn is_ws(a: SocketAddr) -> bool {
+    matches!(a.ip(), IpAddr::V4(v) if v.octets()[0] == 0)
+}
+
+fn ws_accept(l: TcpListener, tx: Sender<Event>, map: WsMap) {
+    let mut next: u32 = 1;
+    for st in l.incoming().flatten() {
+        let id = next;
+        next = next.wrapping_add(1).max(1) & 0x00ff_ffff;
+        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, (id >> 16) as u8, (id >> 8) as u8, id as u8)), 1);
+        let (tx, map) = (tx.clone(), map.clone());
+        std::thread::spawn(move || {
+            if let Some(w) = ws_handshake(&st) {
+                map.lock().unwrap().insert(addr, w);
+                ws_read_loop(st, addr, &tx, &map);
+                map.lock().unwrap().remove(&addr);
+                let _ = tx.send(Event::Gone(addr));
+            }
+        });
+    }
+}
+
+/// Reads the HTTP upgrade request and answers it; returns a writer clone of the stream.
+fn ws_handshake(st: &TcpStream) -> Option<TcpStream> {
+    st.set_read_timeout(Some(Duration::from_secs(10))).ok()?;
+    let mut req = Vec::new();
+    let mut b = [0u8; 1];
+    let mut r = st;
+    while !req.ends_with(b"\r\n\r\n") {
+        if req.len() > 8192 || r.read(&mut b).ok()? == 0 {
+            return None;
+        }
+        req.push(b[0]);
+    }
+    let text = String::from_utf8_lossy(&req);
+    let key = text.lines().find_map(|l| {
+        let (k, v) = l.split_once(':')?;
+        if k.trim().eq_ignore_ascii_case("sec-websocket-key") { Some(v.trim().to_string()) } else { None }
+    })?;
+    let accept = base64(&sha1(format!("{}258EAFA5-E914-47DA-95CA-C5AB0DC85B11", key).as_bytes()));
+    let mut w = st.try_clone().ok()?;
+    let resp = format!(
+        "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {}\r\n\r\n",
+        accept
+    );
+    w.write_all(resp.as_bytes()).ok()?;
+    let _ = st.set_nodelay(true);
+    st.set_read_timeout(Some(CLIENT_TIMEOUT)).ok()?;
+    Some(w)
+}
+
+fn ws_read_loop(mut st: TcpStream, addr: SocketAddr, tx: &Sender<Event>, map: &WsMap) {
+    loop {
+        let mut h = [0u8; 2];
+        if st.read_exact(&mut h).is_err() {
+            return;
+        }
+        let op = h[0] & 0x0f;
+        let masked = h[1] & 0x80 != 0;
+        let mut len = (h[1] & 0x7f) as u64;
+        if len == 126 {
+            let mut e = [0u8; 2];
+            if st.read_exact(&mut e).is_err() {
+                return;
+            }
+            len = u16::from_be_bytes(e) as u64;
+        } else if len == 127 {
+            return; // nobody sends 64 KB game messages
+        }
+        if len > 4096 {
+            return;
+        }
+        let mut mask = [0u8; 4];
+        if masked && st.read_exact(&mut mask).is_err() {
+            return;
+        }
+        let mut data = vec![0u8; len as usize];
+        if st.read_exact(&mut data).is_err() {
+            return;
+        }
+        if masked {
+            for (k, d) in data.iter_mut().enumerate() {
+                *d ^= mask[k % 4];
+            }
+        }
+        match op {
+            1 => {
+                if data.len() <= MAX_MSG {
+                    if let Ok(t) = String::from_utf8(data) {
+                        let _ = tx.send(Event::Msg(addr, t.trim().to_string()));
+                    }
+                }
+            }
+            8 => return,
+            9 => {
+                let mut f = vec![0x8a, data.len() as u8];
+                f.extend_from_slice(&data);
+                if let Some(w) = map.lock().unwrap().get_mut(&addr) {
+                    let _ = w.write_all(&f);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+pub fn ws_frame(payload: &[u8]) -> Vec<u8> {
+    let mut f = vec![0x81];
+    if payload.len() < 126 {
+        f.push(payload.len() as u8);
+    } else {
+        f.push(126);
+        f.extend_from_slice(&(payload.len() as u16).to_be_bytes());
+    }
+    f.extend_from_slice(payload);
+    f
+}
+
+pub fn sha1(data: &[u8]) -> [u8; 20] {
+    let mut h: [u32; 5] = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0];
+    let mut m = data.to_vec();
+    let bits = (data.len() as u64) * 8;
+    m.push(0x80);
+    while m.len() % 64 != 56 {
+        m.push(0);
+    }
+    m.extend_from_slice(&bits.to_be_bytes());
+    for chunk in m.chunks(64) {
+        let mut w = [0u32; 80];
+        for i in 0..16 {
+            w[i] = u32::from_be_bytes([chunk[4 * i], chunk[4 * i + 1], chunk[4 * i + 2], chunk[4 * i + 3]]);
+        }
+        for i in 16..80 {
+            w[i] = (w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]).rotate_left(1);
+        }
+        let (mut a, mut b, mut c, mut d, mut e) = (h[0], h[1], h[2], h[3], h[4]);
+        for (i, wi) in w.iter().enumerate() {
+            let (f, k) = match i {
+                0..=19 => ((b & c) | (!b & d), 0x5A827999),
+                20..=39 => (b ^ c ^ d, 0x6ED9EBA1),
+                40..=59 => ((b & c) | (b & d) | (c & d), 0x8F1BBCDC),
+                _ => (b ^ c ^ d, 0xCA62C1D6),
+            };
+            let t = a.rotate_left(5).wrapping_add(f).wrapping_add(e).wrapping_add(k).wrapping_add(*wi);
+            e = d;
+            d = c;
+            c = b.rotate_left(30);
+            b = a;
+            a = t;
+        }
+        h[0] = h[0].wrapping_add(a);
+        h[1] = h[1].wrapping_add(b);
+        h[2] = h[2].wrapping_add(c);
+        h[3] = h[3].wrapping_add(d);
+        h[4] = h[4].wrapping_add(e);
+    }
+    let mut out = [0u8; 20];
+    for i in 0..5 {
+        out[4 * i..4 * i + 4].copy_from_slice(&h[i].to_be_bytes());
+    }
+    out
+}
+
+pub fn base64(data: &[u8]) -> String {
+    const T: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut s = String::new();
+    for c in data.chunks(3) {
+        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
+        for k in 0..4 {
+            if k <= c.len() {
+                s.push(T[(n >> (18 - 6 * k) & 63) as usize] as char);
+            } else {
+                s.push('=');
+            }
+        }
+    }
+    s
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn websocket_accept_key() {
+        // the example from RFC 6455 section 1.3
+        let k = base64(&sha1(b"dGhlIHNhbXBsZSBub25jZQ==258EAFA5-E914-47DA-95CA-C5AB0DC85B11"));
+        assert_eq!(k, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
+    }
 
     #[test]
     fn elo_even_win() {

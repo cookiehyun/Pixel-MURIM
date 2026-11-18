@@ -14,9 +14,11 @@ import * as Match from "./match";
 import * as Cpu from "./cpu";
 import * as Screens from "./screens";
 import * as Arcade from "./arcade";
+import * as Online from "./online";
+import * as Lockstep from "./lockstep";
 import { RGB } from "./util";
 
-export const GS_MENU = 0, GS_FIGHT = 1, GS_SELECT = 2, GS_LEVEL = 3, GS_STAGE = 4, GS_LADDER = 5, GS_CONTINUE = 6, GS_ENDING = 7;
+export const GS_MENU = 0, GS_FIGHT = 1, GS_SELECT = 2, GS_LEVEL = 3, GS_STAGE = 4, GS_LADDER = 5, GS_CONTINUE = 6, GS_ENDING = 7, GS_ONLINE = 8;
 export const MODE_TRAINING = 0, MODE_VSCPU = 1, MODE_SANDBOX = 2, MODE_ARCADE = 3, MODE_TAG = 4;
 
 export const G = {
@@ -72,7 +74,17 @@ export const paused = () => mPaused;
 
 export function gameTick(): void {
   K.poll();
-  if (G.GameState === GS_FIGHT) {
+  if (Online.active()) Online.pump();
+  if (G.GameState === GS_ONLINE) { Online.lobbyTick(); return; }
+  const netFight = Lockstep.active() && G.GameState === GS_FIGHT;
+  if (netFight) {
+    // online: no pause; run this tick only when both players' inputs for it are known
+    K.consumeFocusLost();
+    if (K.isPressed(K.BTN_QUIT)) { Online.leave(); return; }
+    Lockstep.captureLocal(Fighter.rawLocal(0));
+    Online.sendFightPackets();
+    if (!Lockstep.ready()) { Lockstep.noteStall(); return; }
+  } else if (G.GameState === GS_FIGHT) {
     if (K.isPressed(K.BTN_QUIT)) { mPaused = !mPaused; mPauseSel = 0; return; }
     if (K.consumeFocusLost() && !mPaused) { mPaused = true; mPauseSel = 0; return; }
     if (mPaused) { pauseTick(); return; }
@@ -83,10 +95,11 @@ export function gameTick(): void {
     case GS_LEVEL: Screens.levelTick(); return;
     case GS_STAGE: Screens.stageTick(); return;
   }
-  if (G.GameState >= GS_LADDER) { Arcade.screenTick(); return; }
+  if (G.GameState >= GS_LADDER && G.GameState <= GS_ENDING) { Arcade.screenTick(); return; }
 
   for (let i = 0; i <= 1; i++) {
     if (!Match.inputAllowed()) Fighter.feedInput(i, 5, 0, 0);
+    else if (netFight) { if (i === 0) Lockstep.feedFrame(); }
     else if (G.Multi) Fighter.feedHuman(i, 1 + i);
     else if (isCpu(i)) { Cpu.observe(i); Cpu.think(i); }
     else if (i === Fighter.controlled()) Fighter.feedHuman(i);
@@ -108,16 +121,18 @@ export function gameTick(): void {
   FX.update();
   Hud.update();
   Match.tick(C.SuperFreeze > 0 || C.HitStop > 0);
+  if (netFight) { Lockstep.endFrame(); Online.afterFrame(); }
 }
 
 export function gameRender(): void {
   switch (G.GameState) {
+    case GS_ONLINE: Online.render(); return;
     case GS_MENU: Screens.titleRender(); break;
     case GS_SELECT: Screens.selectRender(); break;
     case GS_LEVEL: Screens.levelRender(); break;
     case GS_STAGE: Screens.stageRender(); break;
     default:
-      if (G.GameState >= GS_LADDER) Arcade.screenRender();
+      if (G.GameState >= GS_LADDER && G.GameState <= GS_ENDING) Arcade.screenRender();
       else {
         R.beginFrame(C.SuperFreeze > 0 || C.ImpactDark > 0);
         Fighter.draw();
@@ -126,6 +141,7 @@ export function gameRender(): void {
         Hud.draw();
         Match.draw();
         if (C.WhiteFlash > 1) R.flashScreen(RGB(250, 246, 255));
+        if (Online.active()) Online.renderOverlay();
         if (mPaused) pauseRender();
       }
   }

@@ -9,6 +9,7 @@ import * as Arcade from "./arcade";
 import { levelName } from "./cpu";
 import { G, GS_SELECT, GS_LEVEL, GS_STAGE, GS_MENU, MODE_ARCADE, MODE_TAG, MODE_TRAINING, MODE_VSCPU, restart } from "./game";
 import { RGB } from "./util";
+import * as Online from "./online";
 
 const ROSTER = 8, SLOT_CHEONMA = 6, SLOT_RANDOM = 7, GRID_COLS = 4, BOX_W = 15;
 export const ROSTER_SIZE = 6;
@@ -18,7 +19,7 @@ const rStat = [[3, 4, 3, 3, 4], [5, 1, 2, 5, 1], [2, 3, 5, 2, 3], [1, 4, 1, 1, 5
 const rHeadX = [2, 4, 2, 1, 4, 1, 4, 0], rHeadY = [-30, -35, -31, -30, -32, -30, -35, 0];
 const cGold = RGB(240, 190, 80), cDim = RGB(130, 120, 150), cP1 = RGB(90, 170, 255), cP2 = RGB(255, 90, 80);
 
-let mCursor = 0, mMenuLevel = 0, mMenuTick = 0, mPhase = 0, mLevelSel = 1, mStageSel = 0, mNotice = 0;
+let mCursor = 0, mMenuLevel = 0, mMenuTick = 0, mPhase = 0, mLevelSel = 1, mStageSel = 0;
 const mSel = [0, 1, 2, 3], mPick = [0, 1, 2, 3];
 
 export const rosterPrefix = (k: number) => rPrefix[k];
@@ -47,15 +48,23 @@ function randomPick(): number {
 
 // ---------------------------------------------------------------- title
 
-const LABELS: Record<number, string[]> = { 0: ["SINGLE PLAYER", "MULTIPLAYER"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"] };
+const LABELS: Record<number, string[]> = {
+  0: ["SINGLE PLAYER", "MULTIPLAYER"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
+  4: ["QUICK MATCH", "ROOM CODE", "RANKING"], 6: ["CREATE ROOM", "JOIN ROOM"],
+};
+const PARENT: Record<number, number> = { 1: 0, 2: 0, 4: 2, 6: 4 };
 
 export function titleTick(): void {
   mMenuTick++;
-  if (mNotice > 0) mNotice--;
   const n = LABELS[mMenuLevel].length;
   if (K.isPressed(K.BTN_UP)) mCursor = (mCursor + n - 1) % n;
   if (K.isPressed(K.BTN_DOWN)) mCursor = (mCursor + 1) % n;
-  if ((K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) && mMenuLevel > 0) { mCursor = mMenuLevel - 1; mMenuLevel = 0; return; }
+  if ((K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) && mMenuLevel > 0) {
+    const up = PARENT[mMenuLevel];
+    mCursor = up === 0 ? mMenuLevel - 1 : mMenuLevel === 4 ? 1 : 1;
+    mMenuLevel = up;
+    return;
+  }
   if (!K.isPressed(K.BTN_LP)) return;
   if (mMenuLevel === 0) { mMenuLevel = 1 + mCursor; mCursor = 0; }
   else if (mMenuLevel === 1) {
@@ -64,7 +73,17 @@ export function titleTick(): void {
     selectBegin();
   } else if (mMenuLevel === 2) {
     if (mCursor === 0) { G.Multi = true; G.WatchMode = false; G.GameMode = MODE_TAG; selectBegin(); }
-    else mNotice = 60;                                    // online: not in the web version yet
+    else { mMenuLevel = 4; mCursor = 0; }
+  } else if (mMenuLevel === 4) {
+    if (mCursor === 0) Online.beginQuickMatch();
+    else if (mCursor === 1) { mMenuLevel = 6; mCursor = 0; }
+    else Online.beginRanking();
+  } else if (mMenuLevel === 6) {
+    if (mCursor === 0) Online.beginRoomCreate();
+    else {
+      const code = window.prompt("Room code (4 letters, shown on your friend's screen):", "") ?? "";
+      if (code.trim()) Online.beginRoomJoin(code);
+    }
   }
 }
 
@@ -97,7 +116,6 @@ export function titleRender(): void {
     }
     Font.drawText(labels[k], cx, y, c, 1, 1);
   }
-  if (mNotice > 0) Font.drawText("ONLINE IS COMING SOON", cx, 85, RGB(255, 140, 70), 1, 1);
   Font.drawText(mMenuLevel === 0 ? "UP DOWN = SELECT    A = OK" : "UP DOWN = SELECT    A = OK    S = BACK", cx, 92, RGB(150, 140, 170), 1, 1);
 }
 
@@ -289,6 +307,11 @@ export function stageTick(): void {
 }
 
 export function stageRender(): void {
+  drawStagePage(mStageSel, "LEFT RIGHT = SELECT  A = FIGHT  S = BACK", true);
+}
+
+export function drawStagePage(sel: number, hint: string, arrows: boolean): void {
+  mStageSel = sel;
   const cx = SCREEN_W / 2;
   R.fillRect(0, 0, SCREEN_W, SCREEN_H, RGB(12, 10, 22));
   Font.drawBig("SELECT STAGE", cx, 2, cGold, 1);
@@ -297,10 +320,12 @@ export function stageRender(): void {
   R.drawRectOutline(x0 - 1, y0 - 1, SCREEN_W / 2 + 2, SCREEN_H / 2 + 2, RGB(60, 44, 20));
   R.drawStageThumb(mStageSel, x0, y0, 2);
   const c = Math.trunc(mMenuTick / 6) % 2 === 0 ? cGold : RGB(120, 90, 40);
-  Font.drawBig("<", x0 - 12, y0 + SCREEN_H / 4 - 7, c, 2);
-  Font.drawBig(">", x0 + SCREEN_W / 2 + 12, y0 + SCREEN_H / 4 - 7, c, 2);
+  if (arrows) {
+    Font.drawBig("<", x0 - 12, y0 + SCREEN_H / 4 - 7, c, 2);
+    Font.drawBig(">", x0 + SCREEN_W / 2 + 12, y0 + SCREEN_H / 4 - 7, c, 2);
+  }
   Font.drawBig(D.StageName[mStageSel], cx, 70, RGB(255, 240, 210), 1);
   for (let k = 0; k < D.StageCount; k++)
     R.fillRect(cx - Math.trunc((D.StageCount * 6) / 2) + k * 6 + 1, 81, 4, 3, k === mStageSel ? cGold : RGB(60, 52, 76));
-  Font.drawText("LEFT RIGHT = SELECT  A = FIGHT  S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+  Font.drawText(hint, cx, 92, RGB(110, 100, 130), 1, 1);
 }

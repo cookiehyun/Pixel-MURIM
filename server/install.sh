@@ -17,13 +17,13 @@ sudo chown "$USER" /var/lib/pixel-murim
 
 sudo tee /etc/systemd/system/pixel-murim.service > /dev/null <<EOF
 [Unit]
-Description=Pixel Murim game server (UDP 47700)
+Description=Pixel Murim game server (UDP 47700, WebSocket 127.0.0.1:47701)
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 User=$USER
-ExecStart=/usr/local/bin/pixel-murim-server --port 47700 --db /var/lib/pixel-murim/players.tsv
+ExecStart=/usr/local/bin/pixel-murim-server --port 47700 --ws-port 47701 --db /var/lib/pixel-murim/players.tsv
 Restart=always
 RestartSec=2
 
