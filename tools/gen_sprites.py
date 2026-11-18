@@ -424,7 +424,13 @@ HEUKRIM = dict(
               torso="b", torso_dark="B", skirt="b", skirt_dark="B",
               belt="d", trim="w", cuff="w"),
     head="heukrim",
+    scabbard=dict(length=10),
 )
+HEUKRIM["palette"].update({"W": "DCE4EC", "Q": "FFFFFF", "y": "B89A50", "m": "3A2430", "r": "8A2AA8", "c": "2A1E1A"})
+
+# Heukrim with the sword drawn (sp1 toggles between the two kits): same body, blade in the front hand
+HEUKRIM_SW = dict(HEUKRIM, name="heukrimsw", weapon=dict(kind="sword", length=10),
+                  scabbard=dict(length=10, empty=True))
 
 CHEONMA = dict(                          # final boss (arcade): the Heavenly Demon
     name="cheonma",
@@ -551,6 +557,40 @@ HEUKRIM_OVERRIDES = {
     "win": P(lean=-10, lf=(20, 2), lb=(-18, -30), af=(150, 30), ab=(20, 40), open_hand=True),   # hand to the face, laughing
 }
 
+# draw / sheathe (sp1, both kits): the hand goes to the hilt at the hip
+HEUKRIM_OVERRIDES["draw_0"] = P(lean=10, lf=(24, 4), lb=(-20, -30), af=(-30, 20), ab=(55, 130), open_hand=True)
+
+HS_GUARD = (45, 105)
+HEUKRIM_SW_OVERRIDES = dict(HEUKRIM_OVERRIDES)
+HEUKRIM_SW_OVERRIDES.update({
+    "idle_0": P(lean=12, lf=(20, 4), lb=(-18, -34), af=HS_GUARD, ab=(55, 130), wa=112),
+    "idle_1": P(lean=13, lf=(21, 5), lb=(-19, -36), af=(43, 102), ab=(53, 126), wa=110),
+    "walk_0": P(lean=14, lf=(22, 5), lb=(-18, -30), af=HS_GUARD, ab=(55, 130), wa=112),
+    "walk_1": P(lean=14, lf=(8, 0), lb=(-5, -40), af=HS_GUARD, ab=(55, 130), wa=112),
+    "walk_2": P(lean=14, lf=(-16, -26), lb=(22, 5), af=HS_GUARD, ab=(55, 130), wa=112),
+    "walk_3": P(lean=14, lf=(-5, -40), lb=(8, 0), af=HS_GUARD, ab=(55, 130), wa=112),
+    "crouch": P(lean=22, lf=CROUCH_F, lb=CROUCH_B, af=(50, 100), wa=105),
+    "jump": P(lean=10, lf=TUCK_F, lb=TUCK_B, af=(40, 120), ground="air", wa=130),
+    "guard": P(lean=-6, lf=(20, 5), lb=(-30, -15), af=(40, 150), ab=(45, 150), wa=172),
+    "cguard": P(lean=12, lf=CROUCH_F, lb=CROUCH_B, af=(45, 150), ab=(55, 150), wa=172),
+    # light: short horizontal cut
+    "lp_0": P(lean=8, af=(25, 60), ab=(55, 130), wa=35),
+    "lp_1": P(lean=20, lf=(30, 2), lb=(-28, -30), af=(94, 94), ab=(40, 120), wa=94, trail=(40, 94)),
+    # heavy: diagonal cut from over the shoulder
+    "hp_0": P(lean=-8, lf=(22, 4), lb=(-20, -30), af=(160, 140), ab=(60, 120), wa=200),
+    "hp_1": P(lean=28, lf=(42, 0), lb=(-42, -40), af=(100, 62), ab=(40, 100), wa=60, trail=(200, 60)),
+    "clp": P(lean=22, lf=CROUCH_F, lb=CROUCH_B, af=(86, 86), wa=86),
+    "chp_0": P(lean=24, lf=CROUCH_F, lb=CROUCH_B, af=(-20, 30), wa=-30),
+    "chp_1": P(lean=2, lf=(45, -5), lb=(10, -50), af=(155, 172), wa=175, trail=(40, 175)),   # rising cut
+    "jp": P(lean=12, lf=TUCK_F, lb=TUCK_B, af=(60, 55), ground="air", wa=45, trail=(170, 45)),
+    "ovh_0": P(lean=-14, lf=(24, 2), lb=(-30, -18), af=(172, 150), ab=(170, 150), wa=210),
+    "ovh_1": P(lean=34, lf=(50, 2), lb=(-50, -42), af=(110, 70), ab=(100, 75), wa=50, trail=(215, 50)),
+    # sheathe: blade turned back toward the scabbard
+    "draw_0": P(lean=10, lf=(24, 4), lb=(-20, -30), af=(-30, 20), ab=(55, 130), wa=-150),
+    "intro": P(lean=4, lf=(18, 2), lb=(-18, -30), af=(60, 160), ab=(80, 165), wa=180),
+    "win": P(lean=-10, lf=(20, 2), lb=(-18, -30), af=(30, 20), ab=(20, 40), wa=-140),
+})
+
 KICK_GUARD_F = (55, 140)
 SEOLHWA_OVERRIDES = {
     "idle_0": P(lean=4, lf=(18, 4), lb=(-26, -10), af=KICK_GUARD_F, ab=(25, 160), open_hand=True),
@@ -661,7 +701,11 @@ MOVE_ANIMS = {
         ("sp2_seq", 2, ["dp_1", "dp_1", "dp_2", "dp_3", "dp_4", "dp_5"]),
     ],
     "heukrim": [
-        ("sp1_pre", 2, ["sp_a", "sp_0"]),
+        ("sp1_pre", 2, ["draw_0"]),
+        ("sp2_pre", 2, ["rush_0", "rush_2"]),
+    ],
+    "heukrimsw": [
+        ("sp1_pre", 2, ["draw_0"]),
         ("sp2_pre", 2, ["rush_0", "rush_2"]),
     ],
     "cheonma": [
@@ -955,6 +999,19 @@ def build(spec, pose):
             if cv.c[ey - 1, ex] == "s":
                 cv.c[ey - 1, ex] = "h"                         # brow
 
+    # scabbard worn at the waist, slanting back and down (Heukrim); the hilt shows while sheathed
+    sc = spec.get("scabbard")
+    if sc:
+        d = dirv(-62)
+        d = (d[0] * math.cos(rot) - d[1] * math.sin(rot), d[0] * math.sin(rot) + d[1] * math.cos(rot))
+        mouth = (pt["hip"][0] + 1.6 * d[0] * -1 + 0.3, pt["hip"][1] - 0.8)
+        end = (mouth[0] + d[0] * sc["length"], mouth[1] + d[1] * sc["length"])
+        cv.put(seg_mask(mouth, end, 0.75), "c")
+        cv.put(seg_mask((end[0] - d[0] * 1.5, end[1] - d[1] * 1.5), end, 0.8), "y")      # chape
+        cv.put(seg_mask((mouth[0] + d[0] * 0.2, mouth[1] + d[1] * 0.2), (mouth[0] + d[0] * 1.2, mouth[1] + d[1] * 1.2), 0.9), "y")
+        if not sc.get("empty"):
+            cv.put(seg_mask(mouth, (mouth[0] - d[0] * 3.2, mouth[1] - d[1] * 3.2), 0.7), "m")   # hilt
+
     # front arm last (on top), with inner outline
     draw_arm(pt["eF"], pt["hF"], lk["arm_front"], lk["arm_front2"], True)
 
@@ -1185,7 +1242,7 @@ def generate(spec, overrides):
 if __name__ == "__main__":
     only = os.environ.get("ONLY")
     for spec, ov in ((DANWOO, DANWOO_OVERRIDES), (CHEOLSAN, CHEOLSAN_OVERRIDES), (MUYEONG, MUYEONG_OVERRIDES),
-                     (SEOLHWA, SEOLHWA_OVERRIDES), (HEUKRIM, HEUKRIM_OVERRIDES),
+                     (SEOLHWA, SEOLHWA_OVERRIDES), (HEUKRIM, HEUKRIM_OVERRIDES), (HEUKRIM_SW, HEUKRIM_SW_OVERRIDES),
                      (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES)):
         if only and spec["name"] != only:
             continue

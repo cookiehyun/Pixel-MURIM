@@ -117,7 +117,7 @@ P는 A 또는 S, K는 Z 또는 X입니다. →는 상대가 있는 쪽입니다.
 | 철산 | 잡기 | →↓←P 금강파쇄 (커맨드 잡기) | ↓↘→P 철산고 (돌진) | ↓→↓→P 나한복마 (4연타 후 내리꽂기) |
 | 무영 | 검객 | ↓↘→P 검기 (칼바람) | ↓↙←P 섬광참 (돌진 베기) | ↓→↓→P 만검귀종 (연속 베기) |
 | 설화 | 발차기 | ↓↙←K 연환비각 (3연타 돌진) | →↓↘K 선풍각 (공중제비 대공) | ↓→↓→K 낙화유수 (연속 차기) |
-| 흑림 | 견제 | ↓↘→P 흑사침 (독침) | ↓↙←K 귀영보 (등 뒤로 순간이동) | ↓→↓→P 천마강림 (순간이동 장법) |
+| 흑림 | 변칙 | ↓↘→P 발도 (허리춤의 칼을 뽑는다. 다시 쓰면 칼집에 넣는다. 칼을 든 동안 펀치가 칼베기로 바뀌어 손이 조금 길어지고 데미지는 조금 약해진다) | ↓↙←K 귀영보 (등 뒤로 순간이동) | ↓→↓→P 천마강림 (순간이동 장법) |
 | 홍련 | 부채 | ↓↘→P 부채 던지기 (돌아오는 부채) | →↓↘K 연화선 (회전 차기) | ↓→↓→P 홍련업화 (상대 발밑 불기둥) |
 | 천마 | 근거리 압박 (아케이드를 깨면 열림) | ↓↘→P 마공장 (빨간 손바닥을 뻗는 돌진 장법) | →↓←P 흡성대법 (가까운 상대를 그 자리에 묶어 기를 빨아들임: 데미지, 내공 흡수, 체력 회복) | ↓→↓→P 천마군림 (상대 몸 주변에서 마기 폭발 4연타) |
 
@@ -137,9 +137,9 @@ P는 A 또는 S, K는 Z 또는 X입니다. →는 상대가 있는 쪽입니다.
 |---|---|---|---|---|---|---|---|
 | A → A → S | 150 | 200 | 135 | 105 | 140 | 136 | 175 |
 | ↓Z → ↓X (다리 쓸기, 다운) | 120 | 150 | 118 | 101 | 132 | 118 | 150 |
-| S → 필살기1 | 175 | - | 145 | 146 | 145 | 150 | 180 |
+| S → 필살기1 | 175 | - | 145 | 146 | - | 150 | 180 |
 | S → 필살기2 | 200 | 240 | 185 | 150 | - | 170 | - |
-| A → A → 필살기1 | 137 | - | 110 | 112 | 119 | 123 | 138 |
+| A → A → 필살기1 | 137 | - | 110 | 112 | - | 123 | 138 |
 | A → A → 필살기2 | 170 | 183 | 140 | 117 | - | 146 | - |
 | S → 궁극기 | 390 | - | 415 | 365 | 400 | 330 | 475 |
 | 점프 X → (착지) A → S | 170 | - | - | - | - | - | - |
@@ -241,7 +241,7 @@ P is A or S, K is Z or X. → means toward the opponent.
 | Cheolsan | Grappler | →↓←P Geumgang Pashwae (command grab) | ↓↘→P Cheolsango (shoulder rush) | ↓→↓→P Nahan Bokma (4 hits, then a slam) |
 | Muyeong | Swordsman | ↓↘→P Geomgi (sword wave) | ↓↙←P Seomgwangcham (dash slash) | ↓→↓→P Mangeom Gwijong (flurry of cuts) |
 | Seolhwa | Kicker | ↓↙←K Yeonhwan Bigak (3-hit rush) | →↓↘K Seonpunggak (flip kick) | ↓→↓→K Nakhwa Yusu (kick barrage) |
-| Heukrim | Zoner | ↓↘→P Heuksachim (poison needles) | ↓↙←K Gwiyeongbo (teleport behind) | ↓→↓→P Cheonma Gangrim (teleport palm) |
+| Heukrim | Trickster | ↓↘→P Draw (draws the sword at his hip; use again to sheathe. While drawn, punches become slashes: a bit more reach, a bit less damage) | ↓↙←K Gwiyeongbo (teleport behind) | ↓→↓→P Cheonma Gangrim (teleport palm) |
 | Hongryeon | Fans | ↓↘→P Fan throw (comes back) | →↓↘K Yeonhwaseon (spinning kick) | ↓→↓→P Hongryeon Eophwa (fire pillar under the opponent) |
 | Cheonma | Close-range pressure (unlocked by clearing arcade) | ↓↘→P Demon palm (lunging palm with a red palm projection) | →↓←P Heupseong daebeop (holds a nearby opponent stunned and drains damage, naegong and health) | ↓→↓→P Cheonma Gunrim (4 demon blasts around the opponent's body) |
 
@@ -261,9 +261,9 @@ A light attack (A·Z, standing or crouching) can chain into another normal, up t
 |---|---|---|---|---|---|---|---|
 | A → A → S | 150 | 200 | 135 | 105 | 140 | 136 | 175 |
 | ↓Z → ↓X (sweep, knockdown) | 120 | 150 | 118 | 101 | 132 | 118 | 150 |
-| S → special 1 | 175 | - | 145 | 146 | 145 | 150 | 180 |
+| S → special 1 | 175 | - | 145 | 146 | - | 150 | 180 |
 | S → special 2 | 200 | 240 | 185 | 150 | - | 170 | - |
-| A → A → special 1 | 137 | - | 110 | 112 | 119 | 123 | 138 |
+| A → A → special 1 | 137 | - | 110 | 112 | - | 123 | 138 |
 | A → A → special 2 | 170 | 183 | 140 | 117 | - | 146 | - |
 | S → super | 390 | - | 415 | 365 | 400 | 330 | 475 |
 | Jump X → (land) A → S | 170 | - | - | - | - | - | - |

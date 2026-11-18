@@ -81,6 +81,8 @@ Private Const SS_END As Long = 40        ' super slash sequence length
 
 Public Type TFighter
     prefix As String
+    kit As String            ' sprite / move set in use: prefix, or prefix & "sw" with the sword drawn (Heukrim)
+    armed As Boolean
     state As Long
     stTick As Long           ' ticks since entering the state
     x As Double              ' anchor x (center under hip)
@@ -265,8 +267,6 @@ End Sub
 Private Sub Setup(ByVal i As Long, ByVal prefix As String, ByVal x As Double, ByVal walkSpeed As Double, _
                   ByVal dashSpeed As Double, ByVal jumpVY As Double, ByVal jumpVX As Double, ByVal halfW As Double, _
                   ByVal maxHealth As Long, ByVal hurtH As Long, ByVal hurtHC As Long)
-    Dim names As Variant, k As Long, a As Long, b As Long, t As Long
-    names = Array("lp", "hp", "lk", "hk", "clp", "chp", "clk", "chk", "jp", "jk", "throw", "sp1", "sp2", "super", "ovh")
     With F(i)
         .prefix = prefix
         .startX = x
@@ -278,6 +278,19 @@ Private Sub Setup(ByVal i As Long, ByVal prefix As String, ByVal x As Double, By
         .maxHealth = maxHealth
         .hurtH = hurtH
         .hurtHC = hurtHC
+        .armed = False
+    End With
+    LoadKit i, prefix
+    ResetOne i
+End Sub
+
+' Sprite and move ids for the given set (Heukrim: "heukrim" with fists, "heukrimsw" with the sword drawn).
+Private Sub LoadKit(ByVal i As Long, ByVal kit As String)
+    Dim names As Variant, k As Long, a As Long, b As Long, t As Long, prefix As String
+    names = Array("lp", "hp", "lk", "hk", "clp", "chp", "clk", "chk", "jp", "jk", "throw", "sp1", "sp2", "super", "ovh")
+    prefix = kit
+    With F(i)
+        .kit = kit
         .aIdle = Data.AnimId(prefix & ".idle")
         .aWalk = Data.AnimId(prefix & ".walk")
         .sCrouch = Data.SpriteId(prefix & ".crouch")
@@ -315,13 +328,14 @@ Private Sub Setup(ByVal i As Long, ByVal prefix As String, ByVal x As Double, By
             Next b
         Next a
     End With
-    ResetOne i
 End Sub
 
 ' Field-by-field copy (plain UDT assignment is not a reliable deep copy in every VBA host).
 Public Sub CopyFighter(dst As TFighter, src As TFighter)
     Dim k As Long
     dst.prefix = src.prefix
+    dst.kit = src.kit
+    dst.armed = src.armed
     dst.state = src.state
     dst.stTick = src.stTick
     dst.x = src.x
@@ -414,6 +428,10 @@ End Sub
 
 Private Sub ResetOne(ByVal i As Long)
     Dim k As Long
+    If F(i).armed Then                                  ' every round starts with the sword sheathed
+        F(i).armed = False
+        LoadKit i, F(i).prefix
+    End If
     mGN(i) = 0
     mPose(i) = -1
     mAwakeShown(i) = False
@@ -511,6 +529,7 @@ Public Function StateHash() As Long
             h = HashMix(h, .health): h = HashMix(h, .state): h = HashMix(h, .stTick)
             h = HashMix(h, .meter): h = HashMix(h, .naegong): h = HashMix(h, .facing)
             h = HashMix(h, .mv): h = HashMix(h, .downPhase): h = HashMix(h, .stun)
+            h = HashMix(h, Len(.kit))
         End With
     Next i
     If Tag.Active Then                                     ' resting partners too
@@ -907,6 +926,8 @@ Private Sub UpdateAttack(ByVal i As Long, ByVal d As Boolean)
             If t = Data.MvStartup(.mv) Then
                 If TryGrab(i, .mv) Then Exit Sub
             End If
+        Case MT_STANCE
+            If t = Data.MvStartup(.mv) Then ToggleArms i
         Case MT_SUPER_QUAKE
             If t = Data.MvStartup(.mv) Then
                 Combat.ShowText .superName, 40, i
@@ -1398,7 +1419,7 @@ Public Function HitRect(ByVal i As Long, x0 As Long, y0 As Long, w As Long, h As
         mv = .mv
         mt = Data.MvType(mv)
         If mt = MT_PROJ Or mt = MT_SUPER_PROJ Or mt = MT_GRAB Or mt = MT_SUPER_GRAB Or mt = MT_THROW Then Exit Function
-        If mt = MT_PROJ_BOOM Or mt = MT_SUPER_FIRE Or mt = MT_TELEPORT Then Exit Function
+        If mt = MT_PROJ_BOOM Or mt = MT_SUPER_FIRE Or mt = MT_TELEPORT Or mt = MT_STANCE Then Exit Function
         w = Data.MvHbW(mv): h = Data.MvHbH(mv)
         If .facing > 0 Then
             x0 = Int(.x + 0.5) + Data.MvHbX(mv)
@@ -1717,6 +1738,21 @@ Private Sub DrawDemonPalm(ByVal i As Long)
             End If
         Next c
     Next r
+End Sub
+
+' Draw / sheathe (Heukrim's sp1): switch to the other move and sprite set. The current move keeps
+' running to its end; the next one comes from the new set.
+Private Sub ToggleArms(ByVal i As Long)
+    Dim cur As Long
+    cur = F(i).mv
+    F(i).armed = Not F(i).armed
+    If F(i).armed Then
+        LoadKit i, F(i).prefix & "sw"
+    Else
+        LoadKit i, F(i).prefix
+    End If
+    F(i).mv = cur
+    FX.Spawn Int(F(i).x + 0.5) + F(i).facing * 6, Int(F(i).footY) - 18, FX_BLOCK
 End Sub
 
 ' Danwoo's cheongpungjang (sp1): Cheonma's lunging palm, but a smaller hand in wind blue.

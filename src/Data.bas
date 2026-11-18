@@ -61,6 +61,7 @@ Public Const MT_SUPER_TELE As Long = 10     ' teleport, then a strike; on hit ->
 Public Const MT_PROJ_BOOM As Long = 11      ' projectile that flies out and returns (one hit each way)
 Public Const MT_SUPER_FIRE As Long = 12     ' fire pillar erupting under the opponent (p2 = hits)
 Public Const MT_SUPER_QUAKE As Long = 13    ' ground slam: shockwave on both sides, hurls the opponent away
+Public Const MT_STANCE As Long = 14         ' draw / sheathe: switches the fighter to the <prefix>sw move set and back
 
 Private mSprIdx As Collection
 Private mAnimIdx As Collection
@@ -83,6 +84,7 @@ Public Sub LoadAll()
     LoadSpriteFile "muyeong"
     LoadSpriteFile "seolhwa"
     LoadSpriteFile "heukrim"
+    LoadSpriteFile "heukrimsw"                     ' Heukrim with the sword drawn
     LoadSpriteFile "hongryeon"
     LoadSpriteFile "cheonma"                       ' arcade final boss (not on the select screen)
     LoadSpriteFile "fx"
@@ -354,6 +356,7 @@ Private Sub LoadMoves()
                 Case "PB": MvType(id) = MT_PROJ_BOOM
                 Case "SF": MvType(id) = MT_SUPER_FIRE
                 Case "SQ": MvType(id) = MT_SUPER_QUAKE
+                Case "SW": MvType(id) = MT_STANCE
                 Case Else: MvType(id) = MT_NORMAL
             End Select
             MvP1(id) = Val(p(18))

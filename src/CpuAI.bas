@@ -200,6 +200,14 @@ Public Sub Think(ByVal i As Long)
         If .state <> ST_JUMP Then mAirDecided(i) = False
         If .state <> ST_DOWN Then mDownDecided(i) = False: mWakeDecided(i) = False
 
+        ' Heukrim: draw the sword when there is room (and now and then sheathe it again up close)
+        If .prefix = "heukrim" And (.state = ST_IDLE Or .state = ST_WALK) Then
+            If (Not .armed And dist > 26 And Rnd < 0.1) Or (.armed And dist < 16 And Rnd < 0.005) Then
+                QSpecial i, MV_SP1, False
+                Exit Sub
+            End If
+        End If
+
         Select Case .state
         Case ST_THROWN
             If Not mTechDecided(i) Then
@@ -471,9 +479,7 @@ End Function
 ' How much this fighter's CPU prefers to keep distance and throw projectiles (0 = rush down).
 Private Function Zoner(ByVal i As Long) As Double
     Select Case Fighter.F(i).prefix
-    Case "heukrim": Zoner = 1#
     Case "hongryeon": Zoner = 0.7
-    Case "danwoo": Zoner = 0.3
     Case Else: Zoner = 0
     End Select
 End Function

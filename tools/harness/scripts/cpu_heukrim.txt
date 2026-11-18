@@ -1,0 +1,3 @@
+CMD start 0 2 1 7
+CMD chars heukrim muyeong
+900 -

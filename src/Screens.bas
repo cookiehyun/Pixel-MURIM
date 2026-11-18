@@ -39,7 +39,7 @@ Public Sub Init()
     rStat(2, 0) = 2: rStat(2, 1) = 3: rStat(2, 2) = 5: rStat(2, 3) = 2: rStat(2, 4) = 3: rHeadX(2) = 2: rHeadY(2) = -31
     rPrefix(3) = "seolhwa": rName(3) = "SEOLHWA": rStyle(3) = "SPEED KICKER"
     rStat(3, 0) = 1: rStat(3, 1) = 4: rStat(3, 2) = 1: rStat(3, 3) = 1: rStat(3, 4) = 5: rHeadX(3) = 1: rHeadY(3) = -30
-    rPrefix(4) = "heukrim": rName(4) = "HEUKRIM": rStyle(4) = "ZONER"
+    rPrefix(4) = "heukrim": rName(4) = "HEUKRIM": rStyle(4) = "TRICKSTER"
     rStat(4, 0) = 3: rStat(4, 1) = 4: rStat(4, 2) = 4: rStat(4, 3) = 3: rStat(4, 4) = 2: rHeadX(4) = 4: rHeadY(4) = -32
     rPrefix(5) = "hongryeon": rName(5) = "HONGRYEON": rStyle(5) = "FAN DANCER"
     rStat(5, 0) = 2: rStat(5, 1) = 4: rStat(5, 2) = 4: rStat(5, 3) = 3: rStat(5, 4) = 5: rHeadX(5) = 1: rHeadY(5) = -30
