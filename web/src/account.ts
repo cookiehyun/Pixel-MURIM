@@ -3,8 +3,8 @@
 // game-server key (the ranking follows the account to any device) and save data.
 // Setup: run web/supabase.sql in the Supabase SQL editor, then fill in the two values below.
 
-const SUPABASE_URL_DEFAULT = "";          // https://xxxx.supabase.co
-const SUPABASE_KEY_DEFAULT = "";          // anon / publishable key (public by design; never the service_role key)
+const SUPABASE_URL_DEFAULT = "https://htvrqosrohofaypqexru.supabase.co";
+const SUPABASE_KEY_DEFAULT = "sb_publishable_6jGB5bDAR6UvqEy29smZfw_VVgJrqoy";   // publishable key: public by design (never the secret key)
 // tests can point the page at a mock: ?sb=<url>&sbkey=<key>
 const q = new URLSearchParams(location.search);
 const SUPABASE_URL = q.get("sb") || SUPABASE_URL_DEFAULT;
@@ -32,7 +32,7 @@ function lsSet(k: string, v: string): void { try { if (v) localStorage.setItem(k
 
 async function call(path: string, body: unknown, method = "POST", auth = false, extra: Record<string, string> = {}): Promise<unknown> {
   const h: Record<string, string> = { apikey: SUPABASE_KEY, "Content-Type": "application/json", ...extra };
-  h.Authorization = "Bearer " + (auth && session ? session.access : SUPABASE_KEY);
+  if (auth && session) h.Authorization = "Bearer " + session.access;   // publishable keys are not JWTs: apikey alone otherwise
   const r = await fetch(SUPABASE_URL + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
   const text = await r.text();
   const data = text ? JSON.parse(text) : null;
