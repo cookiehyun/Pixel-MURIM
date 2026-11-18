@@ -25,7 +25,7 @@ export const MK_STAND = 0, MK_CROUCH = 1, MK_AIR = 2;
 export const LV_HIGH = 0, LV_LOW = 1, LV_OVERHEAD = 2, LV_UNBLOCK = 3;
 export const MT_NORMAL = 0, MT_THROW = 1, MT_PROJ = 2, MT_RISE = 3, MT_RUSH = 4, MT_GRAB = 5, MT_SUPER_PROJ = 6,
   MT_SUPER_GRAB = 7, MT_SUPER_RUSH = 8, MT_TELEPORT = 9, MT_SUPER_TELE = 10, MT_PROJ_BOOM = 11, MT_SUPER_FIRE = 12,
-  MT_SUPER_QUAKE = 13, MT_STANCE = 14;
+  MT_SUPER_QUAKE = 13, MT_STANCE = 14, MT_RAGE = 15, MT_SUPER_RIFT = 16;
 
 const sprIdx = new Map<string, number>();
 const animIdx = new Map<string, number>();
@@ -44,7 +44,7 @@ function hexColor(hx: string): number {
   return RGB(parseInt(hx.slice(0, 2), 16), parseInt(hx.slice(2, 4), 16), parseInt(hx.slice(4, 6), 16));
 }
 
-const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "hongryeon", "cheonma", "fx"];
+const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "fx"];
 const STAGES = ["sanmun", "MOUNTAIN GATE", "bamboo", "BAMBOO FOREST", "inn", "NIGHT INN", "snow", "SNOW PEAK", "waterfall", "WATERFALL"];
 
 export async function loadAll(): Promise<void> {
@@ -174,7 +174,7 @@ function loadMoves(): void {
     D.MvSprA[id] = spriteId(p[0] + "." + p[16]);
     D.MvType[id] = ({ T: MT_THROW, P: MT_PROJ, U: MT_RISE, R: MT_RUSH, G: MT_GRAB, SP: MT_SUPER_PROJ, SG: MT_SUPER_GRAB,
       SR: MT_SUPER_RUSH, TP: MT_TELEPORT, ST: MT_SUPER_TELE, PB: MT_PROJ_BOOM, SF: MT_SUPER_FIRE, SQ: MT_SUPER_QUAKE,
-      SW: MT_STANCE } as Record<string, number>)[p[17]] ?? MT_NORMAL;
+      SW: MT_STANCE, BK: MT_RAGE, SV: MT_SUPER_RIFT } as Record<string, number>)[p[17]] ?? MT_NORMAL;
     D.MvP1[id] = parseFloat(p[18]) || 0;
     D.MvP2[id] = parseFloat(p[19]) || 0;
     D.MvCmd[id] = p[20] === "-" ? "" : p[20];

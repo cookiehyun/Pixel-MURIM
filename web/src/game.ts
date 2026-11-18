@@ -125,6 +125,7 @@ export function gameRender(): void {
         FX.draw();
         Hud.draw();
         Match.draw();
+        if (C.WhiteFlash > 1) R.flashScreen(RGB(250, 246, 255));
         if (mPaused) pauseRender();
       }
   }

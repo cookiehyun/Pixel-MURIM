@@ -2,7 +2,7 @@
 import {
   D, animId, spriteId, moveId, hasSprite, animFrame, animFrameHold,
   MT_NORMAL, MT_THROW, MT_PROJ, MT_RISE, MT_RUSH, MT_GRAB, MT_SUPER_PROJ, MT_SUPER_GRAB, MT_SUPER_RUSH,
-  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE,
+  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT,
 } from "./data";
 import * as R from "./renderer";
 import { GROUND_Y, SCREEN_W } from "./renderer";
@@ -29,6 +29,7 @@ const GRAVITY = 0.5, BACK_WALK = 0.75, GUARD_RANGE = 60, DOWN_LIE_TICKS = 16, GE
 const ROLL_SPEED = 3.5, WAKE_THROW_INV = 6, DRAIN_NG = 400, DRAIN_FIRST = 4, DRAIN_EVERY = 5, DRAIN_PULSES = 4;
 const DRAIN_RELEASE = 26, DUMMY_INTERVAL = 30, BUF_TICKS = 5, MAX_CHAIN = 3, HIST_LEN = 32, MOTION_WINDOW = 12;
 const SUPER_WINDOW = 20, DASH_TICKS = 6, TECH_WINDOW = 3, SG_END = 46, SS_END = 40;
+const RAGE_SPEED = 1.35, RIFT_CUTS = 5, RIFT_BREAK = 26, RIFT_END = 40, FLURRY_KICKS = 7, FLURRY_END = 38;
 
 export class TFighter {
   prefix = ""; kit = ""; armed = false;
@@ -42,7 +43,8 @@ export class TFighter {
   aIdle = 0; aWalk = 0; sCrouch = 0; sJump = 0; sGuard = 0; sCGuard = 0; sHit0 = 0; sHit1 = 0; sCHit = 0;
   sDown0 = 0; sDown1 = 0; sRoll0 = 0; sRoll1 = 0; sRoll2 = 0; sRoll3 = 0; sDash = 0; sBDash = 0;
   sPunchA = 0; sPunchB = 0; sLift = 0; sSlam = 0; sSlashA = 0; sSlashB = 0; sSlashC = 0;
-  seqFx = 0; superName = ""; hitCount = 0;
+  seqFx = 0; superName = ""; sp1Name = ""; hitCount = 0;
+  rage = 0; cineSpr = -1; cineX0 = 0; cineCX = 0; cineCY = 0;
   moves: number[] = new Array(15).fill(0);
   spOrder: number[] = [0, 0, 0];
 }
@@ -54,7 +56,7 @@ const GHOSTS = 4;
 const mGX = [[0, 0, 0, 0], [0, 0, 0, 0]], mGY = [[0, 0, 0, 0], [0, 0, 0, 0]], mGId = [[0, 0, 0, 0], [0, 0, 0, 0]];
 const mGFlip = [[false, false, false, false], [false, false, false, false]];
 const mGN = [0, 0], mPose = [-1, -1], mAwakeShown = [false, false];
-let mFrame = 0;
+let mFrame = 0, mDraw = 0;
 
 export function init(c0: string, c1: string, humanIndex: number): void {
   setupCharacter(0, c0, 72);
@@ -86,8 +88,8 @@ function setupCharacter(i: number, prefix: string, x: number): void {
   const f = F[i];
   f.seqFx = FX.FX_SLASH;
   switch (f.prefix) {
-    case "cheolsan": f.superName = "NAHAN BOKMA"; break;
-    case "muyeong": f.superName = "MANGEOM GWIJONG"; break;
+    case "cheolsan": f.superName = "GEUMGANG BUNNO"; f.sp1Name = "NAHAN BOKMA"; break;
+    case "muyeong": f.superName = "MUYEONG CHAMGONG"; f.sp1Name = "MANGEOM GWIJONG"; break;
     case "seolhwa":
       f.superName = "NAKHWA YUSU"; f.seqFx = FX.FX_HIT;
       f.sSlashA = spriteId("seolhwa.hk_1"); f.sSlashB = spriteId("seolhwa.lk_1"); f.sSlashC = spriteId("seolhwa.rush_1");
@@ -152,6 +154,7 @@ function resetOne(i: number): void {
   f.x = f.startX; f.footY = GROUND_Y; f.vx = 0; f.vy = 0; f.slide = 0; f.onGround = true; f.crouch = false;
   f.facing = i === 0 ? 1 : -1;
   f.health = f.maxHealth; f.healthShown = f.maxHealth; f.redCap = f.maxHealth; f.trailDelay = 0;
+  f.rage = 0; f.cineSpr = -1;
   f.stun = 0; f.wakeInv = 0; f.rollDir = 0; f.flash = 0; f.bufAtk = -1; f.bufDash = 0; f.chain = 0; f.meter = 0;
   f.naegong = NAEGONG_MAX; f.ngFlash = 0; f.inDir = 5; f.inPress = 0; f.inHeld = 0;
   f.hist.fill(5);
@@ -204,7 +207,7 @@ export function stateHash(): number {
     h = hashMix(h, f.health); h = hashMix(h, f.state); h = hashMix(h, f.stTick);
     h = hashMix(h, f.meter); h = hashMix(h, f.naegong); h = hashMix(h, f.facing);
     h = hashMix(h, f.mv); h = hashMix(h, f.downPhase); h = hashMix(h, f.stun);
-    h = hashMix(h, f.kit.length);
+    h = hashMix(h, f.kit.length); h = hashMix(h, f.rage);
   }
   if (Tag.active()) for (let i = 2; i <= 3; i++) {
     h = hashMix(h, F[i].health); h = hashMix(h, F[i].naegong); h = hashMix(h, F[i].redCap); h = hashMix(h, F[i].prefix.length);
@@ -347,6 +350,14 @@ function updateFighter(i: number): void {
   }
   if (f.ngFlash > 0) f.ngFlash--;
   if (f.wakeInv > 0) f.wakeInv--;
+  if (f.rage > 0) {
+    f.rage--;
+    if (f.state === ST_ATTACK && f.onGround) {            // berserk: half recovery, faster startup
+      const s = D.MvStartup[f.mv], a = D.MvActive[f.mv];
+      if (f.stTick >= s + a) f.stTick++;
+      else if (f.stTick + 1 < s && mFrame % 2 === 0) f.stTick++;
+    }
+  }
   if (f.slide !== 0) {
     f.x += f.slide;
     f.slide *= 0.6;
@@ -405,6 +416,8 @@ function updateFighter(i: number): void {
     case ST_THROW: {
       const mt = D.MvType[f.mv];
       if (mt === MT_SUPER_GRAB) superGrabStep(i);
+      else if (mt === MT_SUPER_RIFT) riftStep(i);
+      else if (mt === MT_SUPER_RUSH && f.prefix === "seolhwa" && f.mv === f.moves[MV_SUPER]) flurryStep(i);
       else if (mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE) superSlashStep(i);
       else if (isDrain(i)) drainStep(i);
       else if (f.stTick === D.MvStartup[f.mv]) {
@@ -453,6 +466,16 @@ function updateAttack(i: number, d: boolean): void {
       break;
     case MT_STANCE:
       if (t === D.MvStartup[f.mv]) toggleArms(i);
+      break;
+    case MT_RAGE:
+      if (t === D.MvStartup[f.mv]) {
+        f.rage = D.MvP1[f.mv];
+        Combat.showText(f.superName, 40, i);
+        FX.spawn(vint(f.x + 0.5), vint(f.footY) - 20, FX.FX_HEAVY);
+      }
+      break;
+    case MT_SUPER_RIFT:
+      if (t === D.MvStartup[f.mv]) riftDash(i);
       break;
     case MT_SUPER_QUAKE:
       if (t === D.MvStartup[f.mv]) {
@@ -504,7 +527,7 @@ function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boole
   if (atk >= 0 && startAttack(i, atk, d, false)) return;
   if (f.bufDash !== 0) {
     f.backward = f.bufDash < 0;
-    f.vx = f.facing * f.dashSpeed * f.bufDash;
+    f.vx = f.facing * f.dashSpeed * f.bufDash * (f.rage > 0 ? RAGE_SPEED : 1);
     f.bufDash = 0;
     setState(i, ST_DASH);
   } else if (u) {
@@ -518,8 +541,9 @@ function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boole
   else if (fwd || back) {
     f.backward = back;
     setState(i, ST_WALK);
-    if (back) f.x -= f.facing * f.walkSpeed * BACK_WALK;
-    else f.x += f.facing * f.walkSpeed;
+    const k = f.rage > 0 ? RAGE_SPEED : 1;
+    if (back) f.x -= f.facing * f.walkSpeed * BACK_WALK * k;
+    else f.x += f.facing * f.walkSpeed * k;
   } else setState(i, ST_IDLE);
 }
 
@@ -598,7 +622,7 @@ function superGrabStep(i: number): void {
     FX.spawn(vint(F[o].x + 0.5) - 8, GROUND_Y - 6, FX.FX_HEAVY);
     FX.spawn(vint(F[o].x + 0.5) + 8, GROUND_Y - 6, FX.FX_HEAVY);
     Combat.C.HitStop = 8;
-    Combat.showText(f.superName, 40, i);
+    Combat.showText(moveName(i), 40, i);
   }
   if (t >= 22 && t < 34 && F[o].state === ST_THROWN) {
     F[o].x = f.x + f.facing * (t < 30 ? 3 : 3 + (t - 29) * 4);
@@ -629,6 +653,7 @@ export function startSuperSlash(a: number, d: number): void {
   setState(a, ST_THROW);
   setState(d, ST_THROWN);
   F[d].crouch = false; F[d].bufAtk = -1; F[d].footY = GROUND_Y; F[d].onGround = true;
+  F[a].cineCX = vint(F[d].x + 0.5); F[a].cineCY = GROUND_Y - 20;
 }
 
 function superSlashStep(i: number): void {
@@ -646,7 +671,7 @@ function superSlashStep(i: number): void {
     F[o].flash = 2;
     FX.spawn(cx, cy, f.seqFx); FX.spawn(cx, cy - 4, FX.FX_HEAVY); FX.spawn(cx, cy + 4, FX.FX_HEAVY);
     Combat.C.HitStop = 8;
-    Combat.showText(f.superName, 40, i);
+    Combat.showText(moveName(i), 40, i);
   }
   if (t >= SS_END) setState(i, ST_IDLE);
 }
@@ -702,6 +727,7 @@ export function setState(i: number, st: number): void {
   const f = F[i];
   if (f.state !== st || st === ST_ATTACK || st === ST_HIT || st === ST_DOWN || st === ST_THROW || st === ST_DASH) f.stTick = 0;
   f.state = st;
+  f.cineSpr = -1;
   if (st === ST_CROUCH) f.crouch = true;
   if (st === ST_IDLE || st === ST_WALK || st === ST_JUMP || st === ST_DASH) f.crouch = false;
 }
@@ -793,6 +819,7 @@ export function hitRect(i: number): Box | null {
   const f = F[i], mv = f.mv, mt = D.MvType[mv];
   if (mt === MT_PROJ || mt === MT_SUPER_PROJ || mt === MT_GRAB || mt === MT_SUPER_GRAB || mt === MT_THROW) return null;
   if (mt === MT_PROJ_BOOM || mt === MT_SUPER_FIRE || mt === MT_TELEPORT || mt === MT_STANCE) return null;
+  if (mt === MT_RAGE || mt === MT_SUPER_RIFT) return null;
   const w = D.MvHbW[mv], h = D.MvHbH[mv];
   const x = f.facing > 0 ? vint(f.x + 0.5) + D.MvHbX[mv] : vint(f.x + 0.5) - D.MvHbX[mv] - w + 1;
   return { x, y: vint(f.footY + 0.5) + D.MvHbY[mv], w, h };
@@ -815,6 +842,13 @@ export function draw(): void {
   drawGhosts(mControl);
   drawOne(1 - mControl);
   drawOne(mControl);
+  mDraw++;
+  for (let i = 0; i <= 1; i++) {
+    if (F[i].state === ST_THROW && D.MvType[F[i].mv] === MT_SUPER_RIFT) drawRifts(i);
+    if (F[i].state === ST_THROW && F[i].prefix === "seolhwa" && F[i].mv === F[i].moves[MV_SUPER]) drawFlurry(i);
+    if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_SUPER_RIFT) drawRiftStreak(i, F[i].stTick - D.MvStartup[F[i].mv]);
+    if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE) drawRoar(i);
+  }
   for (let i = 0; i <= 1; i++) {
     if (isDrain(i)) drawDrainOrbs(i);
     const f = F[i];
@@ -836,6 +870,7 @@ export function setPose(i: number, nm: string): void {
 export function clearGhosts(i: number): void { mGN[i] = 0; }
 
 function ghostColor(i: number): number {
+  if (F[i].rage > 0) return RGB(150, 24, 18);
   return F[i].prefix === "heukrim" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(96, 30, 40) : -1;
 }
 
@@ -846,7 +881,7 @@ function updateGhosts(i: number): void {
   if (f.state === ST_DASH || f.state === ST_JUMP) want = true;
   else if (f.state === ST_ATTACK) {
     const mt = D.MvType[f.mv];
-    want = mt === MT_TELEPORT || mt === MT_SUPER_TELE || !f.onGround;
+    want = mt === MT_TELEPORT || mt === MT_SUPER_TELE || !f.onGround || (f.rage > 0 && (mt === MT_RUSH || mt === MT_SUPER_RUSH));
   }
   if (want) {
     for (let k = GHOSTS - 1; k >= 1; k--) {
@@ -865,6 +900,7 @@ function drawGhosts(i: number): void {
 
 export function currentSprite(i: number): number {
   const f = F[i], t = f.stTick;
+  if (f.cineSpr >= 0) return f.cineSpr;
   if (mPose[i] >= 0 && f.onGround && (f.state === ST_IDLE || f.state === ST_WALK || f.state === ST_CROUCH)) return mPose[i];
   switch (f.state) {
     case ST_IDLE: return animFrame(f.aIdle, t);
@@ -933,6 +969,13 @@ function drawOne(i: number): void {
   const f = F[i];
   const tint = f.flash > 0 ? RGB(255, 255, 255) : -1;
   const x = vint(f.x + 0.5), y = vint(f.footY + 0.5), flip = f.facing < 0;
+  if (rageShown(i)) {
+    const id = rageSprite(currentSprite(i));
+    drawRageAura(i, id, x, y, flip);
+    R.drawSprite(id, x, y, flip, tint);
+    drawSteam(x + f.facing * 2, y - 36);
+    return;
+  }
   if ((demonAwake(i) || drainLinked(i)) && tint < 0) {
     if (Math.trunc(mFrame / 2) % 2 === 0 || drainLinked(i)) {
       const red = RGB(200, 30, 50);
@@ -1108,4 +1151,240 @@ function drawBoxes(i: number): void {
   if (u) R.drawRectOutline(u.x, u.y, u.w, u.h, RGB(60, 255, 120));
   const h = hitRect(i);
   if (h) R.drawRectOutline(h.x, h.y, h.w, h.h, RGB(255, 40, 40));
+}
+
+// ---------------------------------------------------------------- new supers (web version)
+
+/** Name shown for the special in progress: sp1 has its own name when the character has one. */
+function moveName(i: number): string {
+  const f = F[i];
+  return f.mv === f.moves[MV_SP1] && f.sp1Name ? f.sp1Name : f.superName;
+}
+
+export const raging = (i: number) => F[i].rage > 0;
+const rageShown = (i: number) => F[i].prefix === "cheolsan" && (F[i].rage > 0 || (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE));
+
+const rageMap = new Map<number, number>();
+function rageSprite(id: number): number {
+  let r = rageMap.get(id);
+  if (r === undefined) {
+    const nm = D.SprName[id];
+    r = nm.startsWith("cheolsan.") && hasSprite("cheolsanrg." + nm.slice(9)) ? spriteId("cheolsanrg." + nm.slice(9)) : id;
+    rageMap.set(id, r);
+  }
+  return r;
+}
+
+/** Berserk aura: a flickering red / orange rim, flame tongues off the top edge, embers rising. */
+function drawRageAura(i: number, id: number, x: number, y: number, flip: boolean): void {
+  const m = R.spriteMask(id, x, y, flip), f = mDraw;
+  const tops = new Map<number, number>();
+  for (const k of m) {
+    const px = ((k % 1024) + 1024) % 1024, py = Math.round((k - px) / 1024);
+    if (!tops.has(px) || py < tops.get(px)!) tops.set(px, py);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      const q = k + dx + dy * 1024;
+      if (m.has(q)) continue;
+      const h = (((px + dx) * 7 + (py + dy) * 13 + f * 5) % 6 + 6) % 6;
+      R.putPixel(px + dx, py + dy, h < 4 ? RGB(200, 30, 20) : RGB(255, 120, 40));
+    }
+  }
+  for (const [px, ty] of tops) {
+    const h = ((px * 31 + f * 17) % 7 + 7) % 7;
+    if (h <= 2) continue;
+    for (let k = 1; k < h; k++)
+      R.putPixel(px, ty - k - 1, k === h - 1 ? RGB(255, 230, 120) : k > Math.trunc(h / 2) ? RGB(255, 140, 40) : RGB(220, 40, 20));
+  }
+  for (let e = 0; e < 6; e++) R.putPixel(x - 10 + ((e * 37 + f * 3) % 22), y - 20 - ((f * 2 + e * 11) % 26), RGB(255, 170, 60));
+  void i;
+}
+
+function drawSteam(x: number, y: number): void {
+  for (let k = 0; k < 3; k++) {
+    const r = (mDraw + k * 3) % 3, cx = x - 5 + k * 5, cy = y - 3 - ((mDraw * 2 + k * 5) % 8);
+    for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) if (dx * dx + dy * dy <= r * r) R.putPixel(cx + dx, cy + dy, RGB(230, 225, 220));
+  }
+}
+
+/** Activation: red shock ring spreading from the roaring monk. */
+function drawRoar(i: number): void {
+  const f = F[i], t = f.stTick;
+  const r = 4 + t * 5, cx = vint(f.x + 0.5), cy = vint(f.footY) - 18;
+  for (let a = 0; a < 360; a += 4)
+    R.putPixel(cx + clng(r * Math.cos(a * 0.0174533)), cy + clng(r * 0.6 * Math.sin(a * 0.0174533)), RGB(255, 60 + (a % 3) * 40, 30));
+}
+
+// ---- Muyeong: 무영참공 (one flash through the opponent, then space tears around them)
+
+function riftDash(i: number): void {
+  const o = 1 - i, f = F[i], mv = f.mv;
+  const dist = (F[o].x - f.x) * f.facing;
+  f.cineX0 = f.x;
+  if (dist > 0 && dist <= D.MvP1[mv] && hurtRect(o)) {
+    const cx = vint(F[o].x + 0.5), cy = vint(F[o].footY) - 18;
+    if (Combat.blocks(o, D.MvLevel[mv])) {
+      f.x = F[o].x - f.facing * (f.halfW + F[o].halfW);
+      Combat.applyAttack(i, o, mv, cx, cy, false, true);
+    } else {
+      let nx = F[o].x + f.facing * (f.halfW + F[o].halfW + 8);
+      if (nx < f.halfW) nx = f.halfW;
+      if (nx > SCREEN_W - f.halfW) nx = SCREEN_W - f.halfW;
+      f.x = nx;
+      f.facing = F[o].x > f.x ? 1 : -1;
+      Combat.applyAttack(i, o, mv, cx, cy, false, true);
+    }
+    f.hasHit = true;
+  } else {
+    f.x += f.facing * Math.min(D.MvP1[mv], 50);
+    clampX(i);
+  }
+}
+
+function riftStep(i: number): void {
+  const o = 1 - i, f = F[i], t = f.stTick;
+  f.cineSpr = spriteId("muyeong.rush_3");
+  if (t < RIFT_BREAK) Combat.C.ImpactDark = 2;
+  if (t >= 2 && t < 2 + RIFT_CUTS * 3 && (t - 2) % 3 === 0) {
+    Combat.dealDamage(o, 30); Combat.addComboHit(i);
+    Combat.C.HitStop = 1;
+  } else if (t === RIFT_BREAK) {
+    Combat.dealDamage(o, Math.max(0, D.MvDamage[f.mv] - RIFT_CUTS * 30)); Combat.addComboHit(i);
+    applyHit(o, 0, 3, true);
+    F[o].flash = 2;
+    Combat.C.WhiteFlash = 2;
+    Combat.C.HitStop = 6;
+    Combat.showText(moveName(i), 40, i);
+  }
+  if (t >= RIFT_END) setState(i, ST_IDLE);
+}
+
+// fixed rift shapes (angle in degrees, length, offset) and jitter, so every cast looks the same
+const RIFTS = [[-35, 52, -2], [20, 58, 3], [75, 48, -4], [-70, 56, 1], [50, 50, 4]];
+const JIT: number[] = [];
+{ let s = 12345; for (let k = 0; k < 400; k++) { s = (s * 1103515245 + 12345) & 0x7fffffff; JIT.push((s / 0x7fffffff - 0.5) * 0.7); } }
+
+function drawRiftStreak(i: number, t: number): void {
+  if (t < 0 || t > 2) return;
+  const f = F[i], y = vint(f.footY) - 20;
+  const x0 = Math.min(f.cineX0, f.x), x1 = Math.max(f.cineX0, f.x);
+  R.fillRect(x0, y - 1, x1 - x0, 1, RGB(170, 220, 255));
+  R.fillRect(x0, y, x1 - x0, 1, RGB(255, 255, 255));
+  R.fillRect(x0, y + 1, x1 - x0, 1, RGB(170, 220, 255));
+}
+
+function drawRifts(i: number): void {
+  const f = F[i], t = f.stTick, cx = f.cineCX, cy = f.cineCY;
+  drawRiftStreak(i, t);
+  if (t < RIFT_BREAK) {
+    for (let k = 0; k < RIFTS.length; k++) {
+      if (t < 2 + k * 3) continue;
+      const ow = t < 17 ? 0 : Math.min(3.5, (t - 17) * 0.5);
+      const a = RIFTS[k][0] * 0.0174533, L = RIFTS[k][1], off = RIFTS[k][2];
+      const ux = Math.cos(a), uy = Math.sin(a), nx = -uy, ny = ux;
+      for (let s = -Math.trunc(L / 2); s <= Math.trunc(L / 2); s++) {
+        const j = JIT[(k * 80 + s + 40) % 400];
+        const taper = 1 - Math.abs(s) / (L / 2 + 1), w = ow * taper;
+        const x = cx + ux * s + nx * (off + j), y = cy + uy * s + ny * (off + j);
+        if (w < 0.6) { R.putPixel(clng(x), clng(y), RGB(235, 245, 255)); continue; }
+        for (let d = -Math.trunc(w) - 1; d <= Math.trunc(w) + 1; d++) {
+          const px = clng(x + nx * d), py = clng(y + ny * d);
+          if (Math.abs(d) <= w - 1) R.putPixel(px, py, (px + py) % 5 ? RGB(12, 6, 26) : RGB(60, 30, 110));
+          else if (Math.abs(d) <= w) R.putPixel(px, py, RGB(235, 245, 255));
+          else if ((px * 3 + py) % 4 === 0) R.putPixel(px, py, RGB(120, 200, 255));
+        }
+      }
+    }
+  } else {
+    const s = t - RIFT_BREAK;
+    for (let k = 0; k < 26; k++) {
+      const a = (JIT[k * 3] + 0.35) * 6.28 / 0.7, sp = 1.5 + (JIT[k * 3 + 1] + 0.35) * 3.5;
+      const d = s * sp + 4;
+      const x0 = cx + Math.cos(a) * d, y0 = cy + Math.sin(a) * d * 0.8;
+      const c = k % 3 ? RGB(230, 240, 255) : RGB(12, 6, 26);
+      R.putPixel(clng(x0), clng(y0), c);
+      R.putPixel(clng(x0 + Math.cos(a + 1)), clng(y0 + Math.sin(a + 1)), c);
+      R.putPixel(clng(x0 + Math.cos(a + 1) * 2), clng(y0 + Math.sin(a + 1) * 2), c);
+    }
+  }
+}
+
+// ---- Seolhwa: 낙화유수 (a storm of kicks with one pale ghost striking from behind)
+
+const KICKS = ["lk_1", "hk_1", "rush_1", "hk_t", "rush_2", "lk_1", "hk_1", "rush_3"];
+
+function flurryStep(i: number): void {
+  const o = 1 - i, f = F[i], t = Math.max(0, f.stTick - 1), fo = F[o];
+  const kicksEnd = FLURRY_KICKS * 3;
+  if (t < kicksEnd + 3) Combat.C.ImpactDark = 2;
+  if (t < kicksEnd) {
+    const k = Math.trunc(t / 3), lift = Math.min(t, 6);
+    f.x = fo.x - f.facing * 16;
+    f.cineSpr = spriteId("seolhwa." + KICKS[k % KICKS.length]);
+    fo.footY = GROUND_Y - lift;
+    f.cineCY = vint(fo.footY) - 20;
+    if (t % 3 === 0) {
+      Combat.dealDamage(o, 25); Combat.addComboHit(i);
+      fo.flash = 1;
+      Combat.C.HitStop = 1;
+    }
+  } else if (t < kicksEnd + 3) {
+    f.cineSpr = spriteId("seolhwa.dp_3");
+    f.x = fo.x - f.facing * 6;
+    f.footY = GROUND_Y - 24 - (t - kicksEnd) * 2;
+    fo.footY = GROUND_Y - 6;
+  } else if (t === kicksEnd + 3) {
+    f.footY = GROUND_Y;
+    f.x = fo.x - f.facing * 8;
+    f.cineSpr = spriteId("seolhwa.ovh_1");
+    fo.footY = GROUND_Y;
+    Combat.dealDamage(o, Math.max(0, D.MvDamage[f.mv] - FLURRY_KICKS * 25)); Combat.addComboHit(i);
+    applyHit(o, 0, 2.5, true);
+    fo.flash = 2;
+    Combat.C.WhiteFlash = 2;
+    Combat.C.HitStop = 6;
+    Combat.showText(moveName(i), 40, i);
+  } else if (t < kicksEnd + 9) f.cineSpr = spriteId("seolhwa.ovh_1");
+  if (t >= FLURRY_END) { f.footY = GROUND_Y; setState(i, ST_IDLE); }
+}
+
+const PETAL = [RGB(255, 170, 200), RGB(255, 210, 225), RGB(240, 120, 160)];
+
+function drawFlurry(i: number): void {
+  const f = F[i], t = Math.max(0, f.stTick - 1), o = 1 - i, kicksEnd = FLURRY_KICKS * 3;
+  const cx = f.cineCX, cy = f.cineCY;
+  if (t < kicksEnd) {
+    const k = Math.trunc(t / 3);
+    R.drawGhost(spriteId("seolhwa." + KICKS[(k + 3) % KICKS.length]), vint(F[o].x + 0.5) + f.facing * 20, vint(F[o].footY + 0.5), f.facing > 0);
+    if (t % 3 <= 1) {                                   // one arc + spark per kick
+      const a0 = (k * 70) % 360;
+      for (let s = 0; s < 24; s++) {
+        const a = (a0 + (110 * s) / 23) * 0.0174533;
+        R.putPixel(cx + clng(11 * Math.cos(a)), cy + clng(11 * Math.sin(a)), RGB(255, 255, 255));
+        if (s > 12) R.putPixel(cx + clng(10 * Math.cos(a)), cy + clng(10 * Math.sin(a)), RGB(255, 255, 255));
+      }
+      const sx = cx + (k % 3) * 3 - 3, sy = cy - 2;
+      for (let s = 0; s < 8; s++)
+        for (let d = 0; d <= 4; d++) R.putPixel(sx + clng(Math.cos(s * 0.785) * d), sy + clng(Math.sin(s * 0.785) * d), RGB(255, 250, 220));
+    }
+  } else if (t < kicksEnd + 3) {
+    const r = 12, ax = vint(f.x + 0.5) + f.facing * 2, ay = vint(f.footY) - 18;
+    for (let s = 0; s < 40; s++) R.putPixel(ax + clng(r * Math.cos(s * 0.15)), ay + clng(r * Math.sin(s * 0.15)), RGB(255, 255, 255));
+  } else {
+    const s = t - kicksEnd - 1;
+    for (let k = 0; k < 40; k++) {
+      const a = (JIT[k * 5 % 400] + 0.35) * 6.28 / 0.7, sp = 1 + (JIT[(k * 5 + 1) % 400] + 0.35) * 2.85;
+      const d = s * sp;
+      const px = cx + Math.cos(a) * d + Math.sin(s * 0.5 + k) * 2;
+      const py = cy + Math.sin(a) * d * 0.6 + Math.pow(Math.max(0, s), 1.4) * 0.6;
+      R.putPixel(clng(px), clng(py), PETAL[k % 3]);
+      R.putPixel(clng(px) + 1, clng(py), PETAL[(k + 1) % 3]);
+    }
+  }
+}
+
+/** Test hook: start move slot for fighter i right now (used by the browser smoke tests). */
+export function debugStart(i: number, slot: number): boolean {
+  if (slot === MV_SUPER) F[i].meter = METER_MAX;
+  F[i].naegong = NAEGONG_MAX;
+  return startAttack(i, slot, false, false);
 }

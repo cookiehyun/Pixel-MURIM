@@ -1,7 +1,9 @@
 import { loadAll } from "./data";
 import * as K from "./input";
 import * as R from "./renderer";
-import { gameInit, gameTick, gameRender } from "./game";
+import { gameInit, gameTick, gameRender, G, startMatch, MODE_TRAINING } from "./game";
+import * as Fighter from "./fighter";
+import { C } from "./combat";
 import { setupTouch } from "./touch";
 
 const TICK_MS = 50;                    // 20 ticks per second, like the Excel version
@@ -13,6 +15,7 @@ async function main(): Promise<void> {
   R.init(canvas);
   gameInit();
   setupTouch();
+  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy };
   document.getElementById("loading")?.remove();
   let acc = 0, last = performance.now();
   const frame = (now: number) => {

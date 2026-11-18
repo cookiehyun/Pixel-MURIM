@@ -1,16 +1,16 @@
 // Port of Combat.bas: hit resolution, guard, combo scaling, meter, hit stop, KO.
-import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE } from "./data";
+import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE, MT_SUPER_RIFT } from "./data";
 import * as FX from "./fx";
-import { F, hitRect, hurtRect, applyHit, applyBlock, startSuperSlash, atWall, demonAwake, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
+import { F, hitRect, hurtRect, applyHit, applyBlock, startSuperSlash, atWall, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
 
-export const C = { HitStop: 0, SuperFreeze: 0, SuperOwner: 0, SlowMo: 0, ImpactDark: 0, KoFinished: false };
+export const C = { HitStop: 0, SuperFreeze: 0, SuperOwner: 0, SlowMo: 0, ImpactDark: 0, WhiteFlash: 0, KoFinished: false };
 const KO_TICKS = 80;
 let mKoTimer = 0;
 const mCombo = [0, 0], mComboShow = [0, 0], mComboShown = [0, 0];
 let mText = "", mTextTicks = 0, mTextOwner = -1;
 
 export function init(): void {
-  C.HitStop = 0; C.SuperFreeze = 0; C.SlowMo = 0; C.ImpactDark = 0; C.KoFinished = false;
+  C.HitStop = 0; C.SuperFreeze = 0; C.SlowMo = 0; C.ImpactDark = 0; C.WhiteFlash = 0; C.KoFinished = false;
   mKoTimer = 0;
   mCombo[0] = mCombo[1] = 0; mComboShow[0] = mComboShow[1] = 0; mTextTicks = 0;
 }
@@ -43,6 +43,7 @@ export function tickTimers(): void {
   for (let a = 0; a <= 1; a++) if (mComboShow[a] > 0) mComboShow[a]--;
   if (mTextTicks > 0) mTextTicks--;
   if (C.ImpactDark > 0) C.ImpactDark--;
+  if (C.WhiteFlash > 0) C.WhiteFlash--;
 }
 
 export function resolve(): void {
@@ -86,14 +87,16 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
   let push = heavy ? 2.2 : 0.8;
   if (!lastHit) push = 0.4;
   if (mt === MT_SUPER_QUAKE) push = 3.5;
-  if (D.MvLevel[mv] === LV_UNBLOCK && F[d].state === ST_GUARD) showText("GUARD BREAK", 24, a);
+  // berserk Cheolsan: every special breaks the guard
+  const level = special && !isProj && raging(a) ? LV_UNBLOCK : D.MvLevel[mv];
+  if (level === LV_UNBLOCK && F[d].state === ST_GUARD) showText("GUARD BREAK", 24, a);
 
-  if ((mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE) && !blocks(d, D.MvLevel[mv])) {
+  if ((mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE || mt === MT_SUPER_RIFT) && !blocks(d, level)) {
     FX.spawn(cx, cy, FX.FX_SLASH);
     startSuperSlash(a, d);
     return;
   }
-  if (blocks(d, D.MvLevel[mv])) {
+  if (blocks(d, level)) {
     applyBlock(d, D.MvBlockstun[mv], push * 0.8);
     if (special) dealDamage(d, Math.trunc(D.MvDamage[mv] / (4 * hits)));
     addMeter(a, 15); addMeter(d, 10);
@@ -107,6 +110,7 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     if (mCombo[a] >= 3) dmg *= Math.max(0.5, 1 - 0.1 * (mCombo[a] - 2));
     if (counter) dmg *= 1.25;
     if (demonAwake(a)) dmg *= 1.15;
+    if (raging(a)) dmg *= 1.25;
     dealDamage(d, Math.floor(dmg + 0.5));
     const ko = F[d].health <= 0;
     let stun = D.MvHitstun[mv];
@@ -122,12 +126,13 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     if (counter) showText("COUNTER", 20, a);
     if (mCombo[a] >= 2) { mComboShown[a] = mCombo[a]; mComboShow[a] = 40; }
     if (D.MvLevel[mv] === LV_UNBLOCK) { C.HitStop = 8; C.ImpactDark = 8; C.SlowMo = 24; }
+    else if (level === LV_UNBLOCK) C.HitStop = 6;
     if (ko) C.HitStop = 10;
   }
   if (!isProj && atWall(d)) F[a].slide = -F[a].facing * push * 1.2;
 }
 
-function blocks(d: number, level: number): boolean {
+export function blocks(d: number, level: number): boolean {
   const f = F[d];
   if (f.state !== ST_GUARD) return false;
   if (level === LV_LOW) return f.crouch;

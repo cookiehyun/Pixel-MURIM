@@ -1,5 +1,5 @@
 // Port of CpuAI.bas: the CPU opponent produces the same inputs a player would.
-import { D, LV_LOW, LV_OVERHEAD, MT_PROJ, MT_PROJ_BOOM, MT_RISE, MT_RUSH, MT_GRAB, MT_TELEPORT, MT_SUPER_FIRE, MT_SUPER_TELE, MT_SUPER_RUSH, MT_SUPER_PROJ, MT_NORMAL } from "./data";
+import { D, LV_LOW, LV_OVERHEAD, MT_PROJ, MT_PROJ_BOOM, MT_RISE, MT_RUSH, MT_GRAB, MT_TELEPORT, MT_SUPER_FIRE, MT_SUPER_TELE, MT_SUPER_RUSH, MT_SUPER_PROJ, MT_NORMAL, MT_SUPER_GRAB, MT_RAGE, MT_SUPER_RIFT } from "./data";
 import {
   F, feedInput, threatened, inRecovery, canAfford, B_LP, B_HP, B_LK, B_HK, METER_MAX, MV_SP1, MV_SP2, MV_SUPER,
   ST_ATTACK, ST_JUMP, ST_DOWN, ST_HIT, ST_LAND, ST_IDLE, ST_WALK, ST_CROUCH, ST_GUARD, ST_THROWN,
@@ -87,6 +87,8 @@ function findSpecial(i: number, mt: number): number {
   for (let s = MV_SP1; s <= MV_SP2; s++) {
     let st = specialType(i, s);
     if (st === MT_PROJ_BOOM) st = MT_PROJ;
+    if (st === MT_SUPER_GRAB) st = MT_GRAB;
+    if (st === MT_SUPER_RUSH) st = MT_RUSH;
     if (st === mt && canAfford(i, s)) return s;
   }
   return -1;
@@ -222,6 +224,7 @@ function neutral(i: number, o: number, v: number, dist: number): number {
     else if (st === MT_SUPER_TELE || st === MT_SUPER_FIRE) { qSpecial(i, MV_SUPER, false); return 5; }
     else if (st === MT_SUPER_RUSH) { if (dist < 52) { qSpecial(i, MV_SUPER, true); return 5; } }
     else if (st === MT_SUPER_PROJ) { if (dist > 30) { qSpecial(i, MV_SUPER, true); return 5; } }
+    else if (st === MT_RAGE || st === MT_SUPER_RIFT) { if (dist < 64) { qSpecial(i, MV_SUPER, true); return 5; } }
     else if (dist < 38) { qSpecial(i, MV_SUPER, true); return 5; }
   }
 

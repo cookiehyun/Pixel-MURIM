@@ -164,3 +164,34 @@ export function drawStageThumb(k: number, x0: number, y0: number, stp: number): 
   for (let y = 0; y < Math.trunc(SCREEN_H / stp); y++)
     for (let x = 0; x < Math.trunc(SCREEN_W / stp); x++) putPixel(x0 + x, y0 + y, pix[x * stp + y * stp * D.StageW]);
 }
+
+/** Screen pixels covered by a sprite (for outlines and auras). */
+export function spriteMask(id: number, x: number, y: number, flip: boolean): Set<number> {
+  const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
+  const m = new Set<number>();
+  x = Math.trunc(x); y = Math.trunc(y);
+  for (let sy = 0; sy < h; sy++)
+    for (let sx = 0; sx < w; sx++) {
+      if (D.SprPix[off + sy * w + sx] < 0) continue;
+      const px = flip ? x + ax - sx : x - ax + sx, py = y - ay + sy;
+      m.add(px + py * 1024);
+    }
+  return m;
+}
+
+/** A pale ghost of a sprite: white outline, body blended toward ice blue. */
+export function drawGhost(id: number, x: number, y: number, flip: boolean): void {
+  const m = spriteMask(id, x, y, flip);
+  for (const k of m) {
+    const px = ((k % 1024) + 1024) % 1024, py = Math.round((k - px) / 1024);
+    if (px < 0 || px >= SCREEN_W || py < 0 || py >= SCREEN_H) continue;
+    const edge = !m.has(k + 1) || !m.has(k - 1) || !m.has(k + 1024) || !m.has(k - 1024);
+    if (edge) { back[px + py * SCREEN_W] = RGB(255, 255, 255); continue; }
+    const b = back[px + py * SCREEN_W];
+    const r = (b & 255) * 0.45 + 150 * 0.55, g = ((b >> 8) & 255) * 0.45 + 190 * 0.55, bl = ((b >> 16) & 255) * 0.45 + 255 * 0.55;
+    back[px + py * SCREEN_W] = RGB(Math.trunc(r), Math.trunc(g), Math.trunc(bl));
+  }
+}
+
+/** Fill the whole frame with one color (white flash on a finishing blow). */
+export function flashScreen(color: number): void { back.fill(color); }
