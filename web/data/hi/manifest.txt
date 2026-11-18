@@ -8,10 +8,10 @@ danwoo.idle_a danwoo/stand1.png 11 54
 danwoo.idle_b danwoo/stand2.png 11 53
 danwoo.idle_c danwoo/stand3.png 11 54
 ANIM danwoo.idle 5 idle_0 idle_a idle_b idle_c
-danwoo.walk_0 danwoo/walk0.png 18 55
-danwoo.walk_1 danwoo/walk1.png 12 55
-danwoo.walk_2 danwoo/walk2.png 18 55
-danwoo.walk_3 danwoo/walk3.png 12 55
+danwoo.walk_0 danwoo/walk0.png 12 55
+danwoo.walk_1 danwoo/walk1.png 11 55
+danwoo.walk_2 danwoo/walk2.png 13 55
+danwoo.walk_3 danwoo/walk3.png 11 55
 danwoo.crouch danwoo/crouch.png 12 41
 danwoo.jump danwoo/jump.png 15 48
 danwoo.lp_0 danwoo/stand0.png 11 55
