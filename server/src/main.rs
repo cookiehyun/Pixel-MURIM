@@ -14,6 +14,7 @@
 //!   ROOM                             make a room            -> ROOMCODE <code>
 //!   JOINROOM <code>                  join a friend's room   -> MATCHED ... (both)
 //!   QUEUE / UNQUEUE                  ranked quick match on / off -> QUEUED, MATCHED ...
+//!   QUEUE CASUAL                     friendly match queue (not ranked, any rating)
 //!   RESULT <match id> <game> <winner>  game = 1, 2, ... within the match; winner: 0 host, 1 guest,
 //!                                    -1 draw. May be sent several times. -> RATING <new> <change>
 //!   LEAVE                            leave the room / match (the partner gets BYE)
@@ -48,7 +49,7 @@ const K: f64 = 32.0;
 enum Where {
     Idle,
     RoomHost,
-    Queued(Instant),
+    Queued(Instant, bool), // since, ranked
     InMatch(u64),
 }
 
@@ -344,14 +345,16 @@ impl Server {
                 }
             }
             "QUEUE" => {
-                if !matches!(at, Where::Queued(_)) {
+                // QUEUE = ranked; QUEUE CASUAL = friendly match (any opponent, ratings untouched)
+                let ranked = !(p.len() >= 2 && p[1] == "CASUAL");
+                if !matches!(at, Where::Queued(_, r) if r == ranked) {
                     self.leave(from, false);
-                    self.clients.get_mut(&from).unwrap().at = Where::Queued(Instant::now());
+                    self.clients.get_mut(&from).unwrap().at = Where::Queued(Instant::now(), ranked);
                 }
                 self.send(from, "QUEUED");
             }
             "UNQUEUE" => {
-                if matches!(at, Where::Queued(_)) {
+                if matches!(at, Where::Queued(..)) {
                     self.clients.get_mut(&from).unwrap().at = Where::Idle;
                 }
             }
@@ -546,10 +549,10 @@ impl Server {
     }
 
     fn matchmake(&mut self) {
-        let mut q: Vec<(SocketAddr, Instant, f64)> = self
+        let mut q: Vec<(SocketAddr, Instant, f64, bool)> = self
             .clients
             .iter()
-            .filter_map(|(a, c)| if let Where::Queued(t) = c.at { Some((*a, t, 0.0)) } else { None })
+            .filter_map(|(a, c)| if let Where::Queued(t, r) = c.at { Some((*a, t, 0.0, r)) } else { None })
             .collect();
         let proto_of = |s: &Server, a: &SocketAddr| s.clients.get(a).map(|c| c.proto.clone()).unwrap_or_default();
         for e in q.iter_mut() {
@@ -568,7 +571,8 @@ impl Server {
                 }
                 let (wa, wb) = (q[i].1.elapsed().as_secs_f64(), q[j].1.elapsed().as_secs_f64());
                 if proto_of(self, &q[i].0) == proto_of(self, &q[j].0)
-                    && can_pair(q[i].2, q[j].2, wa, wb)
+                    && q[i].3 == q[j].3
+                    && (!q[i].3 || can_pair(q[i].2, q[j].2, wa, wb))
                     && best.is_none_or(|b| (q[j].2 - q[i].2).abs() < (q[b].2 - q[i].2).abs()) {
                         best = Some(j);
                     }
@@ -576,7 +580,7 @@ impl Server {
             if let Some(j) = best {
                 used[i] = true;
                 used[j] = true;
-                self.start_match(q[i].0, q[j].0, true); // the one who waited longer hosts
+                self.start_match(q[i].0, q[j].0, q[i].3); // the one who waited longer hosts
             }
         }
     }
