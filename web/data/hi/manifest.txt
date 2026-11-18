@@ -63,3 +63,5 @@ danwoo.slam_0 danwoo/stand0.png 11 55
 danwoo.slam_1 danwoo/slam.png 19 45
 danwoo.win danwoo/win.png 13 55
 danwoo.intro danwoo/stand0.png 11 55
+# walk: longer on the wide steps, quick through the knee-up frames (sheet 02)
+ANIM danwoo.walk 2 walk_0 walk_0 walk_1 walk_2 walk_2 walk_3
