@@ -17,6 +17,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("sheet"); ap.add_argument("char"); ap.add_argument("frames", nargs="+")
 ap.add_argument("--ref", default="stand0"); ap.add_argument("--ref-ax", type=int, default=None)
 ap.add_argument("--colors", type=int, default=24)
+ap.add_argument("--bg-tol", type=int, default=4, help="pixel sheets have an exact flat background: keep this small, or dark clothes vanish")
 args = ap.parse_args()
 
 im = Image.open(args.sheet).convert("RGB"); a = np.asarray(im).astype(int)
@@ -27,7 +28,7 @@ for n in (16, 12, 10, 8, 6, 5, 4, 3, 2):                          # exact enlarg
             im = im.resize((im.width // n, im.height // n), Image.NEAREST); print("shrunk by", n); break
 tmp = tempfile.mkdtemp(); src = os.path.join(tmp, "src.png"); im.save(src)
 files = [f.split(":")[0] for f in args.frames]
-out = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), tmp, f"{src}:1=" + ",".join(files), "--colors", str(args.colors)],
+out = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), tmp, f"{src}:1=" + ",".join(files), "--colors", str(args.colors), "--bg-tol", str(args.bg_tol)],
                      capture_output=True, text=True)
 if out.returncode: print(out.stdout, out.stderr); sys.exit(1)
 
