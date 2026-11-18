@@ -75,8 +75,9 @@ async function loadHiSprites(): Promise<void> {
   const cache = new Map<string, ImageData>();
   for (const ln of lines) {
     const p = ln.trim().split(/\s+/);
-    if (p[0] === "ANIM" && p.length >= 4 && animIdx.has(p[1])) {
-      // ANIM <char.anim> <ticks per frame> <frames...>: replace an animation's frame list
+    if (p[0] === "ANIM" && p.length >= 4) {
+      // ANIM <char.anim> <ticks per frame> <frames...>: replace (or add) an animation's frame list
+      if (!animIdx.has(p[1])) animIdx.set(p[1], D.AnimCount++);
       const a = animIdx.get(p[1])!, pre = p[1].split(".")[0] + ".";
       D.AnimTPF[a] = +p[2];
       D.AnimStart[a] = frameNames.length;

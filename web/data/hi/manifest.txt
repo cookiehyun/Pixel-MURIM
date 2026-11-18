@@ -14,25 +14,25 @@ danwoo.walk_2 danwoo/walk2.png 13 55
 danwoo.walk_3 danwoo/walk3.png 11 55
 danwoo.crouch danwoo/crouch.png 14 45
 danwoo.jump danwoo/jumptop.png 14 52
-danwoo.lp_0 danwoo/stand0.png 11 55
-danwoo.lp_1 danwoo/jab.png 12 53
-danwoo.hp_p danwoo/stand0.png 11 55
-danwoo.hp_0 danwoo/stand0.png 11 55
-danwoo.hp_1 danwoo/straight.png 23 53
-danwoo.hp_2 danwoo/straight.png 23 53
-danwoo.hp_3 danwoo/stand0.png 11 55
-danwoo.lk_0 danwoo/stand0.png 11 55
-danwoo.lk_1 danwoo/frontkick.png 18 55
-danwoo.hk_p danwoo/stand0.png 11 55
-danwoo.hk_0 danwoo/stand0.png 11 55
-danwoo.hk_1 danwoo/highkick.png 20 54
-danwoo.hk_2 danwoo/highkick.png 20 54
-danwoo.hk_3 danwoo/stand0.png 11 55
-danwoo.clp danwoo/cpunch.png 21 41
-danwoo.clk danwoo/sweep.png 17 41
+danwoo.lp_0 danwoo/jabc.png 10 55
+danwoo.lp_1 danwoo/jab.png 10 55
+danwoo.hp_p danwoo/hpwind.png 18 54
+danwoo.hp_0 danwoo/hpwind.png 18 54
+danwoo.hp_1 danwoo/hplunge.png 28 51
+danwoo.hp_2 danwoo/hpfollow.png 26 48
+danwoo.hp_3 danwoo/hprec.png 12 55
+danwoo.lk_0 danwoo/kneeup.png 12 55
+danwoo.lk_1 danwoo/frontkick.png 13 55
+danwoo.hk_p danwoo/rhstart.png 13 57
+danwoo.hk_0 danwoo/rhstart.png 13 57
+danwoo.hk_1 danwoo/highkick.png 25 56
+danwoo.hk_2 danwoo/rhfollow.png 13 55
+danwoo.hk_3 danwoo/rhrec.png 12 55
+danwoo.clp danwoo/cpunch.png 15 41
+danwoo.clk danwoo/clowkick.png 11 39
 danwoo.chk danwoo/sweep.png 17 41
-danwoo.chp_0 danwoo/crouch.png 14 45
-danwoo.chp_1 danwoo/uppercut.png 14 42
+danwoo.chp_0 danwoo/ucstart.png 14 37
+danwoo.chp_1 danwoo/uppercut.png 14 53
 danwoo.jp danwoo/jpunch.png 21 51
 danwoo.jk danwoo/jkick.png 24 47
 danwoo.guard danwoo/guard.png 13 55
@@ -46,8 +46,8 @@ danwoo.roll_0 danwoo/rolla.png 20 27
 danwoo.roll_1 danwoo/rollb.png 18 35
 danwoo.roll_2 danwoo/rolla.png 20 27
 danwoo.roll_3 danwoo/rollb.png 18 35
-danwoo.ovh_0 danwoo/overhead.png 21 48
-danwoo.ovh_1 danwoo/chop.png 19 45
+danwoo.ovh_0 danwoo/overhead.png 16 59
+danwoo.ovh_1 danwoo/chop.png 14 48
 danwoo.throw_0 danwoo/grab.png 22 49
 danwoo.throw_1 danwoo/grab.png 22 49
 danwoo.dash danwoo/dash0.png 22 48
@@ -71,7 +71,19 @@ danwoo.land danwoo/land.png 12 43
 danwoo.dash_1 danwoo/dash1.png 26 41
 danwoo.bdash_1 danwoo/bdash1.png 12 48
 # walk: slower steps (5 ticks a frame = one full step cycle per second)
-ANIM danwoo.walk 5 walk_0 walk_1 walk_2 walk_3
 danwoo.down_b danwoo/bounce.png 27 23
 danwoo.getup_0 danwoo/getup0.png 16 34
 danwoo.getup_1 danwoo/getup1.png 17 40
+danwoo.lp_r danwoo/jabr.png 11 55
+danwoo.lk_r danwoo/kickret.png 12 55
+# attacks: wind-up -> hit -> follow-through / recovery (sheets 09-13)
+ANIM danwoo.lp_rec 3 lp_r
+ANIM danwoo.lk_pre 3 lk_0
+ANIM danwoo.lk_rec 3 lk_r idle_0
+ANIM danwoo.hp_pre 3 hp_0
+ANIM danwoo.hp_rec 3 hp_2 hp_3
+ANIM danwoo.hk_pre 5 hk_0
+ANIM danwoo.hk_rec 4 hk_2 hk_3
+ANIM danwoo.ovh_pre 8 ovh_0
+ANIM danwoo.ovh_rec 5 ovh_1 ovh_1
+ANIM danwoo.chp_rec 5 chp_1 chp_0

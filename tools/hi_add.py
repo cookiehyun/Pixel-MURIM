@@ -15,7 +15,9 @@ from PIL import Image
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ap = argparse.ArgumentParser()
 ap.add_argument("sheet"); ap.add_argument("char"); ap.add_argument("frames", nargs="+")
-ap.add_argument("--ref", default="stand0"); ap.add_argument("--ref-ax", type=int, default=None)
+ap.add_argument("--ref", default="stand0")
+ap.add_argument("--band", default="0.40,0.52", help="height band (from the top) whose middle lines up with the reference; use the chest (0.25,0.38) when a leg crosses the belt")
+ap.add_argument("--only", default="", help="comma list of files to write (the rest of the sheet is ignored)"); ap.add_argument("--ref-ax", type=int, default=None)
 ap.add_argument("--colors", type=int, default=24)
 ap.add_argument("--bg-tol", type=int, default=4, help="pixel sheets have an exact flat background: keep this small, or dark clothes vanish")
 args = ap.parse_args()
@@ -32,7 +34,9 @@ out = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py")
                      capture_output=True, text=True)
 if out.returncode: print(out.stdout, out.stderr); sys.exit(1)
 
-def belt(a, lo=.40, hi=.52):
+BAND = tuple(float(v) for v in args.band.split(","))
+def belt(a, lo=None, hi=None):
+    lo = BAND[0] if lo is None else lo; hi = BAND[1] if hi is None else hi
     op = a[:, :, 3] > 0; H = op.shape[0]
     xs = [x for y in range(int(H * lo), int(H * hi) + 1) for x in np.where(op[y])[0]]
     return float(np.median(xs))
@@ -45,8 +49,11 @@ if os.path.exists(ref_png):
     d = ref_ax - belt(np.array(Image.open(ref_png)))
 else:
     d = None
+only = set(args.only.split(",")) if args.only else None
 for spec in args.frames:
-    f, sprites = spec.split(":"); a = np.array(Image.open(os.path.join(tmp, f + ".png")))
+    f, sprites = spec.split(":")
+    if f == "-" or (only and f not in only): continue
+    a = np.array(Image.open(os.path.join(tmp, f + ".png")))
     ax = int(round(belt(a) + d)) if d is not None else a.shape[1] // 2
     ay = a.shape[0] - 1
     Image.fromarray(a).save(os.path.join(cdir, f + ".png"))
