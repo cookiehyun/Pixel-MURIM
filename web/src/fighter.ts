@@ -45,7 +45,7 @@ export class TFighter {
   sPunchA = 0; sPunchB = 0; sLift = 0; sSlam = 0; sSlashA = 0; sSlashB = 0; sSlashC = 0;
   seqFx = 0; superName = ""; sp1Name = ""; hitCount = 0;
   // optional extra frames from hi-res art (-1 = not drawn: the single classic frame is used)
-  sCrouchIn = -1; sJumpPrep = -1; sJumpUp = -1; sJumpDown = -1; sLand = -1; sGetup = -1; sDash1 = -1; sBDash1 = -1;
+  sCrouchIn = -1; sJumpPrep = -1; sJumpUp = -1; sJumpDown = -1; sLand = -1; sGetup0 = -1; sGetup1 = -1; sDownB = -1; sDash1 = -1; sBDash1 = -1;
   rage = 0; cineSpr = -1; cineX0 = 0; cineCX = 0; cineCY = 0;
   moves: number[] = new Array(15).fill(0);
   spOrder: number[] = [0, 0, 0];
@@ -126,7 +126,8 @@ function loadKit(i: number, kit: string): void {
   f.sRoll3 = spriteId(p + ".roll_3"); f.sDash = spriteId(p + ".dash"); f.sBDash = spriteId(p + ".bdash");
   const opt = (n: string) => (hasSprite(p + "." + n) ? spriteId(p + "." + n) : -1);
   f.sCrouchIn = opt("crouch_in"); f.sJumpPrep = opt("jump_prep"); f.sJumpUp = opt("jump_up"); f.sJumpDown = opt("jump_down");
-  f.sLand = opt("land"); f.sGetup = opt("getup"); f.sDash1 = opt("dash_1"); f.sBDash1 = opt("bdash_1");
+  f.sLand = opt("land"); f.sGetup0 = opt("getup_0"); f.sGetup1 = opt("getup_1"); f.sDownB = opt("down_b");
+  f.sDash1 = opt("dash_1"); f.sBDash1 = opt("bdash_1");
   f.sPunchA = spriteId(p + ".lp_1"); f.sPunchB = spriteId(p + ".hp_1"); f.sLift = spriteId(p + ".throw_1");
   f.sSlam = spriteId(p + ".sp_1"); f.sSlashA = spriteId(p + ".hp_1"); f.sSlashB = spriteId(p + ".chp_1");
   f.sSlashC = spriteId(p + ".lp_1");
@@ -968,12 +969,14 @@ export function currentSprite(i: number): number {
     case ST_DOWN:
       switch (f.downPhase) {
         case 0: return f.sDown0;
-        case 1: return f.sDown1;
+        case 1: return t < 3 && f.sDownB >= 0 ? f.sDownB : f.sDown1;      // bounce off the floor first
         case 3: {
           const k = f.rollDir === f.facing ? Math.trunc(t / 2) % 4 : (4 - (Math.trunc(t / 2) % 4)) % 4;
           return [f.sRoll0, f.sRoll1, f.sRoll2, f.sRoll3][k];
         }
-        default: return f.sGetup >= 0 && t >= 2 ? f.sGetup : f.sCrouch;
+        default:                                                          // getting up: sit up, then one knee
+          if (f.sGetup0 >= 0) return t < 2 || f.sGetup1 < 0 ? f.sGetup0 : f.sGetup1;
+          return f.sCrouch;
       }
   }
   return animFrame(f.aIdle, t);

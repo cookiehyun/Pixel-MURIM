@@ -35,17 +35,17 @@ danwoo.chp_0 danwoo/crouch.png 14 45
 danwoo.chp_1 danwoo/uppercut.png 14 42
 danwoo.jp danwoo/jpunch.png 21 51
 danwoo.jk danwoo/jkick.png 24 47
-danwoo.guard danwoo/guard.png 18 56
-danwoo.cguard danwoo/cguard.png 16 45
-danwoo.hit_0 danwoo/hit0.png 21 50
-danwoo.hit_1 danwoo/hit1.png 14 44
-danwoo.chit danwoo/chit.png 17 38
-danwoo.down_0 danwoo/fly.png 29 41
-danwoo.down_1 danwoo/lie.png 33 16
-danwoo.roll_0 danwoo/roll0.png 17 35
-danwoo.roll_1 danwoo/roll1.png 18 34
-danwoo.roll_2 danwoo/roll2.png 17 35
-danwoo.roll_3 danwoo/roll3.png 18 34
+danwoo.guard danwoo/guard.png 13 55
+danwoo.cguard danwoo/cguard.png 15 41
+danwoo.hit_0 danwoo/hit0.png 18 49
+danwoo.hit_1 danwoo/hit1.png 8 45
+danwoo.chit danwoo/chit.png 19 40
+danwoo.down_0 danwoo/fly.png 27 34
+danwoo.down_1 danwoo/lie.png 28 14
+danwoo.roll_0 danwoo/rolla.png 20 27
+danwoo.roll_1 danwoo/rollb.png 18 35
+danwoo.roll_2 danwoo/rolla.png 20 27
+danwoo.roll_3 danwoo/rollb.png 18 35
 danwoo.ovh_0 danwoo/overhead.png 21 48
 danwoo.ovh_1 danwoo/chop.png 19 45
 danwoo.throw_0 danwoo/grab.png 22 49
@@ -68,8 +68,10 @@ danwoo.jump_prep danwoo/jumpprep.png 12 43
 danwoo.jump_up danwoo/jumpup.png 10 55
 danwoo.jump_down danwoo/jumpdown.png 11 52
 danwoo.land danwoo/land.png 12 43
-danwoo.getup danwoo/getup.png 11 55
 danwoo.dash_1 danwoo/dash1.png 26 41
 danwoo.bdash_1 danwoo/bdash1.png 12 48
 # walk: slower steps (5 ticks a frame = one full step cycle per second)
 ANIM danwoo.walk 5 walk_0 walk_1 walk_2 walk_3
+danwoo.down_b danwoo/bounce.png 27 23
+danwoo.getup_0 danwoo/getup0.png 16 34
+danwoo.getup_1 danwoo/getup1.png 17 40
