@@ -75,7 +75,20 @@ async function loadHiSprites(): Promise<void> {
   const cache = new Map<string, ImageData>();
   for (const ln of lines) {
     const p = ln.trim().split(/\s+/);
-    if (p.length < 4 || p[0].startsWith("#") || !sprIdx.has(p[0])) continue;
+    if (p[0] === "ANIM" && p.length >= 4 && animIdx.has(p[1])) {
+      // ANIM <char.anim> <ticks per frame> <frames...>: replace an animation's frame list
+      const a = animIdx.get(p[1])!, pre = p[1].split(".")[0] + ".";
+      D.AnimTPF[a] = +p[2];
+      D.AnimStart[a] = frameNames.length;
+      D.AnimLen[a] = p.length - 3;
+      for (let k = 3; k < p.length; k++) frameNames.push(pre + p[k]);
+      continue;
+    }
+    if (p.length < 4 || p[0].startsWith("#")) continue;
+    if (!sprIdx.has(p[0])) {                              // a new frame that classic art never had
+      const nid = D.SprCount++;
+      sprIdx.set(p[0], nid); D.SprName[nid] = p[0];
+    }
     let data = cache.get(p[1]);
     if (!data) {
       const blob = await (await fetch("hi/" + p[1])).blob();

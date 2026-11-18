@@ -2,28 +2,32 @@
 # <sprite name> <png under data/hi/> <anchorX> <anchorY> [breathe]
 # anchor = ground point under the hip (bottom row); "breathe" = upper body 1 px lower (idle frame 2)
 # danwoo: tools/pixelize.py from the AI sheets, anchors lined up on the belt; roll = one frame turned 4 ways
-danwoo.idle_0 danwoo/idle.png 19 54
-danwoo.idle_1 danwoo/idle.png 19 54 breathe
+# idle: 4-frame breathing loop drawn as true pixel art (sheet 01)
+danwoo.idle_0 danwoo/stand0.png 11 55
+danwoo.idle_a danwoo/stand1.png 11 54
+danwoo.idle_b danwoo/stand2.png 11 53
+danwoo.idle_c danwoo/stand3.png 11 54
+ANIM danwoo.idle 5 idle_0 idle_a idle_b idle_c
 danwoo.walk_0 danwoo/walk0.png 16 54
 danwoo.walk_1 danwoo/walk1.png 11 53
 danwoo.walk_2 danwoo/walk2.png 16 53
 danwoo.walk_3 danwoo/walk3.png 11 53
 danwoo.crouch danwoo/crouch.png 12 41
 danwoo.jump danwoo/jump.png 15 48
-danwoo.lp_0 danwoo/idle.png 19 54
+danwoo.lp_0 danwoo/stand0.png 11 55
 danwoo.lp_1 danwoo/jab.png 12 53
-danwoo.hp_p danwoo/idle.png 19 54
-danwoo.hp_0 danwoo/idle.png 19 54
+danwoo.hp_p danwoo/stand0.png 11 55
+danwoo.hp_0 danwoo/stand0.png 11 55
 danwoo.hp_1 danwoo/straight.png 23 53
 danwoo.hp_2 danwoo/straight.png 23 53
-danwoo.hp_3 danwoo/idle.png 19 54
-danwoo.lk_0 danwoo/idle.png 19 54
+danwoo.hp_3 danwoo/stand0.png 11 55
+danwoo.lk_0 danwoo/stand0.png 11 55
 danwoo.lk_1 danwoo/frontkick.png 18 55
-danwoo.hk_p danwoo/idle.png 19 54
-danwoo.hk_0 danwoo/idle.png 19 54
+danwoo.hk_p danwoo/stand0.png 11 55
+danwoo.hk_0 danwoo/stand0.png 11 55
 danwoo.hk_1 danwoo/highkick.png 20 54
 danwoo.hk_2 danwoo/highkick.png 20 54
-danwoo.hk_3 danwoo/idle.png 19 54
+danwoo.hk_3 danwoo/stand0.png 11 55
 danwoo.clp danwoo/cpunch.png 21 41
 danwoo.clk danwoo/sweep.png 17 41
 danwoo.chk danwoo/sweep.png 17 41
@@ -47,15 +51,15 @@ danwoo.ovh_1 danwoo/chop.png 19 45
 danwoo.throw_0 danwoo/grab.png 22 49
 danwoo.throw_1 danwoo/grab.png 22 49
 danwoo.dash danwoo/dash.png 30 49
-danwoo.bdash danwoo/idle.png 19 54
+danwoo.bdash danwoo/stand0.png 11 55
 danwoo.palm_0 danwoo/palm1.png 26 54
 danwoo.palm_1 danwoo/palm2.png 29 51
-danwoo.sp_0 danwoo/idle.png 19 54
+danwoo.sp_0 danwoo/stand0.png 11 55
 danwoo.sp_1 danwoo/palm2.png 29 51
-danwoo.spin_0 danwoo/idle.png 19 54
-danwoo.spin_t danwoo/idle.png 19 54
+danwoo.spin_0 danwoo/stand0.png 11 55
+danwoo.spin_t danwoo/stand0.png 11 55
 danwoo.spin_1 danwoo/backfist.png 20 51
-danwoo.slam_0 danwoo/idle.png 19 54
+danwoo.slam_0 danwoo/stand0.png 11 55
 danwoo.slam_1 danwoo/slam.png 19 45
 danwoo.win danwoo/win.png 13 55
-danwoo.intro danwoo/idle.png 19 54
+danwoo.intro danwoo/stand0.png 11 55

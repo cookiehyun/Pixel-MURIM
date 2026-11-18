@@ -30,6 +30,10 @@ This is not pixel art. Redraw the same 4 frames as true pixel art with big squar
 Keep all 4 frames in strict side view at exactly the same size as the attached reference. Only the pose may change.
 ```
 
+## 완성 기준 (01번 결과)
+
+01번 결과(192×64 그림, 24색, 서 있는 키 56칸)가 **딱 원하는 형태**입니다. 다음 장도 이 결과를 기준 그림과 같이 첨부하면 같은 크기로 나옵니다.
+
 ## 받을 때 확인할 것
 
 1. **픽셀 칸이 또렷한지.** 확대했을 때 네모 칸이 보여야 합니다. 번지면 위 문장으로 다시 요청하세요.
