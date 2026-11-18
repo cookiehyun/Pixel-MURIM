@@ -998,6 +998,13 @@ function drawOne(i: number): void {
   const x = vint(f.x + 0.5), y = vint(f.footY + 0.5), flip = f.facing < 0;
   if (rageShown(i)) {
     const id = rageSprite(currentSprite(i));
+    if (D.SprHi[id]) {                                    // hi-res art: aura and red wash drawn at art resolution
+      R.drawRageHi(id, x, y, flip, mDraw);
+      R.drawSprite(id, x, y, flip, tint);
+      if (tint < 0) R.tintHi(id, x, y, flip, RGB(255, 40, 20), 0.18);
+      drawSteam(x + f.facing * 2, y - 38);
+      return;
+    }
     drawRageAura(i, id, x, y, flip);
     R.drawSprite(id, x, y, flip, tint);
     drawSteam(x + f.facing * 2, y - 36);
@@ -1196,7 +1203,7 @@ function rageSprite(id: number): number {
   let r = rageMap.get(id);
   if (r === undefined) {
     const nm = D.SprName[id];
-    r = nm.startsWith("cheolsan.") && hasSprite("cheolsanrg." + nm.slice(9)) ? spriteId("cheolsanrg." + nm.slice(9)) : id;
+    r = !D.SprHi[id] && nm.startsWith("cheolsan.") && hasSprite("cheolsanrg." + nm.slice(9)) ? spriteId("cheolsanrg." + nm.slice(9)) : id;
     rageMap.set(id, r);
   }
   return r;

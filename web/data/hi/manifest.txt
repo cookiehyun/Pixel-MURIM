@@ -123,3 +123,9 @@ ANIM danwoo.sp1_pre 2 palm_g palm_s
 ANIM danwoo.sp1_rec 5 palm_f palm_r idle_0
 ANIM danwoo.sp2_pre 4 spin_w spin_b
 ANIM danwoo.sp2_rec 5 spin_f spin_r idle_0
+cheolsan.idle_0 cheolsan/stand0.png 23 59
+cheolsan.idle_a cheolsan/stand1.png 23 58
+cheolsan.idle_b cheolsan/stand2.png 23 57
+cheolsan.idle_c cheolsan/stand3.png 23 58
+# cheolsan: idle breathing loop (sheet 01); other frames still classic
+ANIM cheolsan.idle 5 idle_0 idle_a idle_b idle_c

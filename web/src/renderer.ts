@@ -229,3 +229,75 @@ export function drawGhost(id: number, x: number, y: number, flip: boolean): void
 
 /** Fill the whole frame with one color (white flash on a finishing blow). */
 export function flashScreen(color: number): void { back.fill(color); }
+
+// ---------------------------------------------------------------- hi-res effects (art-pixel size, blended)
+
+function blendAt(k: number, color: number, a: number): void {
+  const b = back[k];
+  const r = (b & 255) + ((color & 255) - (b & 255)) * a;
+  const g = ((b >> 8) & 255) + (((color >> 8) & 255) - ((b >> 8) & 255)) * a;
+  const bl = ((b >> 16) & 255) + (((color >> 16) & 255) - ((b >> 16) & 255)) * a;
+  back[k] = RGB(r, g, bl);
+}
+
+/** One dot the size of a hi-res art pixel at world point (wx, wy); a < 1 blends it over the frame. */
+export function artDot(wx: number, wy: number, color: number, a = 1): void {
+  const px = Math.round(wx * PX), py = Math.round(wy * PX);
+  for (let j = 0; j < HI; j++) {
+    const y = py + j;
+    if (y < 0 || y >= PH) continue;
+    for (let i = 0; i < HI; i++) {
+      const x = px + i;
+      if (x < 0 || x >= PW) continue;
+      if (a >= 1) back[x + y * PW] = color; else blendAt(x + y * PW, color, a);
+    }
+  }
+}
+
+/** Screen-pixel origin of art pixel (sx, sy) of hi-res sprite id drawn at world (x, y). */
+export function hiArtOrigin(id: number, x: number, y: number, flip: boolean, sx: number, sy: number): [number, number] {
+  const X = Math.trunc(x) * PX + (PX - HI >> 1), Y = Math.trunc(y) * PX + PX - HI;
+  return [flip ? X + (D.SprAX[id] - sx) * HI : X + (sx - D.SprAX[id]) * HI, Y + (sy - D.SprAY[id]) * HI];
+}
+
+/** Rage look for hi-res art: flickering red / orange rim, flame tongues off the top edge, embers, red wash. */
+export function drawRageHi(id: number, x: number, y: number, flip: boolean, f: number): void {
+  const w = D.SprW[id], h = D.SprH[id], off = D.SprOff[id];
+  const on = (sx: number, sy: number) => sx >= 0 && sy >= 0 && sx < w && sy < h && D.SprPix[off + sy * w + sx] >= 0;
+  const put = (sx: number, sy: number, c: number, a = 1) => {
+    const [px, py] = hiArtOrigin(id, x, y, flip, sx, sy);
+    for (let j = 0; j < HI; j++) for (let i = 0; i < HI; i++) {
+      const X = px + i, Y = py + j;
+      if (X >= 0 && X < PW && Y >= 0 && Y < PH) { if (a >= 1) back[X + Y * PW] = c; else blendAt(X + Y * PW, c, a); }
+    }
+  };
+  for (let sy = -1; sy <= h; sy++)
+    for (let sx = -1; sx <= w; sx++) {
+      if (on(sx, sy)) continue;
+      if (!(on(sx + 1, sy) || on(sx - 1, sy) || on(sx, sy + 1) || on(sx, sy - 1))) continue;
+      const k = (((sx * 7 + sy * 13 + f * 5) % 6) + 6) % 6;
+      put(sx, sy, k < 4 ? RGB(200, 30, 20) : RGB(255, 120, 40));
+    }
+  for (let sx = 0; sx < w; sx++) {
+    let top = -1;
+    for (let sy = 0; sy < h; sy++) if (on(sx, sy)) { top = sy; break; }
+    if (top < 0) continue;
+    const t = (((sx * 31 + f * 17) % 7) + 7) % 7;
+    if (t <= 2) continue;
+    for (let k = 1; k < t; k++) put(sx, top - k - 1, k === t - 1 ? RGB(255, 230, 120) : k > t / 2 ? RGB(255, 140, 40) : RGB(220, 40, 20));
+  }
+}
+
+/** Wash every pixel of hi-res sprite id (drawn at world x, y) toward color by a. */
+export function tintHi(id: number, x: number, y: number, flip: boolean, color: number, a: number): void {
+  const w = D.SprW[id], h = D.SprH[id], off = D.SprOff[id];
+  for (let sy = 0; sy < h; sy++)
+    for (let sx = 0; sx < w; sx++) {
+      if (D.SprPix[off + sy * w + sx] < 0) continue;
+      const [px, py] = hiArtOrigin(id, x, y, flip, sx, sy);
+      for (let j = 0; j < HI; j++) for (let i = 0; i < HI; i++) {
+        const X = px + i, Y = py + j;
+        if (X >= 0 && X < PW && Y >= 0 && Y < PH) blendAt(X + Y * PW, color, a);
+      }
+    }
+}
