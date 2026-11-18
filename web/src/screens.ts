@@ -11,6 +11,7 @@ import { G, GS_SELECT, GS_LEVEL, GS_STAGE, GS_MENU, MODE_ARCADE, MODE_TAG, MODE_
 import { RGB } from "./util";
 import * as Online from "./online";
 import * as Account from "./account";
+import * as AccountForm from "./accountform";
 
 const ROSTER = 8, SLOT_CHEONMA = 6, SLOT_RANDOM = 7, GRID_COLS = 4, BOX_W = 15;
 export const ROSTER_SIZE = 6;
@@ -51,20 +52,61 @@ function randomPick(): number {
 // ---------------------------------------------------------------- title
 
 const LABELS: Record<number, string[]> = {
-  0: ["SINGLE PLAYER", "MULTIPLAYER"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
-  4: ["QUICK MATCH", "RANK GAME", "ROOM", "CREATE ACCOUNT"], 6: ["CREATE ROOM", "JOIN ROOM"],
+  0: ["SINGLE PLAYER", "MULTIPLAYER", "CREATE ACCOUNT"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
+  4: ["QUICK MATCH", "RANK GAME", "ROOM", "RANKING"], 6: ["CREATE ROOM", "JOIN ROOM"],
 };
 const PARENT: Record<number, number> = { 1: 0, 2: 0, 4: 2, 6: 4 };
 
 /** Back from the account screen: the online menu with the cursor on CREATE ACCOUNT. */
 export function openOnlineMenu(): void { mMenuLevel = 4; mCursor = 3; mNotice = 0; }
 
-const label = (lv: number, k: number) => (lv === 4 && k === 3 && Account.loggedIn() ? "ACCOUNT" : LABELS[lv][k]);
+const LV_ACCOUNT = 10;                       // account page (not a list)
+const label = (lv: number, k: number) => (lv === 0 && k === 2 && Account.loggedIn() ? "ACCOUNT" : LABELS[lv][k]);
 const needsAccount = (lv: number, k: number) => lv === 4 && k < 3 && !Account.loggedIn();
+
+let mFormOpen = false;
+
+function accountTick(): void {
+  if (mFormOpen) return;
+  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) { mMenuLevel = 0; mCursor = 2; return; }
+  const form = (mode: "create" | "login") => {
+    mFormOpen = true;
+    AccountForm.open(mode).then(() => { mFormOpen = false; });
+  };
+  if (Account.loggedIn()) { if (K.isPressed(K.BTN_LK)) Account.logOut(); }
+  else if (K.isPressed(K.BTN_LP)) form("create");
+  else if (K.isPressed(K.BTN_LK)) form("login");
+}
+
+function accountRender(): void {
+  const cx = SCREEN_W / 2;
+  R.beginFrame(true);
+  R.fillRect(0, 0, SCREEN_W, SCREEN_H, RGB(12, 10, 22));
+  Font.drawBig("ACCOUNT", cx, 4, cGold, 1);
+  if (!Account.configured()) {
+    Font.drawText("ACCOUNTS ARE NOT SET UP YET", cx, 40, RGB(255, 140, 90), 1, 1);
+    Font.drawText("S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+    return;
+  }
+  if (Account.loggedIn()) {
+    Font.drawText("LOGGED IN AS", cx, 26, cDim, 1, 1);
+    Font.drawBig(Account.name(), cx, 36, RGB(255, 240, 210), 2);
+    Font.drawText("ONLINE PLAY AND SAVES ARE ON THIS ACCOUNT", cx, 60, cDim, 1, 1);
+    Font.drawText("Z = LOG OUT   S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+  } else {
+    Font.drawText("AN ACCOUNT KEEPS YOUR RANKING", cx, 24, RGB(200, 190, 210), 1, 1);
+    Font.drawText("AND SAVES ON ANY DEVICE", cx, 31, RGB(200, 190, 210), 1, 1);
+    Font.drawText("ONLINE PLAY NEEDS AN ACCOUNT", cx, 41, cDim, 1, 1);
+    if (Math.trunc(mMenuTick / 10) % 2 === 0) Font.drawBig("A = CREATE ACCOUNT", cx, 56, RGB(255, 236, 180), 1);
+    Font.drawText("Z = LOG IN (I HAVE AN ACCOUNT)", cx, 74, RGB(200, 190, 210), 1, 1);
+    Font.drawText("S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+  }
+}
 
 export function titleTick(): void {
   mMenuTick++;
   if (mNotice > 0) mNotice--;
+  if (mMenuLevel === LV_ACCOUNT) { accountTick(); return; }
   const n = LABELS[mMenuLevel].length;
   if (K.isPressed(K.BTN_UP)) mCursor = (mCursor + n - 1) % n;
   if (K.isPressed(K.BTN_DOWN)) mCursor = (mCursor + 1) % n;
@@ -75,7 +117,10 @@ export function titleTick(): void {
     return;
   }
   if (!K.isPressed(K.BTN_LP)) return;
-  if (mMenuLevel === 0) { mMenuLevel = 1 + mCursor; mCursor = 0; }
+  if (mMenuLevel === 0) {
+    if (mCursor === 2) { mMenuLevel = LV_ACCOUNT; return; }
+    mMenuLevel = 1 + mCursor; mCursor = 0;
+  }
   else if (mMenuLevel === 1) {
     G.Multi = false; G.WatchMode = false;
     G.GameMode = mCursor === 0 ? MODE_ARCADE : mCursor === 1 ? MODE_TAG : MODE_TRAINING;
@@ -88,7 +133,7 @@ export function titleTick(): void {
     if (mCursor === 0) Online.beginQuickMatch();
     else if (mCursor === 1) Online.beginRankGame();
     else if (mCursor === 2) { mMenuLevel = 6; mCursor = 0; }
-    else Online.beginAccount();
+    else Online.beginRankingView();
   } else if (mMenuLevel === 6) {
     if (mCursor === 0) Online.beginRoomCreate();
     else {
@@ -100,6 +145,7 @@ export function titleTick(): void {
 
 export function titleRender(): void {
   const cx = SCREEN_W / 2;
+  if (mMenuLevel === LV_ACCOUNT) { accountRender(); return; }
   R.beginFrame(true);
   R.drawSprite(animFrame(F[0].aIdle, mMenuTick), 30, GROUND_Y, false);
   R.drawSprite(animFrame(F[1].aIdle, mMenuTick), SCREEN_W - 30, GROUND_Y, true);

@@ -15,7 +15,6 @@ import * as Arcade from "./arcade";
 import { G, GS_MENU, GS_ONLINE, MODE_TAG, startMatch } from "./game";
 import { RGB, clng } from "./util";
 import * as Account from "./account";
-import * as AccountForm from "./accountform";
 
 const OS_ACCOUNT = 11;
 const OS_OFF = 0, OS_LOBBY = 3, OS_FIGHT = 4, OS_RESULT = 5, OS_ERROR = 6, OS_CONNECT = 7, OS_ROOMWAIT = 8, OS_QUEUE = 9, OS_RANKING = 10;
@@ -32,7 +31,7 @@ let mStage = 0, mStageChoosing = false, mRtt = -1, mDelay = 3, mStartMsg = "", m
 let mAction = 0, mRoomCode = "", mMatchId = 0, mRanked = false, mOppName = "", mOppRating = 0;
 let mRating = 1000, mGames = 0, mRatingDelta = "", mGameNo = 0, mTopN = 0, mMyRank = 0;
 const mTopName: string[] = [], mTopRating: number[] = [];
-let mName = "", mToken = "", mCasual = false, mRankErr = false, mFormOpen = false, mTopGot = false, mHelloSent = false;
+let mName = "", mToken = "", mCasual = false, mRankErr = false, mTopGot = false, mHelloSent = false;
 let ws: WebSocket | null = null;
 const inbox: string[] = [];
 
@@ -47,8 +46,8 @@ export const beginRoomCreate = () => beginServer(ACT_ROOM, "");
 export const beginRoomJoin = (code: string) => beginServer(ACT_JOINROOM, code);
 export const beginRanking = () => beginServer(ACT_TOP, "");
 
-/** CREATE ACCOUNT screen: ranking (top 10 + mine) and A = create account / log in / log out. */
-export function beginAccount(): void {
+/** RANKING (online menu): top 10, plus my rank when logged in. Works without an account. */
+export function beginRankingView(): void {
   reset();
   mAction = ACT_TOP;
   mName = Account.name(); mToken = Account.serverToken();
@@ -281,24 +280,12 @@ export function lobbyTick(): void {
 }
 
 function accountTick(): void {
-  if (mFormOpen) return;
   if (ws && ws.readyState === WebSocket.OPEN && (!mHelloSent || mT % 100 === 0)) {
     mHelloSent = true;
     if (Account.loggedIn()) send("HELLO " + SRV_PROTO + " " + Account.name() + " " + Account.serverToken());
     else send("TOP");
   }
-  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) { leave(); G.GameState = GS_MENU; Screens.openOnlineMenu(); return; }
-  const form = (mode: "create" | "login") => {
-    mFormOpen = true;
-    AccountForm.open(mode).then((ok) => {
-      mFormOpen = false;
-      if (ok) { mName = Account.name(); mToken = Account.serverToken(); mHelloSent = false; }   // re-login to the server: my rank
-    });
-  };
-  if (Account.loggedIn()) {
-    if (K.isPressed(K.BTN_LK)) { Account.logOut(); mName = ""; mMyRank = 0; mHelloSent = false; }
-  } else if (K.isPressed(K.BTN_LP)) form("create");
-  else if (K.isPressed(K.BTN_LK)) form("login");
+  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP) || (mT > 5 && K.isPressed(K.BTN_LP))) { leave(); Screens.openOnlineMenu(); }
 }
 
 function lobbyInput(): void {
@@ -454,15 +441,9 @@ function accountRender(): void {
   R.fillRect(20, 76, SCREEN_W - 40, 1, RGB(60, 52, 76));
   if (Account.loggedIn()) {
     const rank = mMyRank > 0 ? "RANK " + mMyRank + "  " : "";
-    Font.drawText("YOU  " + Account.name() + "  " + rank + mRating, cx, 80, RGB(255, 236, 150), 1, 1);
-    Font.drawText("Z = LOG OUT   S = BACK", cx, 92, cHint, 1, 1);
-  } else if (!Account.configured()) {
-    Font.drawText("ACCOUNTS ARE NOT SET UP YET", cx, 80, RGB(255, 140, 90), 1, 1);
-    Font.drawText("S = BACK", cx, 92, cHint, 1, 1);
-  } else {
-    if (Math.trunc(mT / 10) % 2 === 0) Font.drawText("A = CREATE ACCOUNT", cx, 80, cHi, 1, 1);
-    Font.drawText("Z = LOG IN   S = BACK", cx, 92, cHint, 1, 1);
-  }
+    Font.drawText("YOU  " + Account.name() + "  " + rank + mRating, cx, 81, RGB(255, 236, 150), 1, 1);
+  } else Font.drawText("CREATE AN ACCOUNT TO BE RANKED", cx, 81, cDim, 1, 1);
+  Font.drawText("A OR S = BACK", cx, 92, cHint, 1, 1);
 }
 
 function rankingRender(): void {
