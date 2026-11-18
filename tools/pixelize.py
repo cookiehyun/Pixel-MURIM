@@ -139,11 +139,22 @@ for a, alpha, names, sc, spl in pictures:
                 if cell.size == 0 or cell.mean() < 0.5: continue
                 c = Counter(q[y0:y1, xa:xb][cell].tolist()).most_common(1)[0][0]
                 out[j, i, :3] = pal[c]; out[j, i, 3] = 255
+        # specks: connected pieces under 6 pixels (bits of a neighbouring figure, noise)
         op = out[:, :, 3] > 0
+        seen = np.zeros_like(op)
         for j in range(H):
             for i in range(W):
-                if op[j, i] and not any(0 <= j + dy < H and 0 <= i + dx < W and op[j + dy, i + dx] for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0))):
-                    out[j, i, 3] = 0
+                if not op[j, i] or seen[j, i]: continue
+                comp, dq = [], deque([(j, i)]); seen[j, i] = True
+                while dq:
+                    cy_, cx_ = dq.popleft(); comp.append((cy_, cx_))
+                    for dy in (-1, 0, 1):
+                        for dx in (-1, 0, 1):
+                            ny, nx = cy_ + dy, cx_ + dx
+                            if 0 <= ny < H and 0 <= nx < W and op[ny, nx] and not seen[ny, nx]:
+                                seen[ny, nx] = True; dq.append((ny, nx))
+                if len(comp) < 6:
+                    for cy_, cx_ in comp: out[cy_, cx_, 3] = 0
         op = out[:, :, 3] > 0
         rows = np.where(op.any(axis=1))[0]; cols = np.where(op.any(axis=0))[0]
         out = out[rows.min():rows.max() + 1, cols.min():cols.max() + 1]
