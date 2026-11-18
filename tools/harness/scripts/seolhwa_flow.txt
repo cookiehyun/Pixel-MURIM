@@ -1,0 +1,14 @@
+# seolhwa flow: light kick -> heavy kick -> heavy punch -> light punch, each pressed once the previous hit
+CMD start 0 1 0 1
+CMD chars seolhwa danwoo
+CMD dummy 1
+CMD place 70 88
+3 -
+1 Z
+5 -
+1 X
+7 -
+1 S
+7 -
+1 A
+30 -

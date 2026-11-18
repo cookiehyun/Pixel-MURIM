@@ -959,7 +959,7 @@ Private Sub UpdateAttack(ByVal i As Long, ByVal d As Boolean)
                 atk = TakeAttack(i)
                 StartAttack i, atk, d, True
                 Exit Sub
-            ElseIf .bufAtk < MV_SP1 And .chain < MAX_CHAIN And IsLight(.mv) Then
+            ElseIf .bufAtk < MV_SP1 And .chain < ChainMax(i) And (IsLight(.mv) Or FlowChain(i)) Then
                 atk = TakeAttack(i)
                 .chain = .chain + 1
                 StartAttack i, atk, d, True
@@ -1227,6 +1227,16 @@ Private Sub TechThrow(ByVal i As Long)
     FX.Spawn Int((F(0).x + F(1).x) / 2), Int(F(i).footY) - 22, FX_BLOCK
     Combat.ShowText "ESCAPE", 20
 End Sub
+
+' Seolhwa flows: any standing / crouching normal that connected can lead into the next one
+' (light kick -> heavy kick -> punch ...), up to four hits; the others chain only from lights.
+Private Function FlowChain(ByVal i As Long) As Boolean
+    FlowChain = (F(i).prefix = "seolhwa") And (Data.MvType(F(i).mv) = MT_NORMAL) And F(i).onGround
+End Function
+
+Private Function ChainMax(ByVal i As Long) As Long
+    If F(i).prefix = "seolhwa" Then ChainMax = MAX_CHAIN + 1 Else ChainMax = MAX_CHAIN
+End Function
 
 Private Function IsLight(ByVal mv As Long) As Boolean
     Dim k As Long

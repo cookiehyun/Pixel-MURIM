@@ -31,7 +31,7 @@ Private Const OS_RANKING As Long = 10       ' server: top 10 screen
 
 Public Const DEFAULT_SERVER As String = "161.33.45.170"   ' Pixel Murim game server (profile.txt "server=" overrides)
 Private Const SRV_PROTO As String = "PM4"
-Private Const GAME_BUILD As Long = 20261118          ' bump whenever fighting code changes: both players must match
+Private Const GAME_BUILD As Long = 20261119          ' bump whenever fighting code changes: both players must match
 Private Const ACT_QUICK As Long = 1, ACT_ROOM As Long = 2, ACT_JOINROOM As Long = 3, ACT_TOP As Long = 4
 Private Const PROFILE_FILE As String = "profile.txt"
 

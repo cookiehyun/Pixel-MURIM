@@ -195,6 +195,9 @@ CHEOLSAN = dict(
               belt="r", trim=None, cuff=None),
     head="cheolsan",
 )
+# rage (super): flushed skin, glowing red eyes, knitted brow
+CHEOLSAN_RAGE = dict(CHEOLSAN, name="cheolsanrg", eye_ink="R",
+                     palette=dict(CHEOLSAN["palette"], s="E08A68", S="B05A40", R="FF3020"))
 
 MUYEONG = dict(
     name="muyeong",
@@ -991,7 +994,9 @@ def build(spec, pose):
             no = (cx + fx * (r * 0.95) - ux * 0.9, cy + fy * (r * 0.95) - uy * 0.9)
             cv.c[circle_mask(no, 0.35) & (cv.c == "s")] = "S"                                           # nose shade
     elif 0 <= ex < CANVAS and 0 <= ey < CANVAS and cv.c[ey, ex] != "":
-        cv.c[ey, ex] = "e" if spec["head"] == "cheonma" else "k"
+        cv.c[ey, ex] = spec.get("eye_ink") or ("e" if spec["head"] == "cheonma" else "k")
+        if spec.get("eye_ink") and 0 <= ey - 1 < CANVAS and cv.c[ey - 1, ex] not in ("", "k"):
+            cv.c[ey - 1, ex] = "k"                      # knitted brow over the glowing eye
         if spec.get("hd"):
             mx_, my_ = int(cx + fx * (r * 0.5) - ux * 1.8), int(cy + fy * (r * 0.5) - uy * 1.8)
             if 0 <= mx_ < CANVAS and 0 <= my_ < CANVAS and cv.c[my_, mx_] == "s":
@@ -1243,6 +1248,7 @@ if __name__ == "__main__":
     only = os.environ.get("ONLY")
     for spec, ov in ((DANWOO, DANWOO_OVERRIDES), (CHEOLSAN, CHEOLSAN_OVERRIDES), (MUYEONG, MUYEONG_OVERRIDES),
                      (SEOLHWA, SEOLHWA_OVERRIDES), (HEUKRIM, HEUKRIM_OVERRIDES), (HEUKRIM_SW, HEUKRIM_SW_OVERRIDES),
+                     (CHEOLSAN_RAGE, CHEOLSAN_OVERRIDES),
                      (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES)):
         if only and spec["name"] != only:
             continue
