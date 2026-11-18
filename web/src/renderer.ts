@@ -1,14 +1,16 @@
-// Port of Renderer.bas, drawn at twice the resolution.
+// Port of Renderer.bas, drawn at three times the resolution.
 // The game still thinks in a 192x100 world (SCREEN_W / SCREEN_H: simulation, hitboxes, menus, online).
-// The back buffer is 384x200: classic sprites and all drawing calls become 2x2 blocks, while
-// hi-res sprites (D.SprHi, from PNG art) are drawn pixel for pixel at the doubled resolution.
+// The back buffer is 576x300: classic sprites and all drawing calls become 3x3 blocks, while
+// hi-res sprites (D.SprHi, PNG art) draw each art pixel as a HI x HI block (2x2: ~56 px tall art
+// fills the same height as a 38 px classic sprite).
 import { D } from "./data";
 import { RGB } from "./util";
 
 export const SCREEN_W = 192;
 export const SCREEN_H = 100;
 export const GROUND_Y = 88;
-export const PX = 2;                                  // physical pixels per world pixel
+export const PX = 3;                                  // physical pixels per world pixel
+export const HI = 2;                                  // physical pixels per hi-res art pixel
 const PW = SCREEN_W * PX, PH = SCREEN_H * PX;
 
 let back = new Int32Array(PW * PH);
@@ -42,16 +44,15 @@ export function backPixel(x: number, y: number): number {
   return back[x * PX + y * PX * PW];
 }
 
-function block(px: number, py: number, color: number): void {
-  if (px < 0 || py < 0 || px >= PW - 1 || py >= PH - 1) {
-    for (let j = 0; j < PX; j++) for (let i = 0; i < PX; i++) {
+function block(px: number, py: number, color: number, n = PX): void {
+  if (px < 0 || py < 0 || px > PW - n || py > PH - n) {
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const X = px + i, Y = py + j;
       if (X >= 0 && X < PW && Y >= 0 && Y < PH) back[X + Y * PW] = color;
     }
     return;
   }
-  const k = px + py * PW;
-  back[k] = color; back[k + 1] = color; back[k + PW] = color; back[k + PW + 1] = color;
+  for (let j = 0; j < n; j++) back.fill(color, px + (py + j) * PW, px + n + (py + j) * PW);
 }
 
 export function putPixel(x: number, y: number, color: number): void {
@@ -95,16 +96,16 @@ export function drawSprite(id: number, x: number, y: number, flip: boolean, tint
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
   x = Math.trunc(x); y = Math.trunc(y);
-  if (D.SprHi[id]) {                                  // hi-res art: 1 sprite pixel = 1 screen pixel
-    const X = x * PX + (flip ? 1 : 0), Y = y * PX + PX - 1;
+  if (D.SprHi[id]) {                                  // hi-res art: HI x HI screen pixels per art pixel
+    const X = x * PX + (PX - HI >> 1), Y = y * PX + PX - HI;   // anchor pixel sits on the world pixel
     for (let sy = 0; sy < h; sy++) {
-      const py = Y - ay + sy;
-      if (py < 0 || py >= PH) continue;
+      const py = Y + (sy - ay) * HI;
+      if (py <= -HI || py >= PH) continue;
       for (let sx = 0; sx < w; sx++) {
         const c = pix[off + sy * w + sx];
         if (c < 0) continue;
-        const px = flip ? X + ax - sx : X - ax + sx;
-        if (px >= 0 && px < PW) back[px + py * PW] = tint >= 0 ? tint : c;
+        const px = flip ? X + (ax - sx) * HI : X + (sx - ax) * HI;
+        if (px > -HI && px < PW) block(px, py, tint >= 0 ? tint : c, HI);
       }
     }
     return;
@@ -126,16 +127,16 @@ export function drawSpriteScaled(id: number, x: number, y: number, flip: boolean
   cx0: number, cy0: number, cx1: number, cy1: number, tint = -1, alt = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
-  const B = D.SprHi[id] ? k : k * PX;                 // screen pixels per sprite pixel
+  const B = D.SprHi[id] ? k * HI : k * PX;            // screen pixels per sprite pixel
   const X0 = Math.max(0, cx0 * PX), Y0 = Math.max(0, cy0 * PX);
   const X1 = Math.min(PW - 1, cx1 * PX + PX - 1), Y1 = Math.min(PH - 1, cy1 * PX + PX - 1);
-  const bx = x * PX, by = y * PX + (D.SprHi[id] ? PX * k - B : 0);
+  const bx = x * PX, by = y * PX + (D.SprHi[id] ? (PX - HI) * k : 0);
   for (let sy = 0; sy < h; sy++) {
     for (let sx = 0; sx < w; sx++) {
       let c = pix[off + sy * w + sx];
       if (c < 0) continue;
       if (tint >= 0) c = tint;
-      const px = flip ? bx + (ax - sx) * B - B + PX : bx + (sx - ax) * B;
+      const px = flip ? bx + (ax - sx) * B - (D.SprHi[id] ? 0 : B - PX) : bx + (sx - ax) * B;
       const py = by + (sy - ay) * B;
       for (let j = py; j < py + B; j++) {
         if (j < Y0 || j > Y1) continue;
@@ -185,8 +186,7 @@ export function setStage(k: number): void {
         const t = y / (GROUND_Y - 1);
         c = y < GROUND_Y ? RGB(40 + 60 * t, 60 + 80 * t, 120 + 90 * t) : RGB(60, 45, 35);
       }
-      const p = x * PX + y * PX * PW;
-      bg[p] = c; bg[p + 1] = c; bg[p + PW] = c; bg[p + PW + 1] = c;
+      for (let j = 0; j < PX; j++) bg.fill(c, x * PX + (y * PX + j) * PW, (x + 1) * PX + (y * PX + j) * PW);
     }
   }
   for (let k2 = 0; k2 < bg.length; k2++) bgDark[k2] = darken(bg[k2]);

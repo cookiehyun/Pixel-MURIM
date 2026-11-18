@@ -855,7 +855,7 @@ export function draw(): void {
     if (f.prefix === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
     if (f.prefix === "danwoo" && f.state === ST_ATTACK) {
       if (f.mv === f.moves[MV_SP1] && !D.SprHi[currentSprite(i)]) drawWindPalm(i);   // hi-res art draws its own palm
-      if (f.mv === f.moves[MV_SP2]) drawSpinFist(i);
+      if (f.mv === f.moves[MV_SP2] && !D.SprHi[currentSprite(i)]) drawSpinFist(i);
       if (f.mv === f.moves[MV_SUPER]) drawQuake(i);
     }
   }
@@ -1127,7 +1127,7 @@ function drawQuake(i: number): void {
       if (k === 0) R.fillRect(s < 0 ? gx - rad : gx, gy - 1, rad, 1, RGB(120, 196, 255));
     }
   }
-  if (t <= D.MvActive[f.mv] + 4) {
+  if (t <= D.MvActive[f.mv] + 4 && !D.SprHi[currentSprite(i)]) {     // hi-res art draws its own palm
     const n = BIG_PALM[0].length, flat: string[] = [];
     for (let c = 0; c < Math.trunc(n / 2); c++) {
       let row = "";

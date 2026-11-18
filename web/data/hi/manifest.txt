@@ -1,8 +1,48 @@
-# Hi-res sprites (PNG, drawn at the doubled screen resolution) replacing classic ones.
+# Hi-res sprites (PNG art, 2x2 screen pixels per art pixel) replacing classic ones.
 # <sprite name> <png under data/hi/> <anchorX> <anchorY> [breathe]
 # anchor = ground point under the hip (bottom row); "breathe" = upper body 1 px lower (idle frame 2)
-danwoo.idle_0 danwoo/idle.png 32 75
-danwoo.idle_1 danwoo/idle.png 32 75 breathe
-danwoo.palm_0 danwoo/palm1.png 50 74
-danwoo.palm_1 danwoo/palm2.png 50 70
-danwoo.win danwoo/win.png 24 76
+# danwoo: tools/pixelize.py from the AI sheets; frames without new art keep the classic sprite
+danwoo.idle_0 danwoo/idle.png 19 54
+danwoo.idle_1 danwoo/idle.png 19 54 breathe
+danwoo.walk_0 danwoo/walk0.png 20 54
+danwoo.walk_1 danwoo/walk1.png 10 53
+danwoo.walk_2 danwoo/walk2.png 18 53
+danwoo.walk_3 danwoo/walk3.png 7 53
+danwoo.crouch danwoo/crouch.png 16 41
+danwoo.jump danwoo/jump.png 12 48
+danwoo.lp_0 danwoo/idle.png 19 54
+danwoo.lp_1 danwoo/jab.png 15 53
+danwoo.hp_p danwoo/idle.png 19 54
+danwoo.hp_0 danwoo/idle.png 19 54
+danwoo.hp_1 danwoo/straight.png 20 53
+danwoo.hp_2 danwoo/straight.png 20 53
+danwoo.hp_3 danwoo/idle.png 19 54
+danwoo.lk_0 danwoo/idle.png 19 54
+danwoo.lk_1 danwoo/frontkick.png 14 55
+danwoo.hk_p danwoo/idle.png 19 54
+danwoo.hk_0 danwoo/idle.png 19 54
+danwoo.hk_1 danwoo/highkick.png 20 54
+danwoo.hk_2 danwoo/highkick.png 20 54
+danwoo.hk_3 danwoo/idle.png 19 54
+danwoo.clp danwoo/cpunch.png 15 41
+danwoo.clk danwoo/sweep.png 28 41
+danwoo.chk danwoo/sweep.png 28 41
+danwoo.chp_0 danwoo/crouch.png 16 41
+danwoo.jp danwoo/jpunch.png 20 51
+danwoo.jk danwoo/jkick.png 20 47
+danwoo.guard danwoo/guard.png 20 56
+danwoo.cguard danwoo/cguard.png 16 45
+danwoo.throw_0 danwoo/grab.png 22 49
+danwoo.throw_1 danwoo/grab.png 22 49
+danwoo.dash danwoo/dash.png 28 49
+danwoo.palm_0 danwoo/palm1.png 29 54
+danwoo.palm_1 danwoo/palm2.png 20 51
+danwoo.sp_0 danwoo/idle.png 19 54
+danwoo.sp_1 danwoo/palm2.png 20 51
+danwoo.spin_0 danwoo/idle.png 19 54
+danwoo.spin_t danwoo/idle.png 19 54
+danwoo.spin_1 danwoo/backfist.png 21 51
+danwoo.slam_0 danwoo/idle.png 19 54
+danwoo.slam_1 danwoo/slam.png 22 45
+danwoo.win danwoo/win.png 15 55
+danwoo.intro danwoo/idle.png 19 54
