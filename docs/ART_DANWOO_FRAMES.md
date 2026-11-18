@@ -1,21 +1,41 @@
 # 단우 애니메이션 프레임 주문서 (ChatGPT용)
 
 총 **80프레임 = 그림 20장** (한 장에 4프레임).
-모든 장에 **같은 기준 그림(단우 걷기 4장 그림)을 첨부**하고, 아래 **공통 문장 + 그 장의 동작 문장**을 붙여 넣으세요.
 
-## 공통 문장 (매번 맨 앞에)
+## 준비
+
+1. **기준 그림:** `docs/preview/danwoo_reference_pixel.png` (게임에 들어간 단우 걷기 4장을 픽셀 칸 그대로 확대한 그림).
+   **모든 장에 이 그림을 첨부**합니다. 칸이 뚜렷한 그림을 보여 줘야 ChatGPT도 픽셀로 그립니다.
+2. 한 장마다: **공통 문장 + 그 장의 동작 4줄**을 붙여서 보냅니다.
+3. **먼저 01번 한 장만** 뽑아서 Claude에게 보내 확인받으세요. 게임에 쓸 수 있는 수준이면 나머지를 같은 방식으로 뽑습니다.
+
+## 공통 문장 (매번 맨 앞에, 그대로 복사)
 
 ```
+Pixel art sprite only. Every pixel must be a clearly visible square block, like the attached image. No smooth shading, no gradients, no anti-aliasing, no painterly or blurry edges. Limited palette of about 24 colors with hard edges between them.
 Use the attached image as the character and style reference: same character, same chunky pixel size (about 56 pixels tall when standing), same flat 2D side-view shading with 3 tones per color, same colors, same plain background color #3D4559.
 Draw 4 consecutive animation frames of a 2D fighting game in one wide image (3:1). Strict side view, facing right, full body. All 4 figures at exactly the same scale, standing on the same ground line, evenly spaced, not overlapping. Head size, body proportions and clothes must stay identical in every frame - only the pose changes. No text, no numbers, no watermark.
 Frames, left to right:
 ```
 
-## 받는 요령
+## 결과가 이상할 때 (같은 대화창에서 한 번 더)
 
-1. 한 장 받으면 **4개 모두 같은 크기·같은 옆모습인지** 확인하세요. 하나라도 3/4 각도이거나 머리 크기가 다르면 다시 뽑는 게 낫습니다.
-2. 아주 잘 나온 장이 생기면, 그다음부터는 그 장을 기준 그림으로 같이 첨부해도 좋습니다.
-3. 받은 순서대로 파일 이름에 번호(01~20)만 붙여서 보내 주시면 됩니다.
+부드러운 그림으로 나왔을 때:
+```
+This is not pixel art. Redraw the same 4 frames as true pixel art with big square pixels exactly like the attached reference.
+```
+
+각도나 크기가 들쭉날쭉할 때:
+```
+Keep all 4 frames in strict side view at exactly the same size as the attached reference. Only the pose may change.
+```
+
+## 받을 때 확인할 것
+
+1. **픽셀 칸이 또렷한지.** 확대했을 때 네모 칸이 보여야 합니다. 번지면 위 문장으로 다시 요청하세요.
+2. **4개 모두 같은 크기, 같은 옆모습인지.** 하나라도 3/4 각도이거나 머리 크기가 다르면 다시 뽑는 게 낫습니다.
+3. 아주 잘 나온 장이 생기면, 그다음부터는 기준 그림과 함께 그 장도 첨부해도 좋습니다.
+4. 받은 순서대로 파일 이름에 번호(01~20)만 붙여서 보내 주시면 됩니다.
 
 ---
 
