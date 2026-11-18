@@ -1,0 +1,1111 @@
+// Port of Fighter.bas: the fighter state machine, input decoding, boxes and drawing.
+import {
+  D, animId, spriteId, moveId, hasSprite, animFrame, animFrameHold,
+  MT_NORMAL, MT_THROW, MT_PROJ, MT_RISE, MT_RUSH, MT_GRAB, MT_SUPER_PROJ, MT_SUPER_GRAB, MT_SUPER_RUSH,
+  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE,
+} from "./data";
+import * as R from "./renderer";
+import { GROUND_Y, SCREEN_W } from "./renderer";
+import * as FX from "./fx";
+import * as Proj from "./projectile";
+import * as Combat from "./combat";
+import * as Tag from "./tag";
+import * as Match from "./match";
+import * as K from "./input";
+import { G, MODE_ARCADE, MODE_TRAINING } from "./game";
+import * as Arcade from "./arcade";
+import { RGB, clng, vint } from "./util";
+
+export const ST_IDLE = 0, ST_WALK = 1, ST_CROUCH = 2, ST_JUMP = 3, ST_ATTACK = 4, ST_GUARD = 5, ST_HIT = 6,
+  ST_DOWN = 7, ST_THROW = 8, ST_THROWN = 9, ST_DASH = 10, ST_LAND = 11;
+export const MV_LP = 0, MV_HP = 1, MV_LK = 2, MV_HK = 3, MV_CLP = 4, MV_CHP = 5, MV_CLK = 6, MV_CHK = 7, MV_JP = 8,
+  MV_JK = 9, MV_THROW = 10, MV_SP1 = 11, MV_SP2 = 12, MV_SUPER = 13, MV_OVH = 14;
+export const B_LP = 1, B_HP = 2, B_LK = 4, B_HK = 8;
+export const METER_MAX = 1000, NAEGONG_MAX = 1000;
+const NAEGONG_REGEN = 7;
+export const DUMMY_CPU = 0, DUMMY_IDLE = 1, DUMMY_GUARD = 2, DUMMY_ATTACK = 3, DUMMY_CGUARD = 4;
+
+const GRAVITY = 0.5, BACK_WALK = 0.75, GUARD_RANGE = 60, DOWN_LIE_TICKS = 16, GETUP_TICKS = 4, ROLL_TICKS = 8;
+const ROLL_SPEED = 3.5, WAKE_THROW_INV = 6, DRAIN_NG = 400, DRAIN_FIRST = 4, DRAIN_EVERY = 5, DRAIN_PULSES = 4;
+const DRAIN_RELEASE = 26, DUMMY_INTERVAL = 30, BUF_TICKS = 5, MAX_CHAIN = 3, HIST_LEN = 32, MOTION_WINDOW = 12;
+const SUPER_WINDOW = 20, DASH_TICKS = 6, TECH_WINDOW = 3, SG_END = 46, SS_END = 40;
+
+export class TFighter {
+  prefix = ""; kit = ""; armed = false;
+  state = 0; stTick = 0; x = 0; footY = 0; vx = 0; vy = 0; slide = 0;
+  onGround = true; crouch = false; backward = false; facing = 1;
+  mv = 0; hasHit = false; chain = 0; airAttacked = false; stun = 0; stunTotal = 0;
+  downPhase = 0; rollDir = 0; wakeInv = 0; flash = 0; bufAtk = -1; bufAge = 0; bufDash = 0;
+  health = 0; maxHealth = 0; healthShown = 0; redCap = 0; trailDelay = 0; meter = 0; naegong = 0; ngFlash = 0;
+  inDir = 5; inPress = 0; inHeld = 0; hist: number[] = new Array(HIST_LEN).fill(5); histPos = 0;
+  walkSpeed = 0; dashSpeed = 0; jumpVY = 0; jumpVX = 0; halfW = 0; hurtH = 0; hurtHC = 0; startX = 0;
+  aIdle = 0; aWalk = 0; sCrouch = 0; sJump = 0; sGuard = 0; sCGuard = 0; sHit0 = 0; sHit1 = 0; sCHit = 0;
+  sDown0 = 0; sDown1 = 0; sRoll0 = 0; sRoll1 = 0; sRoll2 = 0; sRoll3 = 0; sDash = 0; sBDash = 0;
+  sPunchA = 0; sPunchB = 0; sLift = 0; sSlam = 0; sSlashA = 0; sSlashB = 0; sSlashC = 0;
+  seqFx = 0; superName = ""; hitCount = 0;
+  moves: number[] = new Array(15).fill(0);
+  spOrder: number[] = [0, 0, 0];
+}
+
+/** 0 / 1 on screen, 2 / 3 tag partners, 4 scratch. */
+export const F: TFighter[] = [0, 1, 2, 3, 4].map(() => new TFighter());
+let mControl = 0, mDummy = DUMMY_CPU, mDummyTick = 0, mDummyNext = 0, mShowBoxes = false;
+const GHOSTS = 4;
+const mGX = [[0, 0, 0, 0], [0, 0, 0, 0]], mGY = [[0, 0, 0, 0], [0, 0, 0, 0]], mGId = [[0, 0, 0, 0], [0, 0, 0, 0]];
+const mGFlip = [[false, false, false, false], [false, false, false, false]];
+const mGN = [0, 0], mPose = [-1, -1], mAwakeShown = [false, false];
+let mFrame = 0;
+
+export function init(c0: string, c1: string, humanIndex: number): void {
+  setupCharacter(0, c0, 72);
+  setupCharacter(1, c1, 120);
+  mControl = humanIndex;
+  mDummy = DUMMY_CPU;
+  mShowBoxes = false;
+}
+
+export const controlled = () => mControl;
+export const dummyMode = () => mDummy;
+export function setControl(i: number): void { mControl = i; }
+export function setDummy(mode: number): void { mDummy = mode; mDummyTick = 0; }
+export function toggleBoxes(): void { mShowBoxes = !mShowBoxes; }
+
+function setupCharacter(i: number, prefix: string, x: number): void {
+  switch (prefix) {
+    case "cheolsan": setup(i, prefix, x, 1.4, 2.6, -4, 1.4, 8, 1080, 34, 25); break;
+    case "muyeong": setup(i, prefix, x, 2, 3, -4.4, 1.7, 6, 930, 30, 21); break;
+    case "seolhwa": setup(i, prefix, x, 2.1, 3.3, -4.8, 2, 5, 880, 29, 20); break;
+    case "heukrim": setup(i, prefix, x, 2.1, 3.3, -4.4, 1.7, 6, 1000, 31, 22); break;
+    case "hongryeon": setup(i, prefix, x, 2, 3.2, -4.6, 1.8, 5, 960, 29, 20); break;
+    case "cheonma":
+      if (i === 1 && G.GameMode === MODE_ARCADE && Arcade.isBossFight()) setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1400, 32, 23);
+      else setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1000, 32, 23);
+      break;
+    default: setup(i, "danwoo", x, 2, 3.2, -4.5, 1.8, 6, 1000, 30, 21);
+  }
+  const f = F[i];
+  f.seqFx = FX.FX_SLASH;
+  switch (f.prefix) {
+    case "cheolsan": f.superName = "NAHAN BOKMA"; break;
+    case "muyeong": f.superName = "MANGEOM GWIJONG"; break;
+    case "seolhwa":
+      f.superName = "NAKHWA YUSU"; f.seqFx = FX.FX_HIT;
+      f.sSlashA = spriteId("seolhwa.hk_1"); f.sSlashB = spriteId("seolhwa.lk_1"); f.sSlashC = spriteId("seolhwa.rush_1");
+      break;
+    case "heukrim": f.superName = "CHEONMA GANGRIM"; f.seqFx = FX.FX_DARK; break;
+    case "hongryeon": f.superName = "HONGRYEON EOPHWA"; break;
+    case "cheonma": f.superName = "CHEONMA GUNRIM"; f.seqFx = FX.FX_DARK; break;
+    default: f.superName = "CHEONGPUNG JINCHEON";
+  }
+}
+
+function setup(i: number, prefix: string, x: number, walkSpeed: number, dashSpeed: number, jumpVY: number, jumpVX: number,
+  halfW: number, maxHealth: number, hurtH: number, hurtHC: number): void {
+  const f = F[i];
+  Object.assign(f, { prefix, startX: x, walkSpeed, dashSpeed, jumpVY, jumpVX, halfW, maxHealth, hurtH, hurtHC, armed: false });
+  loadKit(i, prefix);
+  resetOne(i);
+}
+
+const NAMES = ["lp", "hp", "lk", "hk", "clp", "chp", "clk", "chk", "jp", "jk", "throw", "sp1", "sp2", "super", "ovh"];
+
+/** Sprite and move ids for a set ("heukrim" with fists, "heukrimsw" with the sword drawn). */
+function loadKit(i: number, kit: string): void {
+  const f = F[i], p = kit;
+  f.kit = kit;
+  f.aIdle = animId(p + ".idle"); f.aWalk = animId(p + ".walk");
+  f.sCrouch = spriteId(p + ".crouch"); f.sJump = spriteId(p + ".jump"); f.sGuard = spriteId(p + ".guard");
+  f.sCGuard = spriteId(p + ".cguard"); f.sHit0 = spriteId(p + ".hit_0"); f.sHit1 = spriteId(p + ".hit_1");
+  f.sCHit = spriteId(p + ".chit"); f.sDown0 = spriteId(p + ".down_0"); f.sDown1 = spriteId(p + ".down_1");
+  f.sRoll0 = spriteId(p + ".roll_0"); f.sRoll1 = spriteId(p + ".roll_1"); f.sRoll2 = spriteId(p + ".roll_2");
+  f.sRoll3 = spriteId(p + ".roll_3"); f.sDash = spriteId(p + ".dash"); f.sBDash = spriteId(p + ".bdash");
+  f.sPunchA = spriteId(p + ".lp_1"); f.sPunchB = spriteId(p + ".hp_1"); f.sLift = spriteId(p + ".throw_1");
+  f.sSlam = spriteId(p + ".sp_1"); f.sSlashA = spriteId(p + ".hp_1"); f.sSlashB = spriteId(p + ".chp_1");
+  f.sSlashC = spriteId(p + ".lp_1");
+  for (let k = 0; k <= 14; k++) f.moves[k] = moveId(p + "." + NAMES[k]);
+  f.spOrder = [MV_SUPER, MV_SP1, MV_SP2];
+  for (let a = 0; a <= 1; a++)
+    for (let b = a + 1; b <= 2; b++)
+      if (D.MvCmd[f.moves[f.spOrder[b]]].length > D.MvCmd[f.moves[f.spOrder[a]]].length) {
+        const t = f.spOrder[a]; f.spOrder[a] = f.spOrder[b]; f.spOrder[b] = t;
+      }
+}
+
+export function copyFighter(dst: TFighter, src: TFighter): void {
+  Object.assign(dst, src);
+  dst.hist = src.hist.slice();
+  dst.moves = src.moves.slice();
+  dst.spOrder = src.spOrder.slice();
+}
+
+export function resetRound(keepMeter = false): void {
+  const m0 = F[0].meter, m1 = F[1].meter;
+  resetOne(0);
+  resetOne(1);
+  if (keepMeter) { F[0].meter = m0; F[1].meter = m1; }
+}
+
+function resetOne(i: number): void {
+  if (F[i].armed) { F[i].armed = false; loadKit(i, F[i].prefix); }
+  mGN[i] = 0; mPose[i] = -1; mAwakeShown[i] = false;
+  const f = F[i];
+  f.x = f.startX; f.footY = GROUND_Y; f.vx = 0; f.vy = 0; f.slide = 0; f.onGround = true; f.crouch = false;
+  f.facing = i === 0 ? 1 : -1;
+  f.health = f.maxHealth; f.healthShown = f.maxHealth; f.redCap = f.maxHealth; f.trailDelay = 0;
+  f.stun = 0; f.wakeInv = 0; f.rollDir = 0; f.flash = 0; f.bufAtk = -1; f.bufDash = 0; f.chain = 0; f.meter = 0;
+  f.naegong = NAEGONG_MAX; f.ngFlash = 0; f.inDir = 5; f.inPress = 0; f.inHeld = 0;
+  f.hist.fill(5);
+  f.state = -1;
+  setState(i, ST_IDLE);
+}
+
+// ---------------------------------------------------------------- input
+
+export function dirFrom(fwd: boolean, back: boolean, up: boolean, down: boolean): number {
+  let d = 5;
+  if (fwd) d++;
+  if (back && !fwd) d--;
+  if (up) d += 3;
+  if (down && !up) d -= 3;
+  return d;
+}
+
+function backHop(t: number): number {
+  return t === 1 || t === 5 ? 1.5 : t === 2 || t === 4 ? 2.598 : t === 3 ? 3 : 0;
+}
+
+/** Keyboard -> absolute input bits (online sends these). */
+export function rawLocal(ks = 0): number {
+  let r = 0;
+  if (K.isDown(K.keyOf(ks, 0))) r |= 1;
+  if (K.isDown(K.keyOf(ks, 1))) r |= 2;
+  if (K.isDown(K.keyOf(ks, 2))) r |= 4;
+  if (K.isDown(K.keyOf(ks, 3))) r |= 8;
+  for (let k = 0; k <= 3; k++) {
+    if (K.isPressed(K.keyOf(ks, 4 + k))) r |= 16 << k;
+    if (K.isDown(K.keyOf(ks, 4 + k))) r |= 256 << k;
+  }
+  if (K.isPressed(K.BTN_TAG)) r |= 0x1000;
+  return r;
+}
+
+export function feedRaw(i: number, r: number): void {
+  const l = (r & 1) !== 0, rt = (r & 2) !== 0;
+  const d = F[i].facing > 0 ? dirFrom(rt, l, (r & 4) !== 0, (r & 8) !== 0) : dirFrom(l, rt, (r & 4) !== 0, (r & 8) !== 0);
+  feedInput(i, d, (r >> 4) & 15, (r >> 8) & 15);
+}
+
+export function stateHash(): number {
+  let h = 0;
+  for (let i = 0; i <= 1; i++) {
+    const f = F[i];
+    h = hashMix(h, clng(f.x * 100)); h = hashMix(h, clng(f.footY * 100));
+    h = hashMix(h, clng(f.vx * 100)); h = hashMix(h, clng(f.vy * 100));
+    h = hashMix(h, f.health); h = hashMix(h, f.state); h = hashMix(h, f.stTick);
+    h = hashMix(h, f.meter); h = hashMix(h, f.naegong); h = hashMix(h, f.facing);
+    h = hashMix(h, f.mv); h = hashMix(h, f.downPhase); h = hashMix(h, f.stun);
+    h = hashMix(h, f.kit.length);
+  }
+  if (Tag.active()) for (let i = 2; i <= 3; i++) {
+    h = hashMix(h, F[i].health); h = hashMix(h, F[i].naegong); h = hashMix(h, F[i].redCap); h = hashMix(h, F[i].prefix.length);
+  }
+  h = hashMix(h, Proj.hashPart());
+  h = hashMix(h, Combat.C.HitStop); h = hashMix(h, Combat.C.SuperFreeze);
+  h = hashMix(h, Match.hashPart());
+  return clng(h);
+}
+
+export function hashMix(h: number, v: number): number {
+  let r = h * 31 + v;
+  r = r - Math.floor(r / 1000000007) * 1000000007;
+  return r;
+}
+
+export function feedHuman(i: number, ks = 0): void {
+  const l = K.isDown(K.keyOf(ks, 0)), r = K.isDown(K.keyOf(ks, 1)), u = K.isDown(K.keyOf(ks, 2)), dn = K.isDown(K.keyOf(ks, 3));
+  const d = F[i].facing > 0 ? dirFrom(r, l, u, dn) : dirFrom(l, r, u, dn);
+  let press = 0, held = 0;
+  for (let k = 0; k <= 3; k++) {
+    if (K.isPressed(K.keyOf(ks, 4 + k))) press |= 1 << k;
+    if (K.isDown(K.keyOf(ks, 4 + k))) held |= 1 << k;
+  }
+  feedInput(i, d, press, held);
+}
+
+export function feedDummy(i: number): void {
+  let d = 5, press = 0;
+  if (mDummy === DUMMY_CGUARD) { d = 2; if (threatened(i)) d = 1; }
+  else if (mDummy === DUMMY_GUARD) { if (threatened(i)) d = 4; }
+  else if (mDummy === DUMMY_ATTACK) {
+    mDummyTick++;
+    if (mDummyTick >= DUMMY_INTERVAL) {
+      mDummyTick = 0;
+      press = 1 << (mDummyNext % 4);
+      if (mDummyNext % 8 >= 4) d = 2;
+      mDummyNext++;
+    } else if (F[i].state === ST_ATTACK && F[i].crouch) d = 2;
+  }
+  feedInput(i, d, press, press);
+}
+
+export function feedInput(i: number, d: number, press: number, held: number): void {
+  const f = F[i];
+  f.inDir = d; f.inPress = press; f.inHeld = held;
+  f.histPos = (f.histPos + 1) % HIST_LEN;
+  f.hist[f.histPos] = d;
+  if (f.flash > 0) f.flash--;
+  const a = decodeAttack(i);
+  if (a >= 0) { f.bufAtk = a; f.bufAge = 0; }
+  else if (f.bufAtk >= 0) { f.bufAge++; if (f.bufAge > BUF_TICKS) f.bufAtk = -1; }
+  if (tapped(i, 6)) f.bufDash = 1;
+  if (tapped(i, 4)) f.bufDash = -1;
+  if (d !== 6 && d !== 4) f.bufDash = 0;
+}
+
+const histAt = (i: number, t: number) => F[i].hist[(F[i].histPos - t + HIST_LEN * 4) % HIST_LEN];
+
+function tapped(i: number, d: number): boolean {
+  if (histAt(i, 0) !== d || histAt(i, 1) === d) return false;
+  for (let t = 2; t <= 6; t++) if (histAt(i, t) === d) return histAt(i, t + 1) !== d;
+  return false;
+}
+
+const dirMatches = (want: number, got: number) => (want === 2 ? got >= 1 && got <= 3 : want === got);
+
+function matchMotion(i: number, dirs: string, window: number): boolean {
+  let j = dirs.length, firstHit = -1;
+  for (let t = 0; t <= window; t++) {
+    if (dirMatches(+dirs[j - 1], histAt(i, t))) {
+      if (firstHit < 0) firstHit = t;
+      j--;
+      if (j === 0) return firstHit <= 4;
+    }
+  }
+  return false;
+}
+
+function decodeAttack(i: number): number {
+  const f = F[i], press = f.inPress;
+  if (press === 0) return -1;
+  if ((f.inHeld & (B_LP | B_LK)) === (B_LP | B_LK) && (press & (B_LP | B_LK)) !== 0) return MV_THROW;
+  const isP = (press & (B_LP | B_HP)) !== 0, isK = (press & (B_LK | B_HK)) !== 0;
+  for (let k = 0; k <= 2; k++) {
+    const slot = f.spOrder[k], cmd = D.MvCmd[f.moves[slot]];
+    if (cmd.length < 2) continue;
+    const btn = cmd[cmd.length - 1];
+    if (!((btn === "P" && isP) || (btn === "K" && isK))) continue;
+    const motion = cmd.slice(0, -1);
+    if (slot === MV_SUPER) {
+      if (f.meter >= METER_MAX && matchMotion(i, motion, SUPER_WINDOW)) return slot;
+    } else if (matchMotion(i, motion, MOTION_WINDOW)) {
+      if (canAfford(i, slot)) return slot;
+      f.ngFlash = 12;
+    }
+  }
+  let r = -1;
+  if (press & B_LP) r = MV_LP;
+  if (press & B_LK) r = MV_LK;
+  if (press & B_HP) r = f.inDir === 6 ? MV_OVH : MV_HP;
+  if (press & B_HK) r = MV_HK;
+  return r;
+}
+
+export const canAfford = (i: number, slot: number) => F[i].naegong >= D.MvCost[F[i].moves[slot]];
+
+function takeAttack(i: number): number {
+  const a = F[i].bufAtk;
+  F[i].bufAtk = -1;
+  return a;
+}
+
+// ---------------------------------------------------------------- update
+
+export function update(): void {
+  mFrame++;
+  if (G.GameMode === MODE_TRAINING) {
+    if (K.isPressed(K.BTN_SWAP)) { mControl = 1 - mControl; F[0].bufAtk = -1; F[1].bufAtk = -1; }
+    if (K.isPressed(K.BTN_DBG_DUMMY)) setDummy((mDummy + 1) % 5);
+    if (K.isPressed(K.BTN_DBG_BOX)) mShowBoxes = !mShowBoxes;
+    if (K.isPressed(K.BTN_DBG_HIT)) applyHit(1 - mControl, 10, 1.5, false);
+    if (K.isPressed(K.BTN_DBG_DOWN)) applyHit(1 - mControl, 0, 1.5, true);
+  }
+  for (let i = 0; i <= 1; i++) updateFighter(i);
+  resolvePush();
+  for (let i = 0; i <= 1; i++) { updateFacing(i); updateGhosts(i); }
+}
+
+function updateFighter(i: number): void {
+  const f = F[i];
+  const fwd = f.inDir === 3 || f.inDir === 6 || f.inDir === 9;
+  const back = f.inDir === 1 || f.inDir === 4 || f.inDir === 7;
+  const u = f.inDir >= 7, d = f.inDir <= 3;
+  const wantGuard = back && threatened(i);
+  f.stTick++;
+  if (f.naegong < NAEGONG_MAX && !(f.state === ST_ATTACK && D.MvCost[f.mv] > 0)) {
+    f.naegong += NAEGONG_REGEN;
+    if (f.naegong > NAEGONG_MAX) f.naegong = NAEGONG_MAX;
+  }
+  if (f.ngFlash > 0) f.ngFlash--;
+  if (f.wakeInv > 0) f.wakeInv--;
+  if (f.slide !== 0) {
+    f.x += f.slide;
+    f.slide *= 0.6;
+    if (Math.abs(f.slide) < 0.1) f.slide = 0;
+  }
+  switch (f.state) {
+    case ST_IDLE: case ST_WALK: case ST_CROUCH:
+      actionable(i, fwd, back, u, d, wantGuard); break;
+    case ST_GUARD:
+      if (f.stun > 0) { f.stun--; f.x += f.vx; f.vx *= 0.7; }
+      else actionable(i, fwd, back, u, d, wantGuard);
+      break;
+    case ST_DASH:
+      f.x += f.vx;
+      if (u && !f.backward && f.stTick >= 2) {
+        setState(i, ST_JUMP);
+        f.onGround = false; f.airAttacked = false; f.vy = f.jumpVY; f.vx = f.facing * f.jumpVX * 1.7; f.footY = GROUND_Y;
+      } else if (f.backward) f.footY = GROUND_Y - backHop(f.stTick);
+      if (f.state === ST_DASH && f.stTick >= DASH_TICKS) { f.footY = GROUND_Y; setState(i, ST_IDLE); }
+      break;
+    case ST_JUMP: {
+      const atk = takeAttack(i);
+      if (atk >= 0 && !f.airAttacked) {
+        f.airAttacked = true;
+        f.mv = atk === MV_LK || atk === MV_HK ? f.moves[MV_JK] : f.moves[MV_JP];
+        f.hasHit = false;
+        setState(i, ST_ATTACK);
+      }
+      if (airStep(i)) setState(i, ST_IDLE);
+      break;
+    }
+    case ST_ATTACK: updateAttack(i, d); break;
+    case ST_LAND: f.stun--; if (f.stun <= 0) setState(i, ST_IDLE); break;
+    case ST_HIT:
+      f.x += f.vx; f.vx *= 0.7; f.stun--;
+      if (f.stun <= 0) setState(i, f.crouch ? ST_CROUCH : ST_IDLE);
+      break;
+    case ST_DOWN:
+      switch (f.downPhase) {
+        case 0: if (airStep(i)) { f.downPhase = 1; f.stTick = 0; } break;
+        case 1:
+          if (f.health > 0) {
+            if ((fwd || back) && histAt(i, 1) !== f.inDir && f.stTick >= 1) {
+              f.downPhase = 3; f.stTick = 0; f.rollDir = fwd ? f.facing : -f.facing;
+            } else if (f.stTick >= DOWN_LIE_TICKS) { f.downPhase = 2; f.stTick = 0; }
+          }
+          break;
+        case 3:
+          f.x += f.rollDir * ROLL_SPEED;
+          if (f.stTick >= ROLL_TICKS) { f.downPhase = 2; f.stTick = 0; }
+          break;
+        default:
+          if (f.stTick >= GETUP_TICKS) { setState(i, ST_IDLE); f.wakeInv = WAKE_THROW_INV; }
+      }
+      break;
+    case ST_THROW: {
+      const mt = D.MvType[f.mv];
+      if (mt === MT_SUPER_GRAB) superGrabStep(i);
+      else if (mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE) superSlashStep(i);
+      else if (isDrain(i)) drainStep(i);
+      else if (f.stTick === D.MvStartup[f.mv]) {
+        Combat.dealDamage(1 - i, D.MvDamage[f.mv]);
+        Combat.addMeter(i, 80);
+        applyHit(1 - i, 0, 2.5, true);
+        FX.spawn(vint(F[1 - i].x + 0.5), vint(F[1 - i].footY) - 18, FX.FX_HEAVY);
+        Combat.C.HitStop = 4;
+      }
+      if ((mt === MT_THROW || mt === MT_GRAB) && f.stTick >= moveTotal(f.mv)) setState(i, ST_IDLE);
+      break;
+    }
+    case ST_THROWN:
+      f.vx = 0;
+      if (f.stTick <= TECH_WINDOW && f.bufAtk === MV_THROW && D.MvType[F[1 - i].mv] === MT_THROW) techThrow(i);
+      break;
+  }
+  clampX(i);
+}
+
+function updateAttack(i: number, d: boolean): void {
+  const f = F[i], mt = D.MvType[f.mv], t = f.stTick;
+  switch (mt) {
+    case MT_PROJ: case MT_SUPER_PROJ: case MT_PROJ_BOOM: case MT_SUPER_FIRE:
+      if (t === D.MvStartup[f.mv]) {
+        Proj.spawn(i, f.mv);
+        if (mt === MT_SUPER_FIRE) Combat.showText(f.superName, 40, i);
+      }
+      break;
+    case MT_NORMAL:
+      if (t < D.MvStartup[f.mv] && f.onGround && D.MvP1[f.mv] > 0) f.x += f.facing * D.MvP1[f.mv];
+      break;
+    case MT_RISE:
+      if (t === D.MvStartup[f.mv]) { f.onGround = false; f.vy = D.MvP1[f.mv]; f.vx = f.facing * 0.8; }
+      break;
+    case MT_RUSH: case MT_SUPER_RUSH:
+      if (t >= D.MvStartup[f.mv] && t < D.MvStartup[f.mv] + D.MvActive[f.mv]) {
+        f.x += f.facing * D.MvP1[f.mv];
+        if (mt === MT_RUSH && D.MvP2[f.mv] > 1 && f.hasHit && f.hitCount < D.MvP2[f.mv]) {
+          if ((t - D.MvStartup[f.mv]) % Math.trunc(D.MvActive[f.mv] / D.MvP2[f.mv]) === 0) f.hasHit = false;
+        }
+      }
+      break;
+    case MT_GRAB: case MT_SUPER_GRAB:
+      if (t === D.MvStartup[f.mv] && tryGrab(i, f.mv)) return;
+      break;
+    case MT_STANCE:
+      if (t === D.MvStartup[f.mv]) toggleArms(i);
+      break;
+    case MT_SUPER_QUAKE:
+      if (t === D.MvStartup[f.mv]) {
+        Combat.showText(f.superName, 40, i);
+        FX.spawn(vint(f.x + 0.5), vint(f.footY) - 4, FX.FX_BLOCK);
+      }
+      break;
+    case MT_TELEPORT: case MT_SUPER_TELE:
+      if (t === 1) FX.spawn(vint(f.x + 0.5), vint(f.footY) - 16, FX.FX_DARK);
+      if (t === D.MvStartup[f.mv] - 1) {
+        teleport(i);
+        FX.spawn(vint(f.x + 0.5), vint(f.footY) - 16, FX.FX_DARK);
+      }
+      break;
+  }
+  if (!f.onGround) {
+    if (airStep(i)) {
+      if (mt === MT_RISE) { setState(i, ST_LAND); f.stun = D.MvRecovery[f.mv]; }
+      else setState(i, ST_IDLE);
+    }
+    return;
+  }
+  if (f.hasHit && f.bufAtk >= 0 && f.bufAtk !== MV_THROW) {
+    if (f.bufAtk >= MV_SP1 && f.bufAtk <= MV_SUPER && canCancelIntoSpecial(i, f.bufAtk)) {
+      startAttack(i, takeAttack(i), d, true);
+      return;
+    } else if (f.bufAtk < MV_SP1 && f.chain < chainMax(i) && (isLight(f.mv) || flowChain(i))) {
+      const atk = takeAttack(i);
+      f.chain++;
+      startAttack(i, atk, d, true);
+      return;
+    }
+  }
+  if (t >= moveTotal(f.mv)) setState(i, d ? ST_CROUCH : ST_IDLE);
+}
+
+function canCancelIntoSpecial(i: number, slot: number): boolean {
+  const cur = D.MvType[F[i].mv];
+  return slot === MV_SUPER ? cur !== MT_SUPER_PROJ && cur !== MT_SUPER_GRAB : cur === MT_NORMAL;
+}
+
+function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boolean, wantGuard: boolean): void {
+  let atk = takeAttack(i);
+  const f = F[i];
+  if (atk === MV_THROW) {
+    if (tryThrow(i)) return;
+    atk = MV_LP;
+  }
+  if (atk >= 0 && startAttack(i, atk, d, false)) return;
+  if (f.bufDash !== 0) {
+    f.backward = f.bufDash < 0;
+    f.vx = f.facing * f.dashSpeed * f.bufDash;
+    f.bufDash = 0;
+    setState(i, ST_DASH);
+  } else if (u) {
+    setState(i, ST_JUMP);
+    f.onGround = false; f.airAttacked = false; f.vy = f.jumpVY;
+    f.vx = fwd ? f.facing * f.jumpVX : back ? -f.facing * f.jumpVX : 0;
+  } else if (wantGuard) {
+    f.crouch = d;
+    setState(i, ST_GUARD);
+  } else if (d) setState(i, ST_CROUCH);
+  else if (fwd || back) {
+    f.backward = back;
+    setState(i, ST_WALK);
+    if (back) f.x -= f.facing * f.walkSpeed * BACK_WALK;
+    else f.x += f.facing * f.walkSpeed;
+  } else setState(i, ST_IDLE);
+}
+
+function startAttack(i: number, atk: number, crouching: boolean, chained: boolean): boolean {
+  const f = F[i];
+  let mv: number;
+  if (atk === MV_THROW) atk = MV_LP;
+  if (atk === MV_OVH && crouching) atk = MV_HP;
+  if (atk === MV_OVH) { mv = f.moves[MV_OVH]; crouching = false; }
+  else if (atk >= MV_SP1) {
+    mv = f.moves[atk];
+    const mt = D.MvType[mv];
+    if ((mt === MT_PROJ || mt === MT_SUPER_PROJ || mt === MT_PROJ_BOOM || mt === MT_SUPER_FIRE) && Proj.alive(i)) return false;
+    if (!canAfford(i, atk)) return false;
+    if (atk === MV_SUPER) {
+      if (f.meter < METER_MAX) return false;
+      f.meter = 0;
+      Combat.startSuper(i);
+    }
+    f.naegong -= D.MvCost[mv];
+    crouching = false;
+  } else if (crouching) mv = f.moves[atk + 4];
+  else mv = f.moves[atk];
+  f.mv = mv; f.crouch = crouching; f.vx = 0; f.hasHit = false; f.hitCount = 0;
+  if (!chained) f.chain = 0;
+  setState(i, ST_ATTACK);
+  return true;
+}
+
+function canBeGrabbed(o: number): boolean {
+  const f = F[o];
+  if (!f.onGround || f.wakeInv > 0) return false;
+  switch (f.state) {
+    case ST_IDLE: case ST_WALK: case ST_CROUCH: case ST_DASH: case ST_LAND: return true;
+    case ST_GUARD: return f.stun === 0;
+    case ST_ATTACK: return f.stTick >= D.MvStartup[f.mv] + D.MvActive[f.mv];
+  }
+  return false;
+}
+
+const tryThrow = (i: number) => tryGrab(i, F[i].moves[MV_THROW]);
+
+function tryGrab(i: number, mv: number): boolean {
+  const o = 1 - i;
+  const reach = D.MvHbX[mv] + D.MvHbW[mv];
+  if (Math.abs(F[o].x - F[i].x) > reach) return false;
+  if (!canBeGrabbed(o)) return false;
+  F[i].mv = mv; F[i].vx = 0;
+  setState(i, ST_THROW);
+  setState(o, ST_THROWN);
+  F[o].crouch = false; F[o].bufAtk = -1;
+  if (D.MvType[mv] !== MT_SUPER_GRAB && !isDrain(i)) F[o].x = F[i].x + F[i].facing * (F[i].halfW + F[o].halfW - 2);
+  if (D.MvType[mv] === MT_SUPER_GRAB) FX.spawn(vint(F[o].x + 0.5), vint(F[o].footY) - 20, FX.FX_HEAVY);
+  return true;
+}
+
+function superGrabStep(i: number): void {
+  const o = 1 - i, f = F[i], t = f.stTick;
+  if (t <= 4) {
+    const tx = F[o].x - f.facing * (f.halfW + F[o].halfW - 2);
+    f.x += (tx - f.x) * 0.5;
+  }
+  const hx = vint(F[o].x + 0.5) - f.facing * 2, hy = vint(F[o].footY) - 22;
+  if (t === 6 || t === 10 || t === 14 || t === 18) {
+    Combat.dealDamage(o, 40); Combat.addComboHit(i);
+    F[o].flash = 1;
+    FX.spawn(hx, hy, t === 18 ? FX.FX_HEAVY : FX.FX_HIT);
+    Combat.C.HitStop = 2;
+  } else if (t === 34) {
+    F[o].footY = GROUND_Y;
+    F[o].x = f.x + f.facing * (f.halfW + F[o].halfW + 6);
+    Combat.dealDamage(o, Math.max(0, D.MvDamage[f.mv] - 160)); Combat.addComboHit(i);
+    applyHit(o, 0, 1.2, true);
+    F[o].vy = -2; F[o].flash = 2;
+    FX.spawn(vint(F[o].x + 0.5), GROUND_Y - 3, FX.FX_SLAM);
+    FX.spawn(vint(F[o].x + 0.5) - 8, GROUND_Y - 6, FX.FX_HEAVY);
+    FX.spawn(vint(F[o].x + 0.5) + 8, GROUND_Y - 6, FX.FX_HEAVY);
+    Combat.C.HitStop = 8;
+    Combat.showText(f.superName, 40, i);
+  }
+  if (t >= 22 && t < 34 && F[o].state === ST_THROWN) {
+    F[o].x = f.x + f.facing * (t < 30 ? 3 : 3 + (t - 29) * 4);
+    F[o].footY = GROUND_Y - (t < 28 ? (t - 21) * 5 : t < 30 ? 30 : 30 - (t - 29) * 6);
+  }
+  if (t >= SG_END) setState(i, ST_IDLE);
+}
+
+function teleport(i: number): void {
+  const o = 1 - i, f = F[i];
+  const sd = F[o].x >= f.x ? 1 : -1;
+  const gap = f.halfW + F[o].halfW + 3;
+  let nx = F[o].x + sd * gap;
+  if (nx < f.halfW || nx > SCREEN_W - f.halfW) nx = F[o].x - sd * gap;
+  f.x = nx;
+  f.facing = F[o].x > f.x ? 1 : -1;
+}
+
+export function vanished(i: number): boolean {
+  const f = F[i];
+  if (f.state !== ST_ATTACK) return false;
+  const mt = D.MvType[f.mv];
+  return (mt === MT_TELEPORT || mt === MT_SUPER_TELE) && f.stTick >= 1 && f.stTick < D.MvStartup[f.mv];
+}
+
+export function startSuperSlash(a: number, d: number): void {
+  F[a].vx = 0;
+  setState(a, ST_THROW);
+  setState(d, ST_THROWN);
+  F[d].crouch = false; F[d].bufAtk = -1; F[d].footY = GROUND_Y; F[d].onGround = true;
+}
+
+function superSlashStep(i: number): void {
+  const o = 1 - i, f = F[i], t = f.stTick;
+  const cx = vint(F[o].x + 0.5), cy = vint(F[o].footY) - 18;
+  if (t === 2 || t === 5 || t === 8 || t === 11 || t === 14 || t === 17) {
+    Combat.dealDamage(o, 30); Combat.addComboHit(i);
+    F[o].flash = 1;
+    FX.spawn(cx + (t % 3) - 1, cy + (Math.trunc(t / 3) % 3) * 3 - 3, f.seqFx);
+    Combat.C.HitStop = 1;
+    f.x += f.facing * (Math.trunc(t / 3) % 2 === 0 ? 1 : -1);
+  } else if (t === 26) {
+    Combat.dealDamage(o, Math.max(0, D.MvDamage[f.mv] - 180)); Combat.addComboHit(i);
+    applyHit(o, 0, 3, true);
+    F[o].flash = 2;
+    FX.spawn(cx, cy, f.seqFx); FX.spawn(cx, cy - 4, FX.FX_HEAVY); FX.spawn(cx, cy + 4, FX.FX_HEAVY);
+    Combat.C.HitStop = 8;
+    Combat.showText(f.superName, 40, i);
+  }
+  if (t >= SS_END) setState(i, ST_IDLE);
+}
+
+function techThrow(i: number): void {
+  const o = 1 - i;
+  setState(i, ST_GUARD); F[i].stun = 6; F[i].vx = -F[i].facing * 2.5;
+  setState(o, ST_GUARD); F[o].stun = 6; F[o].vx = -F[o].facing * 2.5;
+  F[i].bufAtk = -1;
+  FX.spawn(vint((F[0].x + F[1].x) / 2), vint(F[i].footY) - 22, FX.FX_BLOCK);
+  Combat.showText("ESCAPE", 20);
+}
+
+const flowChain = (i: number) => F[i].prefix === "seolhwa" && D.MvType[F[i].mv] === MT_NORMAL && F[i].onGround;
+const chainMax = (i: number) => (F[i].prefix === "seolhwa" ? MAX_CHAIN + 1 : MAX_CHAIN);
+
+function isLight(mv: number): boolean {
+  for (let k = 0; k <= 1; k++) {
+    const m = F[k].moves;
+    if (mv === m[MV_LP] || mv === m[MV_LK] || mv === m[MV_CLP] || mv === m[MV_CLK]) return true;
+  }
+  return false;
+}
+
+export const moveTotal = (mv: number) => D.MvStartup[mv] + D.MvActive[mv] + D.MvRecovery[mv];
+
+export function threatened(i: number): boolean {
+  const o = 1 - i;
+  let t = false;
+  if (F[o].state === ST_ATTACK) {
+    const mv = F[o].mv;
+    let reach = D.MvHbX[mv] + D.MvHbW[mv] + F[i].halfW + 8;
+    if (D.MvType[mv] === MT_RUSH || D.MvType[mv] === MT_SUPER_RUSH) reach += D.MvP1[mv] * D.MvActive[mv];
+    if (reach < 26) reach = 26;
+    if (reach > GUARD_RANGE) reach = GUARD_RANGE;
+    if (Math.abs(F[o].x - F[i].x) < reach) t = true;
+  }
+  if (Proj.incomingDistance(i) < 30) t = true;
+  return t;
+}
+
+function airStep(i: number): boolean {
+  const f = F[i];
+  f.vy += GRAVITY; f.footY += f.vy; f.x += f.vx;
+  if (f.footY >= GROUND_Y) {
+    f.footY = GROUND_Y; f.vy = 0; f.vx = 0; f.onGround = true;
+    return true;
+  }
+  return false;
+}
+
+export function setState(i: number, st: number): void {
+  const f = F[i];
+  if (f.state !== st || st === ST_ATTACK || st === ST_HIT || st === ST_DOWN || st === ST_THROW || st === ST_DASH) f.stTick = 0;
+  f.state = st;
+  if (st === ST_CROUCH) f.crouch = true;
+  if (st === ST_IDLE || st === ST_WALK || st === ST_JUMP || st === ST_DASH) f.crouch = false;
+}
+
+export function applyHit(i: number, hitstun: number, push: number, knockdown: boolean): void {
+  const f = F[i];
+  f.bufAtk = -1;
+  if (f.onGround) f.footY = GROUND_Y;
+  if (knockdown || !f.onGround) {
+    setState(i, ST_DOWN);
+    f.downPhase = 0; f.onGround = false; f.vy = -3.5; f.vx = -f.facing * push;
+  } else {
+    f.crouch = f.state === ST_CROUCH || ((f.state === ST_ATTACK || f.state === ST_GUARD || f.state === ST_HIT) && f.crouch);
+    setState(i, ST_HIT);
+    f.stun = hitstun; f.stunTotal = hitstun; f.vx = -f.facing * push;
+  }
+  clampX(i);
+}
+
+export function applyBlock(i: number, blockstun: number, push: number): void {
+  setState(i, ST_GUARD);
+  F[i].stun = blockstun;
+  F[i].vx = -F[i].facing * push;
+}
+
+export const atWall = (i: number) => F[i].x <= F[i].halfW + 0.5 || F[i].x >= SCREEN_W - F[i].halfW - 0.5;
+
+function clampX(i: number): void {
+  const f = F[i];
+  if (f.x < f.halfW) f.x = f.halfW;
+  if (f.x > SCREEN_W - f.halfW) f.x = SCREEN_W - f.halfW;
+  if (f.state === ST_DOWN) {
+    const id = currentSprite(i);
+    let l: number, r: number;
+    if (f.facing < 0) { l = vint(f.x + 0.5) + D.SprAX[id] - (D.SprW[id] - 1); r = vint(f.x + 0.5) + D.SprAX[id]; }
+    else { l = vint(f.x + 0.5) - D.SprAX[id]; r = l + D.SprW[id] - 1; }
+    if (l < 0) f.x -= l;
+    if (r > SCREEN_W - 1) f.x -= r - (SCREEN_W - 1);
+  }
+}
+
+function resolvePush(): void {
+  if (Math.abs(F[0].footY - F[1].footY) > 14) return;
+  if (F[0].state === ST_DOWN || F[1].state === ST_DOWN) return;
+  if (F[0].state === ST_THROWN || F[1].state === ST_THROWN) return;
+  if (vanished(0) || vanished(1)) return;
+  let dx = F[1].x - F[0].x;
+  const minD = F[0].halfW + F[1].halfW;
+  if (Math.abs(dx) >= minD) return;
+  const s = dx > 0 ? 1 : dx < 0 ? -1 : F[0].facing;
+  const ov = minD - Math.abs(dx);
+  F[0].x -= (s * ov) / 2;
+  F[1].x += (s * ov) / 2;
+  clampX(0); clampX(1);
+  dx = F[1].x - F[0].x;
+  if (Math.abs(dx) < minD) {
+    if (F[0].x <= F[0].halfW || F[0].x >= SCREEN_W - F[0].halfW) { F[1].x = F[0].x + s * minD; clampX(1); }
+    else { F[0].x = F[1].x - s * minD; clampX(0); }
+  }
+}
+
+function updateFacing(i: number): void {
+  const o = 1 - i, f = F[i];
+  if (f.state === ST_IDLE || f.state === ST_WALK || f.state === ST_CROUCH || f.state === ST_GUARD) {
+    if (F[o].x > f.x) f.facing = 1;
+    else if (F[o].x < f.x) f.facing = -1;
+  }
+}
+
+// ---------------------------------------------------------------- boxes
+
+export function inActive(i: number): boolean {
+  const f = F[i];
+  if (f.state !== ST_ATTACK) return false;
+  return f.stTick >= D.MvStartup[f.mv] && f.stTick < D.MvStartup[f.mv] + D.MvActive[f.mv];
+}
+
+export function inRecovery(i: number): boolean {
+  const f = F[i];
+  if (f.state === ST_LAND) return true;
+  if (f.state === ST_ATTACK && f.onGround) return f.stTick >= D.MvStartup[f.mv] + D.MvActive[f.mv];
+  return false;
+}
+
+export interface Box { x: number; y: number; w: number; h: number }
+
+export function hitRect(i: number): Box | null {
+  if (!inActive(i)) return null;
+  const f = F[i], mv = f.mv, mt = D.MvType[mv];
+  if (mt === MT_PROJ || mt === MT_SUPER_PROJ || mt === MT_GRAB || mt === MT_SUPER_GRAB || mt === MT_THROW) return null;
+  if (mt === MT_PROJ_BOOM || mt === MT_SUPER_FIRE || mt === MT_TELEPORT || mt === MT_STANCE) return null;
+  const w = D.MvHbW[mv], h = D.MvHbH[mv];
+  const x = f.facing > 0 ? vint(f.x + 0.5) + D.MvHbX[mv] : vint(f.x + 0.5) - D.MvHbX[mv] - w + 1;
+  return { x, y: vint(f.footY + 0.5) + D.MvHbY[mv], w, h };
+}
+
+export function hurtRect(i: number): Box | null {
+  const f = F[i];
+  if (f.state === ST_DOWN || f.state === ST_THROWN) return null;
+  if (vanished(i)) return null;
+  if (f.state === ST_ATTACK && D.MvType[f.mv] === MT_RISE && f.stTick < D.MvP2[f.mv]) return null;
+  const h = f.crouch ? f.hurtHC : f.hurtH;
+  const w = vint(f.halfW * 2 + 4);
+  return { x: vint(f.x + 0.5) - Math.trunc(w / 2), y: vint(f.footY + 0.5) - h, w, h };
+}
+
+// ---------------------------------------------------------------- draw
+
+export function draw(): void {
+  drawGhosts(1 - mControl);
+  drawGhosts(mControl);
+  drawOne(1 - mControl);
+  drawOne(mControl);
+  for (let i = 0; i <= 1; i++) {
+    if (isDrain(i)) drawDrainOrbs(i);
+    const f = F[i];
+    if (f.prefix === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
+    if (f.prefix === "danwoo" && f.state === ST_ATTACK) {
+      if (f.mv === f.moves[MV_SP1]) drawWindPalm(i);
+      if (f.mv === f.moves[MV_SP2]) drawSpinFist(i);
+      if (f.mv === f.moves[MV_SUPER]) drawQuake(i);
+    }
+  }
+  if (mShowBoxes) { drawBoxes(0); drawBoxes(1); }
+}
+
+export function setPose(i: number, nm: string): void {
+  mPose[i] = -1;
+  if (nm && hasSprite(F[i].prefix + "." + nm)) mPose[i] = spriteId(F[i].prefix + "." + nm);
+}
+
+export function clearGhosts(i: number): void { mGN[i] = 0; }
+
+function ghostColor(i: number): number {
+  return F[i].prefix === "heukrim" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(96, 30, 40) : -1;
+}
+
+function updateGhosts(i: number): void {
+  if (ghostColor(i) < 0) { mGN[i] = 0; return; }
+  const f = F[i];
+  let want = false;
+  if (f.state === ST_DASH || f.state === ST_JUMP) want = true;
+  else if (f.state === ST_ATTACK) {
+    const mt = D.MvType[f.mv];
+    want = mt === MT_TELEPORT || mt === MT_SUPER_TELE || !f.onGround;
+  }
+  if (want) {
+    for (let k = GHOSTS - 1; k >= 1; k--) {
+      mGX[i][k] = mGX[i][k - 1]; mGY[i][k] = mGY[i][k - 1]; mGId[i][k] = mGId[i][k - 1]; mGFlip[i][k] = mGFlip[i][k - 1];
+    }
+    mGX[i][0] = vint(f.x + 0.5); mGY[i][0] = vint(f.footY + 0.5); mGId[i][0] = currentSprite(i); mGFlip[i][0] = f.facing < 0;
+    if (mGN[i] < GHOSTS) mGN[i]++;
+  } else if (mGN[i] > 0) mGN[i]--;
+}
+
+function drawGhosts(i: number): void {
+  const c = ghostColor(i);
+  if (c < 0) return;
+  for (let k = 1; k <= GHOSTS - 1; k += 2) if (k < mGN[i]) R.drawSprite(mGId[i][k], mGX[i][k], mGY[i][k], mGFlip[i][k], c);
+}
+
+export function currentSprite(i: number): number {
+  const f = F[i], t = f.stTick;
+  if (mPose[i] >= 0 && f.onGround && (f.state === ST_IDLE || f.state === ST_WALK || f.state === ST_CROUCH)) return mPose[i];
+  switch (f.state) {
+    case ST_IDLE: return animFrame(f.aIdle, t);
+    case ST_WALK: return animFrame(f.aWalk, t, f.backward);
+    case ST_CROUCH: case ST_LAND: return f.sCrouch;
+    case ST_JUMP: return f.sJump;
+    case ST_DASH: return f.backward ? f.sBDash : f.sDash;
+    case ST_ATTACK: case ST_THROW: {
+      const mt = D.MvType[f.mv], mv = f.mv;
+      if (f.state === ST_THROW && mt === MT_SUPER_GRAB) {
+        if (t < 6) return D.MvSprS[mv];
+        if (t < 21) return Math.trunc(t / 4) % 2 === 0 ? f.sPunchB : f.sPunchA;
+        if (t < 34) return f.sLift;
+        return f.sSlam;
+      }
+      if (f.state === ST_THROW && (mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE)) {
+        if (t < 20) {
+          const k = Math.trunc(t / 3) % 3;
+          return k === 0 ? f.sSlashA : k === 1 ? f.sSlashB : f.sSlashC;
+        }
+        return t < 26 ? D.MvSprS[mv] : D.MvSprA[mv];
+      }
+      if (f.state === ST_THROW) return t >= D.MvStartup[mv] ? D.MvSprA[mv] : D.MvSprS[mv];
+      if (t < D.MvStartup[mv] && D.MvSeqPre[mv] >= 0) return animFrameHold(D.MvSeqPre[mv], t);
+      if (t >= D.MvStartup[mv] && D.MvSeqAct[mv] >= 0 && (inActive(i) || !f.onGround)) return animFrameHold(D.MvSeqAct[mv], t - D.MvStartup[mv]);
+      if (inRecovery(i) && D.MvSeqRec[mv] >= 0) return animFrameHold(D.MvSeqRec[mv], t - D.MvStartup[mv] - D.MvActive[mv]);
+      if (mt === MT_RISE && !f.onGround) return D.MvSprA[mv];
+      if (inActive(i)) return D.MvSprA[mv];
+      return D.MvSprS[mv];
+    }
+    case ST_GUARD: return f.crouch ? f.sCGuard : f.sGuard;
+    case ST_HIT:
+      if (f.crouch) return f.sCHit;
+      return t < Math.trunc((f.stunTotal + 1) / 2) ? f.sHit0 : f.sHit1;
+    case ST_THROWN: {
+      let s = f.sHit0;
+      const o = F[1 - i];
+      if (isDrain(1 - i)) { if (Math.trunc(t / 3) % 2 === 1) s = f.sHit1; }
+      else if (o.state === ST_THROW) {
+        const omt = D.MvType[o.mv];
+        if (omt === MT_SUPER_GRAB) {
+          if (o.stTick >= 22) s = f.sDown0;
+          else if (Math.trunc(o.stTick / 4) % 2 === 1) s = f.sHit1;
+        } else if (omt === MT_SUPER_RUSH || omt === MT_SUPER_TELE) {
+          if (Math.trunc(o.stTick / 3) % 2 === 1) s = f.sHit1;
+        }
+      }
+      return s;
+    }
+    case ST_DOWN:
+      switch (f.downPhase) {
+        case 0: return f.sDown0;
+        case 1: return f.sDown1;
+        case 3: {
+          const k = f.rollDir === f.facing ? Math.trunc(t / 2) % 4 : (4 - (Math.trunc(t / 2) % 4)) % 4;
+          return [f.sRoll0, f.sRoll1, f.sRoll2, f.sRoll3][k];
+        }
+        default: return f.sCrouch;
+      }
+  }
+  return animFrame(f.aIdle, t);
+}
+
+function drawOne(i: number): void {
+  if (vanished(i)) return;
+  const f = F[i];
+  const tint = f.flash > 0 ? RGB(255, 255, 255) : -1;
+  const x = vint(f.x + 0.5), y = vint(f.footY + 0.5), flip = f.facing < 0;
+  if ((demonAwake(i) || drainLinked(i)) && tint < 0) {
+    if (Math.trunc(mFrame / 2) % 2 === 0 || drainLinked(i)) {
+      const red = RGB(200, 30, 50);
+      R.drawSprite(currentSprite(i), x - 1, y, flip, red);
+      R.drawSprite(currentSprite(i), x + 1, y, flip, red);
+      R.drawSprite(currentSprite(i), x, y - 1, flip, red);
+    }
+    if (demonAwake(i) && !mAwakeShown[i]) { mAwakeShown[i] = true; Combat.showText("CHEONMA SIMGONG", 40, i); }
+  }
+  R.drawSprite(currentSprite(i), x, y, flip, tint, i === 1 && F[0].prefix === F[1].prefix);
+}
+
+export function isDrain(i: number): boolean {
+  return F[i].state === ST_THROW && F[i].prefix === "cheonma" && D.MvType[F[i].mv] === MT_GRAB;
+}
+
+function drainStep(i: number): void {
+  const o = 1 - i, t = F[i].stTick;
+  if (t >= DRAIN_FIRST && (t - DRAIN_FIRST) % DRAIN_EVERY === 0 && Math.trunc((t - DRAIN_FIRST) / DRAIN_EVERY) < DRAIN_PULSES) {
+    const dmg = Math.trunc(D.MvDamage[F[i].mv] / DRAIN_PULSES);
+    Combat.dealDamage(o, dmg);
+    const steal = Math.min(F[o].naegong, Math.trunc(DRAIN_NG / DRAIN_PULSES));
+    F[o].naegong -= steal;
+    F[i].naegong = Math.min(NAEGONG_MAX, F[i].naegong + steal);
+    F[i].health = Math.min(F[i].maxHealth, F[i].health + Math.trunc(dmg / 2));
+    if (F[i].health > F[i].healthShown) F[i].healthShown = F[i].health;
+    F[o].flash = 1;
+    Combat.addMeter(i, 20);
+    if (F[o].health <= 0) applyHit(o, 0, 1.5, true);
+  }
+  if (t === DRAIN_RELEASE && F[o].state === ST_THROWN) applyHit(o, 4, 0, false);
+}
+
+function drawDrainOrbs(i: number): void {
+  const o = 1 - i;
+  const tx = F[i].x + F[i].facing * 3, ty = F[i].footY - 22;
+  for (let k = 0; k <= 7; k++) {
+    const ang = k * 0.785398;
+    const sx = F[o].x + 13 * Math.cos(ang), sy = F[o].footY - 18 + 13 * Math.sin(ang);
+    const ph = ((F[i].stTick + k * 3) % 8) / 8;
+    const px = clng(sx + (tx - sx) * ph), py = clng(sy + (ty - sy) * ph);
+    R.fillRect(px - 1, py, 3, 1, RGB(255, 60, 70));
+    R.fillRect(px, py - 1, 1, 3, RGB(255, 60, 70));
+    R.putPixel(px, py, RGB(255, 200, 200));
+  }
+}
+
+const BIG_PALM = ["........ooo.......", ".......oolooog....", "....oooorloloog...", "....oloorlorlog...",
+  "....orlorlorlooog.", "....orlorlorloloog", "...oorlorlorlorlog", "...orlorlorlorloog",
+  "...orlorlorlorlog.", ".ooorlorlorlorlog.", ".odorlorlorlorloog", "oodrddrrrrrrrrllog",
+  "odrddrrlllllrlloog", "oorrdrrlwwwlrllog.", ".orrdrrlwwwlrllog.", ".ooddrrlllllrllog.",
+  "..oddrrrrrrrrllog.", "..odrrrrrrrrlooog.", "..ooodrrrrlooog...", "....odrrrrlog.....",
+  "....odrrrrlo......", "....oooooooo......"];
+const SMALL_PALM = [".....oo.o...", "...ooloolo..", "...orlorlog.", "...orlorlolo", "..oorlorlolo",
+  ".odorlorlolo", "oddorrrrrrlo", "odrdrlllrllo", "oordrlwwlrlo", ".ordrlwwlrlo",
+  ".oddrrlllrlo", "..odrrrrrlo.", "..oodrrrlog.", "...odrrrlo..", "...oooooo..."];
+
+function drawDemonPalm(i: number): void {
+  const t = F[i].stTick - D.MvStartup[F[i].mv];
+  if (t < 0 || t > D.MvActive[F[i].mv] + 1) return;
+  const lit = t <= D.MvActive[F[i].mv];
+  const ink = (ch: string): number => {
+    switch (ch) {
+      case "o": return RGB(90, 8, 22);
+      case "d": return RGB(150, 20, 38);
+      case "r": return lit ? RGB(220, 40, 58) : RGB(150, 20, 38);
+      case "l": return lit ? RGB(255, 120, 130) : RGB(220, 40, 58);
+      case "w": return lit ? RGB(255, 215, 215) : RGB(255, 120, 130);
+      case "g": return lit ? RGB(255, 70, 90) : -1;
+    }
+    return -1;
+  };
+  drawArt(i, BIG_PALM, 11, -41, ink);
+}
+
+function drawArt(i: number, rows: string[], dx: number, dy: number, ink: (ch: string) => number): void {
+  const x0 = clng(F[i].x) + F[i].facing * dx, y0 = clng(F[i].footY) + dy;
+  for (let r = 0; r < rows.length; r++)
+    for (let c = 0; c < rows[r].length; c++) {
+      const col = ink(rows[r][c]);
+      if (col >= 0) R.putPixel(F[i].facing > 0 ? x0 + c : x0 - c, y0 + r, col);
+    }
+}
+
+function blueInk(lit: boolean): (ch: string) => number {
+  return (ch) => {
+    switch (ch) {
+      case "o": return RGB(14, 34, 96);
+      case "d": return RGB(34, 80, 180);
+      case "r": return lit ? RGB(66, 140, 236) : RGB(34, 80, 180);
+      case "l": return lit ? RGB(150, 206, 255) : RGB(66, 140, 236);
+      case "w": return lit ? RGB(236, 248, 255) : RGB(150, 206, 255);
+      case "g": return lit ? RGB(110, 190, 255) : -1;
+    }
+    return -1;
+  };
+}
+
+function toggleArms(i: number): void {
+  const cur = F[i].mv;
+  F[i].armed = !F[i].armed;
+  loadKit(i, F[i].armed ? F[i].prefix + "sw" : F[i].prefix);
+  F[i].mv = cur;
+  FX.spawn(vint(F[i].x + 0.5) + F[i].facing * 6, vint(F[i].footY) - 18, FX.FX_BLOCK);
+}
+
+function drawWindPalm(i: number): void {
+  const t = F[i].stTick - D.MvStartup[F[i].mv];
+  if (t < 0 || t > D.MvActive[F[i].mv] + 1) return;
+  drawArt(i, SMALL_PALM, 10, -31, blueInk(t <= D.MvActive[F[i].mv]));
+}
+
+function drawSpinFist(i: number): void {
+  const f = F[i], t = f.stTick - D.MvStartup[f.mv];
+  if (t < -2 || t > D.MvActive[f.mv] + 2) return;
+  const cx = f.x + f.facing * 2, cy = f.footY - 24;
+  for (let k = 0; k <= 14; k++) {
+    const th = 3.14159 * (1 - k / 14);
+    const px = clng(cx + f.facing * 13 * Math.cos(th)), py = clng(cy + 3 * Math.sin(th));
+    const ink = k < 5 ? RGB(34, 80, 180) : k < 10 ? RGB(66, 140, 236) : RGB(150, 206, 255);
+    if (t >= 0 || k < 8) R.fillRect(px, py, 2, 1, ink);
+  }
+  if (t < 0) return;
+  const hx = clng(f.x) + f.facing * 13, hy = clng(f.footY) - 24;
+  R.fillRect(hx - 3, hy - 2, 7, 5, RGB(34, 80, 180));
+  R.fillRect(hx - 2, hy - 3, 5, 7, RGB(34, 80, 180));
+  R.fillRect(hx - 2, hy - 2, 5, 5, RGB(66, 140, 236));
+  R.fillRect(hx - 1, hy - 1, 3, 3, RGB(236, 248, 255));
+  if (t <= 1) {
+    R.putPixel(hx + f.facing * 5, hy - 3, RGB(150, 206, 255));
+    R.putPixel(hx + f.facing * 6, hy + 1, RGB(150, 206, 255));
+    R.putPixel(hx + f.facing * 4, hy + 4, RGB(150, 206, 255));
+  }
+}
+
+function drawQuake(i: number): void {
+  const f = F[i], t = f.stTick - D.MvStartup[f.mv];
+  if (t < 0 || t > D.MvActive[f.mv] + 8) return;
+  const gx = clng(f.x), gy = clng(f.footY);
+  for (let k = 0; k <= 2; k++) {
+    const rad = (t - k * 2) * 6 + 6;
+    if (rad <= 6 || rad >= 70) continue;
+    const h = Math.max(3, 13 - Math.trunc(rad / 7) - k * 2);
+    const ink = k === 0 ? RGB(236, 248, 255) : k === 1 ? RGB(120, 196, 255) : RGB(50, 110, 220);
+    for (let s = -1; s <= 1; s += 2) {
+      R.fillRect(gx + s * rad - 2, gy - h, 4, h, ink);
+      R.fillRect(gx + s * (rad - 4) - 1, gy - Math.trunc(h / 2) - 1, 3, Math.trunc(h / 2) + 1, RGB(50, 110, 220));
+      R.fillRect(gx + s * (rad + 3), gy - h - 3, 1, 2, RGB(150, 206, 255));
+      if (k === 0) R.fillRect(s < 0 ? gx - rad : gx, gy - 1, rad, 1, RGB(120, 196, 255));
+    }
+  }
+  if (t <= D.MvActive[f.mv] + 4) {
+    const n = BIG_PALM[0].length, flat: string[] = [];
+    for (let c = 0; c < Math.trunc(n / 2); c++) {
+      let row = "";
+      for (let r = BIG_PALM.length - 1; r >= 0; r--) row += BIG_PALM[r][n - 1 - c * 2];
+      flat.push(row);
+    }
+    drawArt(i, flat, 2, -Math.trunc(n / 2) + 1, blueInk(t <= D.MvActive[f.mv]));
+    R.fillRect(clng(f.x) - 10, clng(f.footY), 21, 1, RGB(150, 206, 255));
+  }
+}
+
+const drainLinked = (i: number) => isDrain(i) || (isDrain(1 - i) && F[i].state === ST_THROWN);
+
+export function demonAwake(i: number): boolean {
+  const f = F[i];
+  return f.prefix === "cheonma" && f.health > 0 && f.health * 10 <= f.maxHealth * 3;
+}
+
+function drawBoxes(i: number): void {
+  const u = hurtRect(i);
+  if (u) R.drawRectOutline(u.x, u.y, u.w, u.h, RGB(60, 255, 120));
+  const h = hitRect(i);
+  if (h) R.drawRectOutline(h.x, h.y, h.w, h.h, RGB(255, 40, 40));
+}
