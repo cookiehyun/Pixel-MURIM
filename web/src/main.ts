@@ -1,4 +1,5 @@
 import { loadAll } from "./data";
+import * as Account from "./account";
 import * as K from "./input";
 import * as R from "./renderer";
 import { gameInit, gameTick, gameRender, G, startMatch, MODE_TRAINING } from "./game";
@@ -11,6 +12,7 @@ const TICK_MS = 50;                    // 20 ticks per second, like the Excel ve
 async function main(): Promise<void> {
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
   await loadAll();
+  await Account.init();
   K.init();
   R.init(canvas);
   gameInit();

@@ -19,6 +19,7 @@
 //!                                    -1 draw. May be sent several times. -> RATING <new> <change>
 //!   LEAVE                            leave the room / match (the partner gets BYE)
 //!   TOP                              -> TOP <n> <name> <rating> ... ME <rank> <rating> <games>
+//!                                    (also works before HELLO, then without the ME part)
 //!   anything else while matched      relayed to the partner
 //! Web players (browser) connect with WebSocket (--ws-port, 127.0.0.1 only; Caddy adds TLS in front)
 //! and log in with HELLO PW1 ...: the same messages, but they are only ever paired with other web players.
@@ -311,6 +312,10 @@ impl Server {
             self.hello(from, &p);
             return;
         }
+        if p[0] == "TOP" && !self.clients.contains_key(&from) {
+            self.top(from); // ranking screen before logging in (no "ME" part)
+            return;
+        }
         if !self.clients.contains_key(&from) {
             self.send(from, "ERROR LOGIN");
             return;
@@ -532,10 +537,12 @@ impl Server {
         for (_, p) in r.iter().take(10) {
             s.push_str(&format!(" {} {:.0}", p.name, p.rating));
         }
-        let me = &self.clients[&to].token;
-        let pos = r.iter().position(|(t, _)| *t == me).map(|i| i + 1).unwrap_or(0);
-        let (mr, mg) = self.players.get(me).map(|p| (p.rating, p.games)).unwrap_or((START_RATING, 0));
-        s.push_str(&format!(" ME {} {:.0} {}", pos, mr, mg));
+        if let Some(c) = self.clients.get(&to) {
+            let me = &c.token;
+            let pos = r.iter().position(|(t, _)| *t == me).map(|i| i + 1).unwrap_or(0);
+            let (mr, mg) = self.players.get(me).map(|p| (p.rating, p.games)).unwrap_or((START_RATING, 0));
+            s.push_str(&format!(" ME {} {:.0} {}", pos, mr, mg));
+        }
         self.send(to, &s);
     }
 

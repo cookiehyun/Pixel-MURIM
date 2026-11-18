@@ -14,6 +14,9 @@ const touchDown = new Array<boolean>(BTN_COUNT).fill(false);
 const touchLatch = new Array<boolean>(BTN_COUNT).fill(false);
 let lastKey = 0;
 let focusLost = false;
+let suspended = false;                         // a text form is open: keys go to it, not the game
+
+export function setSuspended(v: boolean): void { suspended = v; keyDown.clear(); keyLatch.clear(); }
 
 export function init(): void {
   vk[BTN_LEFT] = 0x25; vk[BTN_UP] = 0x26; vk[BTN_RIGHT] = 0x27; vk[BTN_DOWN] = 0x28;
@@ -21,6 +24,7 @@ export function init(): void {
   vk[BTN_QUIT] = 0x1b; vk[BTN_SWAP] = 0x09; vk[BTN_DBG_HIT] = 0x48; vk[BTN_DBG_DOWN] = 0x4a;
   vk[BTN_DBG_DUMMY] = 0x44; vk[BTN_DBG_BOX] = 0x70; vk[BTN_TAG] = 0x43;
   window.addEventListener("keydown", (e) => {
+    if (suspended) return;
     if (e.keyCode === 9 || e.keyCode === 0x70 || (e.keyCode >= 0x25 && e.keyCode <= 0x28) || e.keyCode === 32) e.preventDefault();
     if (!keyDown.has(e.keyCode)) { keyLatch.add(e.keyCode); lastKey = e.keyCode; }
     keyDown.add(e.keyCode);

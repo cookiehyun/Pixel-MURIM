@@ -1,4 +1,5 @@
 // Port of Arcade.bas: six opponents in random order, your own shadow, then Cheonma. Clear unlocks Cheonma.
+import * as Account from "./account";
 import * as R from "./renderer";
 import { SCREEN_W, SCREEN_H } from "./renderer";
 import * as Font from "./font";
@@ -65,6 +66,7 @@ export function bossUnlocked(): boolean {
 }
 function saveUnlock(): void {
   try { localStorage.setItem("pixelmurim.cheonma", "1"); } catch { /* private mode: not saved */ }
+  Account.store({ cheonma: true });
 }
 
 const countdownSecs = () => 9 - Math.trunc(mT / 20);

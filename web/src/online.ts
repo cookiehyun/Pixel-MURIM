@@ -14,9 +14,12 @@ import * as Screens from "./screens";
 import * as Arcade from "./arcade";
 import { G, GS_MENU, GS_ONLINE, MODE_TAG, startMatch } from "./game";
 import { RGB, clng } from "./util";
+import * as Account from "./account";
+import * as AccountForm from "./accountform";
 
+const OS_ACCOUNT = 11;
 const OS_OFF = 0, OS_LOBBY = 3, OS_FIGHT = 4, OS_RESULT = 5, OS_ERROR = 6, OS_CONNECT = 7, OS_ROOMWAIT = 8, OS_QUEUE = 9, OS_RANKING = 10;
-const ACT_QUICK = 1, ACT_ROOM = 2, ACT_JOINROOM = 3, ACT_TOP = 4;
+const ACT_QUICK = 1, ACT_ROOM = 2, ACT_JOINROOM = 3, ACT_TOP = 4, ACT_CASUAL = 5;
 const SRV_PROTO = "PW1";
 const GAME_BUILD = 20261120;              // bump whenever fighting code changes: both players must match
 export const DEFAULT_SERVER = "wss://pixelmurim.duckdns.org/";
@@ -29,7 +32,7 @@ let mStage = 0, mStageChoosing = false, mRtt = -1, mDelay = 3, mStartMsg = "", m
 let mAction = 0, mRoomCode = "", mMatchId = 0, mRanked = false, mOppName = "", mOppRating = 0;
 let mRating = 1000, mGames = 0, mRatingDelta = "", mGameNo = 0, mTopN = 0, mMyRank = 0;
 const mTopName: string[] = [], mTopRating: number[] = [];
-let mName = "", mToken = "";
+let mName = "", mToken = "", mCasual = false, mRankErr = false, mFormOpen = false, mTopGot = false, mHelloSent = false;
 let ws: WebSocket | null = null;
 const inbox: string[] = [];
 
@@ -38,10 +41,34 @@ export const isHost = () => mHost;
 
 // ---------------------------------------------------------------- start / stop
 
-export const beginQuickMatch = () => beginServer(ACT_QUICK, "");
+export const beginQuickMatch = () => beginServer(ACT_CASUAL, "");     // friendly: anyone, all fighters open
+export const beginRankGame = () => beginServer(ACT_QUICK, "");
 export const beginRoomCreate = () => beginServer(ACT_ROOM, "");
 export const beginRoomJoin = (code: string) => beginServer(ACT_JOINROOM, code);
 export const beginRanking = () => beginServer(ACT_TOP, "");
+
+/** CREATE ACCOUNT screen: ranking (top 10 + mine) and A = create account / log in / log out. */
+export function beginAccount(): void {
+  reset();
+  mAction = ACT_TOP;
+  mName = Account.name(); mToken = Account.serverToken();
+  mRankErr = false; mTopGot = false; mHelloSent = false;
+  openSocket();
+  setState(OS_ACCOUNT);
+}
+
+function openSocket(): void {
+  try { ws = new WebSocket(serverUrl()); } catch { ws = null; mRankErr = true; return; }
+  ws.onmessage = (e) => { if (typeof e.data === "string") inbox.push(e.data); };
+  ws.onclose = () => {
+    if (mState === OS_ACCOUNT) { mRankErr = mTopN === 0; return; }
+    if (mState !== OS_OFF && mState !== OS_ERROR) fail("CONNECTION LOST", "THE SERVER CLOSED THE CONNECTION");
+  };
+  ws.onerror = () => {
+    if (mState === OS_ACCOUNT) mRankErr = true;
+    else if (mState === OS_CONNECT) fail("SERVER NOT RESPONDING", "CANNOT REACH THE GAME SERVER");
+  };
+}
 
 function serverUrl(): string {
   const q = new URLSearchParams(location.search).get("server");
@@ -50,42 +77,14 @@ function serverUrl(): string {
 
 function beginServer(action: number, code: string): void {
   reset();
-  if (!ensureProfile()) { mState = OS_OFF; G.GameState = GS_MENU; return; }
+  if (!Account.loggedIn()) { mState = OS_OFF; G.GameState = GS_MENU; return; }
+  mName = Account.name(); mToken = Account.serverToken();
   mAction = action;
+  mCasual = action === ACT_CASUAL;
   mRoomCode = code.trim().toUpperCase();
   mHost = false;
-  try {
-    ws = new WebSocket(serverUrl());
-  } catch (e) { fail("NETWORK ERROR", String(e)); return; }
-  ws.onmessage = (e) => { if (typeof e.data === "string") inbox.push(e.data); };
-  ws.onclose = () => { if (mState !== OS_OFF && mState !== OS_ERROR) fail("CONNECTION LOST", "THE SERVER CLOSED THE CONNECTION"); };
-  ws.onerror = () => { if (mState === OS_CONNECT) fail("SERVER NOT RESPONDING", "CANNOT REACH THE GAME SERVER"); };
   setState(OS_CONNECT);
-}
-
-function load(k: string): string { try { return localStorage.getItem(k) ?? ""; } catch { return ""; } }
-function save(k: string, v: string): void { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
-
-/** Fighter name + secret token (identifies this player to the server), kept in this browser. */
-function ensureProfile(): boolean {
-  if (!mToken) { mName = load("pixelmurim.name"); mToken = load("pixelmurim.token"); }
-  if (!mName) {
-    const n = cleanName(window.prompt("Your fighter name for online play (letters and numbers, up to 10):", "") ?? "");
-    if (!n) return false;
-    mName = n;
-  }
-  if (mToken.length < 16) mToken = newToken();
-  save("pixelmurim.name", mName); save("pixelmurim.token", mToken);
-  return true;
-}
-
-const cleanName = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
-
-function newToken(): string {
-  const set = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const a = new Uint32Array(24);
-  crypto.getRandomValues(a);
-  return Array.from(a, (v) => set[v % set.length]).join("");
+  openSocket();
 }
 
 export function leave(): void {
@@ -109,7 +108,7 @@ function reset(): void {
   mMyStep = 0; mPeerStep = 0; mMyPick[0] = 0; mMyPick[1] = 1; mPeerPick[0] = 1; mPeerPick[1] = 0;
   mStage = 0; mStageChoosing = false; mRtt = -1; mDelay = 3; mStartMsg = ""; mHeardInput = false; mSilent = 0;
   mAction = 0; mRoomCode = ""; mMatchId = 0; mRanked = false; mOppName = ""; mOppRating = 0;
-  mRatingDelta = ""; mGameNo = 0; mTopN = 0; mMyRank = 0;
+  mRatingDelta = ""; mGameNo = 0; mTopN = 0; mMyRank = 0; mCasual = false;
 }
 
 function setState(s: number): void {
@@ -196,9 +195,11 @@ function handle(p: string[], raw: string): void {
 function handleServer(p: string[]): boolean {
   switch (p[0]) {
     case "WELCOME":
-      if (mState !== OS_CONNECT || p.length < 4) return true;
+      if ((mState !== OS_CONNECT && mState !== OS_ACCOUNT) || p.length < 4) return true;
       mRating = +p[2]; mGames = +p[3];
+      if (mState === OS_ACCOUNT) { send("TOP"); return true; }
       if (mAction === ACT_QUICK) { send("QUEUE"); setState(OS_QUEUE); }
+      else if (mAction === ACT_CASUAL) { send("QUEUE CASUAL"); setState(OS_QUEUE); }
       else if (mAction === ACT_ROOM) { send("ROOM"); setState(OS_ROOMWAIT); }
       else if (mAction === ACT_JOINROOM) { send("JOINROOM " + mRoomCode); setState(OS_ROOMWAIT); }
       else { send("TOP"); setState(OS_RANKING); }
@@ -207,6 +208,7 @@ function handleServer(p: string[]): boolean {
     case "QUEUED": case "KEPT": return true;
     case "NOROOM": fail("NO SUCH ROOM", "CHECK THE CODE " + mRoomCode); return true;
     case "ERROR":
+      if (mState === OS_ACCOUNT) { mRankErr = mTopN === 0; return true; }
       if (p.length >= 2) {
         if (p[1] === "VERSION") fail("UPDATE THE GAME", "THE SERVER RUNS A NEWER VERSION|RELOAD THE PAGE");
         else fail("SERVER REFUSED", p[1]);
@@ -223,7 +225,7 @@ function handleServer(p: string[]): boolean {
     case "RATING": if (p.length >= 3) { mRating = +p[1]; mRatingDelta = p[2]; mGames++; } return true;
     case "TOP": {
       if (p.length < 2) return true;
-      mTopN = Math.min(10, +p[1]);
+      mTopN = Math.min(10, +p[1]); mTopGot = true;
       for (let k = 0; k < mTopN; k++) if (3 + k * 2 < p.length) { mTopName[k] = p[2 + k * 2]; mTopRating[k] = +p[3 + k * 2]; }
       for (let k = 2; k < p.length - 1; k++)
         if (p[k] === "ME" && k + 3 < p.length) { mMyRank = +p[k + 1]; mRating = +p[k + 2]; mGames = +p[k + 3]; }
@@ -242,8 +244,9 @@ function noteRtt(sentMs: number): void {
 /** Lobby / waiting screens: input and periodic messages (GS_ONLINE). */
 export function lobbyTick(): void {
   const back = () => K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP);
-  if (mState !== OS_ERROR && mT % 40 === 20) send("KEEP");
+  if (mState !== OS_ERROR && mState !== OS_ACCOUNT && mT % 40 === 20) send("KEEP");
   switch (mState) {
+    case OS_ACCOUNT: accountTick(); break;
     case OS_CONNECT:
       if (ws && ws.readyState === WebSocket.OPEN && mT % 10 === 1) send("HELLO " + SRV_PROTO + " " + mName + " " + mToken);
       if (mT > SILENT_LIMIT) fail("SERVER NOT RESPONDING", "CANNOT REACH THE GAME SERVER");
@@ -277,6 +280,27 @@ export function lobbyTick(): void {
   }
 }
 
+function accountTick(): void {
+  if (mFormOpen) return;
+  if (ws && ws.readyState === WebSocket.OPEN && (!mHelloSent || mT % 100 === 0)) {
+    mHelloSent = true;
+    if (Account.loggedIn()) send("HELLO " + SRV_PROTO + " " + Account.name() + " " + Account.serverToken());
+    else send("TOP");
+  }
+  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) { leave(); G.GameState = GS_MENU; Screens.openOnlineMenu(); return; }
+  const form = (mode: "create" | "login") => {
+    mFormOpen = true;
+    AccountForm.open(mode).then((ok) => {
+      mFormOpen = false;
+      if (ok) { mName = Account.name(); mToken = Account.serverToken(); mHelloSent = false; }   // re-login to the server: my rank
+    });
+  };
+  if (Account.loggedIn()) {
+    if (K.isPressed(K.BTN_LK)) { Account.logOut(); mName = ""; mMyRank = 0; mHelloSent = false; }
+  } else if (K.isPressed(K.BTN_LP)) form("create");
+  else if (K.isPressed(K.BTN_LK)) form("login");
+}
+
 function lobbyInput(): void {
   Screens.tickMenu();
   if (K.isPressed(K.BTN_QUIT)) { leave(); return; }
@@ -302,9 +326,9 @@ function lobbyInput(): void {
   if (mHost && mMyReady && mPeerReady) mStageChoosing = true;
 }
 
-const openCount = () => (Arcade.bossUnlocked() ? ROSTER_ON : ROSTER_ON - 1);
+const openCount = () => (mCasual || Arcade.bossUnlocked() ? ROSTER_ON : ROSTER_ON - 1);
 const clampSlot = (k: number) => (k >= 0 && k < ROSTER_ON ? k : 0);
-const slotOpen = (k: number) => k < 6 || Arcade.bossUnlocked();
+const slotOpen = (k: number) => k < 6 || mCasual || Arcade.bossUnlocked();
 
 function gridPos(k: number): [number, number] {
   if (k < 4) return [64 + k * 16, 22];
@@ -389,13 +413,14 @@ export function render(): void {
       Font.drawText("S = CANCEL", cx, 92, cHint, 1, 1);
       break;
     case OS_QUEUE:
-      Font.drawBig("QUICK MATCH", cx, 4, cGold, 1);
-      Font.drawText(mName + "  RATING " + mRating, cx, 26, RGB(200, 190, 210), 1, 1);
+      Font.drawBig(mCasual ? "QUICK MATCH" : "RANK GAME", cx, 4, cGold, 1);
+      Font.drawText(mCasual ? mName + "  FRIENDLY MATCH" : mName + "  RATING " + mRating, cx, 26, RGB(200, 190, 210), 1, 1);
       if (blink) Font.drawText("SEARCHING FOR AN OPPONENT...", cx, 44, cHi, 1, 1);
       Font.drawText(Math.trunc(mT / 20) + " S", cx, 56, cDim, 1, 1);
       Font.drawText("S = CANCEL", cx, 92, cHint, 1, 1);
       break;
     case OS_RANKING: rankingRender(); break;
+    case OS_ACCOUNT: accountRender(); break;
     case OS_LOBBY: lobbyRender(); break;
     case OS_RESULT:
       Font.drawBig("MATCH OVER", cx, 34, RGB(255, 204, 92), 2);
@@ -414,6 +439,30 @@ export function render(): void {
     }
   }
   R.flush();
+}
+
+function accountRender(): void {
+  const cx = SCREEN_W / 2;
+  Font.drawBig("RANKING", cx, 2, cGold, 1);
+  if (mTopN === 0) Font.drawText(mTopGot ? "NO RANKED GAMES YET" : mRankErr || mT > 100 ? "RANKING UNAVAILABLE (SERVER OFFLINE)" : "LOADING...", cx, 36, cDim, 1, 1);
+  for (let k = 0; k < mTopN; k++) {
+    const y = 14 + k * 6, c = Account.loggedIn() && mTopName[k] === Account.name() ? RGB(255, 236, 150) : RGB(210, 200, 220);
+    Font.drawText(String(k + 1), 60, y, cDim, 1, 2);
+    Font.drawText(mTopName[k], 66, y, c);
+    Font.drawText(String(mTopRating[k]), 132, y, c, 1, 2);
+  }
+  R.fillRect(20, 76, SCREEN_W - 40, 1, RGB(60, 52, 76));
+  if (Account.loggedIn()) {
+    const rank = mMyRank > 0 ? "RANK " + mMyRank + "  " : "";
+    Font.drawText("YOU  " + Account.name() + "  " + rank + mRating, cx, 80, RGB(255, 236, 150), 1, 1);
+    Font.drawText("Z = LOG OUT   S = BACK", cx, 92, cHint, 1, 1);
+  } else if (!Account.configured()) {
+    Font.drawText("ACCOUNTS ARE NOT SET UP YET", cx, 80, RGB(255, 140, 90), 1, 1);
+    Font.drawText("S = BACK", cx, 92, cHint, 1, 1);
+  } else {
+    if (Math.trunc(mT / 10) % 2 === 0) Font.drawText("A = CREATE ACCOUNT", cx, 80, cHi, 1, 1);
+    Font.drawText("Z = LOG IN   S = BACK", cx, 92, cHint, 1, 1);
+  }
 }
 
 function rankingRender(): void {
@@ -445,7 +494,7 @@ function lobbyRender(): void {
   if (!mHost && mMyReady && mPeerReady) { Screens.drawStagePage(mStage, "THE HOST IS CHOOSING THE STAGE  S = BACK", false); return; }
   R.fillRect(0, 10, 64, 90, RGB(14, 20, 40)); R.fillRect(128, 10, 64, 90, RGB(40, 14, 18));
   R.fillRect(63, 10, 1, 90, RGB(90, 170, 255)); R.fillRect(128, 10, 1, 90, RGB(255, 90, 80));
-  Font.drawBig(mRanked ? "RANKED MATCH" : "ONLINE VERSUS", cx, 2, cGold, 1);
+  Font.drawBig(mRanked ? "RANKED MATCH" : mCasual ? "FRIENDLY MATCH" : "ONLINE VERSUS", cx, 2, cGold, 1);
   Font.drawText(mHost ? mName : mOppName, 3, 13, RGB(90, 170, 255));
   Font.drawText(mHost ? mOppName : mName, SCREEN_W - 3, 13, RGB(255, 90, 80), 1, 2);
   if (mRanked) {
