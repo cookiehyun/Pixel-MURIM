@@ -52,13 +52,9 @@ danwoo.throw_0 danwoo/grab.png 16 54
 danwoo.throw_1 danwoo/pull.png 18 52
 danwoo.dash danwoo/dash0.png 22 48
 danwoo.bdash danwoo/bdash0.png 15 48
-danwoo.palm_0 danwoo/palm1.png 26 54
-danwoo.palm_1 danwoo/palm2.png 29 51
 danwoo.sp_0 danwoo/stand0.png 11 55
-danwoo.sp_1 danwoo/palm2.png 29 51
 danwoo.spin_0 danwoo/stand0.png 11 55
 danwoo.spin_t danwoo/stand0.png 11 55
-danwoo.spin_1 danwoo/backfist.png 20 51
 danwoo.slam_0 danwoo/stand0.png 11 55
 danwoo.win danwoo/win0.png 11 55
 danwoo.intro danwoo/stand0.png 11 55
@@ -111,3 +107,19 @@ danwoo.win_3 danwoo/win3.png 12 54
 # round intro (salute) and victory sequence (sheets 19-20)
 ANIM danwoo.intro 7 intro_0 intro_1 intro_2 intro_3
 ANIM danwoo.winpose 12 win win_1 win_2 win_3
+# specials 1-2 (sheets 16-17) as drawn, qi included; anchors measured on the body without the qi
+danwoo.palm_g danwoo/palm_g.png 14 55
+danwoo.palm_s danwoo/palm_s.png 18 52
+danwoo.palm_f danwoo/palm_f.png 19 51
+danwoo.palm_r danwoo/palm_r.png 14 53
+danwoo.spin_w danwoo/spin_w.png 11 55
+danwoo.spin_b danwoo/spin_b.png 13 55
+danwoo.spin_f danwoo/spin_f.png 18 55
+danwoo.spin_r danwoo/spin_r.png 12 55
+danwoo.palm_0 danwoo/palm_s.png 18 52
+danwoo.palm_1 danwoo/palm_f.png 19 51
+danwoo.spin_1 danwoo/spin_f.png 18 55
+ANIM danwoo.sp1_pre 2 palm_g palm_s
+ANIM danwoo.sp1_rec 5 palm_f palm_r idle_0
+ANIM danwoo.sp2_pre 4 spin_w spin_b
+ANIM danwoo.sp2_rec 5 spin_f spin_r idle_0
