@@ -71,3 +71,5 @@ danwoo.land danwoo/land.png 12 43
 danwoo.getup danwoo/getup.png 11 55
 danwoo.dash_1 danwoo/dash1.png 26 41
 danwoo.bdash_1 danwoo/bdash1.png 12 48
+# walk: slower steps (5 ticks a frame = one full step cycle per second)
+ANIM danwoo.walk 5 walk_0 walk_1 walk_2 walk_3
