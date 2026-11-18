@@ -60,8 +60,7 @@ danwoo.spin_0 danwoo/stand0.png 11 55
 danwoo.spin_t danwoo/stand0.png 11 55
 danwoo.spin_1 danwoo/backfist.png 20 51
 danwoo.slam_0 danwoo/stand0.png 11 55
-danwoo.slam_1 danwoo/slam.png 19 45
-danwoo.win danwoo/win.png 13 55
+danwoo.win danwoo/win0.png 11 55
 danwoo.intro danwoo/stand0.png 11 55
 danwoo.crouch_in danwoo/crouchin.png 13 49
 danwoo.jump_prep danwoo/jumpprep.png 12 43
@@ -94,3 +93,21 @@ ANIM danwoo.chk_rec 5 chk crouch
 ANIM danwoo.throw_seq 4 throw_1 throw_2
 ANIM danwoo.ovh_rec 5 ovh_1 stand_r
 ANIM danwoo.chp_rec 5 chp_1 stand_r
+# super (sheet 18), drawn qi kept
+danwoo.slam_g danwoo/slam_g.png 25 68
+danwoo.slam_j danwoo/slam_j.png 17 72
+danwoo.slam_s danwoo/slam_s.png 22 52
+danwoo.slam_h danwoo/slam_h.png 32 50
+danwoo.slam_1 danwoo/slam_s.png 22 52
+ANIM danwoo.super_pre 5 slam_g slam_j
+ANIM danwoo.super_rec 6 slam_h slam_h stand_r
+danwoo.intro_0 danwoo/intro0.png 10 55
+danwoo.intro_1 danwoo/intro1.png 12 55
+danwoo.intro_2 danwoo/intro2.png 8 52
+danwoo.intro_3 danwoo/intro3.png 11 55
+danwoo.win_1 danwoo/win1.png 12 63
+danwoo.win_2 danwoo/win2.png 13 55
+danwoo.win_3 danwoo/win3.png 12 54
+# round intro (salute) and victory sequence (sheets 19-20)
+ANIM danwoo.intro 7 intro_0 intro_1 intro_2 intro_3
+ANIM danwoo.winpose 12 win win_1 win_2 win_3

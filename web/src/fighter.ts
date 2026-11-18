@@ -1,6 +1,6 @@
 // Port of Fighter.bas: the fighter state machine, input decoding, boxes and drawing.
 import {
-  D, animId, spriteId, moveId, hasSprite, animFrame, animFrameHold,
+  D, animId, spriteId, moveId, hasSprite, hasAnim, animFrame, animFrameHold,
   MT_NORMAL, MT_THROW, MT_PROJ, MT_RISE, MT_RUSH, MT_GRAB, MT_SUPER_PROJ, MT_SUPER_GRAB, MT_SUPER_RUSH,
   MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT,
 } from "./data";
@@ -58,7 +58,8 @@ const GHOSTS = 4;
 const mGX = [[0, 0, 0, 0], [0, 0, 0, 0]], mGY = [[0, 0, 0, 0], [0, 0, 0, 0]], mGId = [[0, 0, 0, 0], [0, 0, 0, 0]];
 const mGFlip = [[false, false, false, false], [false, false, false, false]];
 const mGN = [0, 0], mPose = [-1, -1], mAwakeShown = [false, false];
-const mLandShow = [0, 0];                     // ticks left of the landing pose after a jump (drawing only)
+const mLandShow = [0, 0];
+const mPoseAnim = [-1, -1], mPoseT = [0, 0];       // animated intro / victory pose (drawing only)                     // ticks left of the landing pose after a jump (drawing only)
 let mFrame = 0, mDraw = 0;
 
 export function init(c0: string, c1: string, humanIndex: number): void {
@@ -870,8 +871,12 @@ export function draw(): void {
 }
 
 export function setPose(i: number, nm: string): void {
-  mPose[i] = -1;
-  if (nm && hasSprite(F[i].prefix + "." + nm)) mPose[i] = spriteId(F[i].prefix + "." + nm);
+  mPose[i] = -1; mPoseAnim[i] = -1; mPoseT[i] = mFrame;
+  if (!nm) return;
+  // a whole animation when the art has one (intro salute, victory sequence), else the single pose
+  const an = F[i].prefix + "." + (nm === "win" ? "winpose" : nm);
+  if (hasAnim(an)) { mPoseAnim[i] = animId(an); mPose[i] = animFrameHold(mPoseAnim[i], 0); }
+  else if (hasSprite(F[i].prefix + "." + nm)) mPose[i] = spriteId(F[i].prefix + "." + nm);
 }
 
 export function clearGhosts(i: number): void { mGN[i] = 0; }
@@ -910,7 +915,8 @@ function drawGhosts(i: number): void {
 export function currentSprite(i: number): number {
   const f = F[i], t = f.stTick;
   if (f.cineSpr >= 0) return f.cineSpr;
-  if (mPose[i] >= 0 && f.onGround && (f.state === ST_IDLE || f.state === ST_WALK || f.state === ST_CROUCH)) return mPose[i];
+  if (mPose[i] >= 0 && f.onGround && (f.state === ST_IDLE || f.state === ST_WALK || f.state === ST_CROUCH))
+    return mPoseAnim[i] >= 0 ? animFrameHold(mPoseAnim[i], mFrame - mPoseT[i]) : mPose[i];
   if (mLandShow[i] > 0 && f.sLand >= 0 && (f.state === ST_IDLE || f.state === ST_WALK)) return f.sLand;
   switch (f.state) {
     case ST_IDLE: return animFrame(f.aIdle, t);
