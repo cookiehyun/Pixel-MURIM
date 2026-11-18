@@ -939,7 +939,10 @@ export function currentSprite(i: number): number {
         }
         return t < 26 ? D.MvSprS[mv] : D.MvSprA[mv];
       }
-      if (f.state === ST_THROW) return t >= D.MvStartup[mv] ? D.MvSprA[mv] : D.MvSprS[mv];
+      if (f.state === ST_THROW) {
+        if (t >= D.MvStartup[mv] && D.MvSeqAct[mv] >= 0) return animFrameHold(D.MvSeqAct[mv], t - D.MvStartup[mv]);
+        return t >= D.MvStartup[mv] ? D.MvSprA[mv] : D.MvSprS[mv];
+      }
       if (t < D.MvStartup[mv] && D.MvSeqPre[mv] >= 0) return animFrameHold(D.MvSeqPre[mv], t);
       if (t >= D.MvStartup[mv] && D.MvSeqAct[mv] >= 0 && (inActive(i) || !f.onGround)) return animFrameHold(D.MvSeqAct[mv], t - D.MvStartup[mv]);
       if (inRecovery(i) && D.MvSeqRec[mv] >= 0) return animFrameHold(D.MvSeqRec[mv], t - D.MvStartup[mv] - D.MvActive[mv]);

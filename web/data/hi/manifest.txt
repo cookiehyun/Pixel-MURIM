@@ -30,11 +30,11 @@ danwoo.hk_2 danwoo/rhfollow.png 13 55
 danwoo.hk_3 danwoo/rhrec.png 12 55
 danwoo.clp danwoo/cpunch.png 15 41
 danwoo.clk danwoo/clowkick.png 11 39
-danwoo.chk danwoo/sweep.png 17 41
+danwoo.chk danwoo/sweep.png 9 33
 danwoo.chp_0 danwoo/ucstart.png 14 37
 danwoo.chp_1 danwoo/uppercut.png 14 53
-danwoo.jp danwoo/jpunch.png 21 51
-danwoo.jk danwoo/jkick.png 24 47
+danwoo.jp danwoo/jpunch.png 9 53
+danwoo.jk danwoo/jkick.png 10 51
 danwoo.guard danwoo/guard.png 13 55
 danwoo.cguard danwoo/cguard.png 15 41
 danwoo.hit_0 danwoo/hit0.png 18 49
@@ -48,8 +48,8 @@ danwoo.roll_2 danwoo/rolla.png 20 27
 danwoo.roll_3 danwoo/rollb.png 18 35
 danwoo.ovh_0 danwoo/overhead.png 16 59
 danwoo.ovh_1 danwoo/chop.png 14 48
-danwoo.throw_0 danwoo/grab.png 22 49
-danwoo.throw_1 danwoo/grab.png 22 49
+danwoo.throw_0 danwoo/grab.png 16 54
+danwoo.throw_1 danwoo/pull.png 18 52
 danwoo.dash danwoo/dash0.png 22 48
 danwoo.bdash danwoo/bdash0.png 15 48
 danwoo.palm_0 danwoo/palm1.png 26 54
@@ -85,5 +85,12 @@ ANIM danwoo.hp_rec 3 hp_2 hp_3
 ANIM danwoo.hk_pre 5 hk_0
 ANIM danwoo.hk_rec 4 hk_2 hk_3
 ANIM danwoo.ovh_pre 8 ovh_0
-ANIM danwoo.ovh_rec 5 ovh_1 ovh_1
-ANIM danwoo.chp_rec 5 chp_1 chp_0
+danwoo.chk_s danwoo/sweepst.png 11 34
+danwoo.stand_r danwoo/recover.png 11 54
+danwoo.throw_2 danwoo/hurl.png 21 50
+# sweep, throw, recoveries (sheets 14-15)
+ANIM danwoo.chk_pre 5 chk_s
+ANIM danwoo.chk_rec 5 chk crouch
+ANIM danwoo.throw_seq 4 throw_1 throw_2
+ANIM danwoo.ovh_rec 5 ovh_1 stand_r
+ANIM danwoo.chp_rec 5 chp_1 stand_r
