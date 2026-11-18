@@ -5,6 +5,7 @@ export const D = {
   SprCount: 0,
   SprW: [] as number[], SprH: [] as number[], SprAX: [] as number[], SprAY: [] as number[], SprOff: [] as number[],
   SprName: [] as string[],
+  SprHi: [] as boolean[],               // hi-res art (PNG): drawn at the doubled screen resolution
   SprPix: [] as number[],
   AnimCount: 0,
   AnimTPF: [] as number[], AnimStart: [] as number[], AnimLen: [] as number[], AnimFrames: [] as number[],
@@ -57,12 +58,45 @@ export async function loadAll(): Promise<void> {
     D.StageName[k] = STAGES[k * 2 + 1];
     loadStageFile("stage_" + STAGES[k * 2], k);
   }
+  await loadHiSprites();
   loadMoves();
   for (let k = 0; k < frameNames.length; k++) D.AnimFrames[k] = spriteId(frameNames[k]);
   for (let k = 0; k < D.MvCount; k++) {
     D.MvSeqPre[k] = optAnim(mvKey[k] + "_pre");
     D.MvSeqAct[k] = optAnim(mvKey[k] + "_seq");
     D.MvSeqRec[k] = optAnim(mvKey[k] + "_rec");
+  }
+}
+
+/** data/hi/manifest.txt: PNG art that replaces classic sprites (missing manifest = none). */
+async function loadHiSprites(): Promise<void> {
+  let lines: string[];
+  try { lines = await fetchLines("hi/manifest.txt"); } catch { return; }
+  const cache = new Map<string, ImageData>();
+  for (const ln of lines) {
+    const p = ln.trim().split(/\s+/);
+    if (p.length < 4 || p[0].startsWith("#") || !sprIdx.has(p[0])) continue;
+    let data = cache.get(p[1]);
+    if (!data) {
+      const blob = await (await fetch("hi/" + p[1])).blob();
+      const bmp = await createImageBitmap(blob);
+      const cv = document.createElement("canvas");
+      cv.width = bmp.width; cv.height = bmp.height;
+      const c2 = cv.getContext("2d")!;
+      c2.drawImage(bmp, 0, 0);
+      data = c2.getImageData(0, 0, bmp.width, bmp.height);
+      cache.set(p[1], data);
+    }
+    const id = sprIdx.get(p[0])!, w = data.width, h = data.height, breathe = p[4] === "breathe";
+    D.SprW[id] = w; D.SprH[id] = h; D.SprAX[id] = +p[2]; D.SprAY[id] = +p[3]; D.SprHi[id] = true;
+    D.SprOff[id] = D.SprPix.length;
+    const cut = Math.trunc(h * 0.45);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const sy = breathe && y <= cut ? y - 1 : y;          // upper body sinks one pixel
+        const k = (x + Math.max(0, sy) * w) * 4, d = data.data;
+        D.SprPix.push(sy < 0 || d[k + 3] < 128 ? -1 : RGB(d[k], d[k + 1], d[k + 2]));
+      }
   }
 }
 

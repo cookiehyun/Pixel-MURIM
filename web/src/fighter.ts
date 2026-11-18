@@ -854,7 +854,7 @@ export function draw(): void {
     const f = F[i];
     if (f.prefix === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
     if (f.prefix === "danwoo" && f.state === ST_ATTACK) {
-      if (f.mv === f.moves[MV_SP1]) drawWindPalm(i);
+      if (f.mv === f.moves[MV_SP1] && !D.SprHi[currentSprite(i)]) drawWindPalm(i);   // hi-res art draws its own palm
       if (f.mv === f.moves[MV_SP2]) drawSpinFist(i);
       if (f.mv === f.moves[MV_SUPER]) drawQuake(i);
     }

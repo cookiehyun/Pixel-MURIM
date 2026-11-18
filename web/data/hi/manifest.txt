@@ -1,0 +1,8 @@
+# Hi-res sprites (PNG, drawn at the doubled screen resolution) replacing classic ones.
+# <sprite name> <png under data/hi/> <anchorX> <anchorY> [breathe]
+# anchor = ground point under the hip (bottom row); "breathe" = upper body 1 px lower (idle frame 2)
+danwoo.idle_0 danwoo/idle.png 32 75
+danwoo.idle_1 danwoo/idle.png 32 75 breathe
+danwoo.palm_0 danwoo/palm1.png 50 74
+danwoo.palm_1 danwoo/palm2.png 50 70
+danwoo.win danwoo/win.png 24 76

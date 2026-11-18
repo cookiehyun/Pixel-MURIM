@@ -1,23 +1,28 @@
-// Port of Renderer.bas: a 192x100 back buffer, drawn to a canvas once per frame.
+// Port of Renderer.bas, drawn at twice the resolution.
+// The game still thinks in a 192x100 world (SCREEN_W / SCREEN_H: simulation, hitboxes, menus, online).
+// The back buffer is 384x200: classic sprites and all drawing calls become 2x2 blocks, while
+// hi-res sprites (D.SprHi, from PNG art) are drawn pixel for pixel at the doubled resolution.
 import { D } from "./data";
 import { RGB } from "./util";
 
 export const SCREEN_W = 192;
 export const SCREEN_H = 100;
 export const GROUND_Y = 88;
+export const PX = 2;                                  // physical pixels per world pixel
+const PW = SCREEN_W * PX, PH = SCREEN_H * PX;
 
-let back = new Int32Array(SCREEN_W * SCREEN_H);
-const bg = new Int32Array(SCREEN_W * SCREEN_H);
-const bgDark = new Int32Array(SCREEN_W * SCREEN_H);
+let back = new Int32Array(PW * PH);
+const bg = new Int32Array(PW * PH);
+const bgDark = new Int32Array(PW * PH);
 let ctx: CanvasRenderingContext2D | null = null;
 let img: ImageData | null = null;
 const altCache = new Map<number, Int32Array>();
 
 export function init(canvas: HTMLCanvasElement): void {
-  canvas.width = SCREEN_W;
-  canvas.height = SCREEN_H;
+  canvas.width = PW;
+  canvas.height = PH;
   ctx = canvas.getContext("2d")!;
-  img = ctx.createImageData(SCREEN_W, SCREEN_H);
+  img = ctx.createImageData(PW, PH);
   setStage(0);
 }
 
@@ -34,12 +39,24 @@ export function flush(): void {
 }
 
 export function backPixel(x: number, y: number): number {
-  return back[x + y * SCREEN_W];
+  return back[x * PX + y * PX * PW];
+}
+
+function block(px: number, py: number, color: number): void {
+  if (px < 0 || py < 0 || px >= PW - 1 || py >= PH - 1) {
+    for (let j = 0; j < PX; j++) for (let i = 0; i < PX; i++) {
+      const X = px + i, Y = py + j;
+      if (X >= 0 && X < PW && Y >= 0 && Y < PH) back[X + Y * PW] = color;
+    }
+    return;
+  }
+  const k = px + py * PW;
+  back[k] = color; back[k + 1] = color; back[k + PW] = color; back[k + PW + 1] = color;
 }
 
 export function putPixel(x: number, y: number, color: number): void {
   x = Math.trunc(x); y = Math.trunc(y);
-  if (x >= 0 && x < SCREEN_W && y >= 0 && y < SCREEN_H) back[x + y * SCREEN_W] = color;
+  if (x >= 0 && x < SCREEN_W && y >= 0 && y < SCREEN_H) block(x * PX, y * PX, color);
 }
 
 export function fillRect(x: number, y: number, w: number, h: number, color: number): void {
@@ -50,7 +67,7 @@ export function fillRect(x: number, y: number, w: number, h: number, color: numb
   if (x1 > SCREEN_W - 1) x1 = SCREEN_W - 1;
   if (y1 > SCREEN_H - 1) y1 = SCREEN_H - 1;
   if (x1 < x0) return;
-  for (let j = y0; j <= y1; j++) back.fill(color, j * SCREEN_W + x0, j * SCREEN_W + x1 + 1);
+  for (let j = y0 * PX; j < (y1 + 1) * PX; j++) back.fill(color, j * PW + x0 * PX, j * PW + (x1 + 1) * PX);
 }
 
 export function drawRectOutline(x: number, y: number, w: number, h: number, color: number): void {
@@ -73,11 +90,25 @@ function pixels(id: number, alt: boolean): ArrayLike<number> {
   return a;
 }
 
-/** Draw sprite with its anchor (ground point under the hip) on (x, y). flip mirrors; tint >= 0 paints it one color. */
+/** Draw sprite with its anchor (ground point under the hip) on world point (x, y). flip mirrors; tint >= 0 paints it one color. */
 export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
   x = Math.trunc(x); y = Math.trunc(y);
+  if (D.SprHi[id]) {                                  // hi-res art: 1 sprite pixel = 1 screen pixel
+    const X = x * PX + (flip ? 1 : 0), Y = y * PX + PX - 1;
+    for (let sy = 0; sy < h; sy++) {
+      const py = Y - ay + sy;
+      if (py < 0 || py >= PH) continue;
+      for (let sx = 0; sx < w; sx++) {
+        const c = pix[off + sy * w + sx];
+        if (c < 0) continue;
+        const px = flip ? X + ax - sx : X - ax + sx;
+        if (px >= 0 && px < PW) back[px + py * PW] = tint >= 0 ? tint : c;
+      }
+    }
+    return;
+  }
   for (let sy = 0; sy < h; sy++) {
     const py = y - ay + sy;
     if (py < 0 || py >= SCREEN_H) continue;
@@ -85,30 +116,30 @@ export function drawSprite(id: number, x: number, y: number, flip: boolean, tint
       const c = pix[off + sy * w + sx];
       if (c < 0) continue;
       const px = flip ? x + ax - sx : x - ax + sx;
-      if (px >= 0 && px < SCREEN_W) back[px + py * SCREEN_W] = tint >= 0 ? tint : c;
+      if (px >= 0 && px < SCREEN_W) block(px * PX, py * PX, tint >= 0 ? tint : c);
     }
   }
 }
 
-/** Sprite enlarged k times, clipped to (cx0, cy0)-(cx1, cy1) (select screens). */
+/** Sprite enlarged k times, clipped to world rect (cx0, cy0)-(cx1, cy1) (select screens). */
 export function drawSpriteScaled(id: number, x: number, y: number, flip: boolean, k: number,
   cx0: number, cy0: number, cx1: number, cy1: number, tint = -1, alt = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
-  if (cx0 < 0) cx0 = 0;
-  if (cy0 < 0) cy0 = 0;
-  if (cx1 > SCREEN_W - 1) cx1 = SCREEN_W - 1;
-  if (cy1 > SCREEN_H - 1) cy1 = SCREEN_H - 1;
+  const B = D.SprHi[id] ? k : k * PX;                 // screen pixels per sprite pixel
+  const X0 = Math.max(0, cx0 * PX), Y0 = Math.max(0, cy0 * PX);
+  const X1 = Math.min(PW - 1, cx1 * PX + PX - 1), Y1 = Math.min(PH - 1, cy1 * PX + PX - 1);
+  const bx = x * PX, by = y * PX + (D.SprHi[id] ? PX * k - B : 0);
   for (let sy = 0; sy < h; sy++) {
     for (let sx = 0; sx < w; sx++) {
       let c = pix[off + sy * w + sx];
       if (c < 0) continue;
       if (tint >= 0) c = tint;
-      const px = flip ? x + (ax - sx) * k - (k - 1) : x + (sx - ax) * k;
-      const py = y + (sy - ay) * k;
-      for (let j = py; j < py + k; j++) {
-        if (j < cy0 || j > cy1) continue;
-        for (let i = px; i < px + k; i++) if (i >= cx0 && i <= cx1) back[i + j * SCREEN_W] = c;
+      const px = flip ? bx + (ax - sx) * B - B + PX : bx + (sx - ax) * B;
+      const py = by + (sy - ay) * B;
+      for (let j = py; j < py + B; j++) {
+        if (j < Y0 || j > Y1) continue;
+        for (let i = px; i < px + B; i++) if (i >= X0 && i <= X1) back[i + j * PW] = c;
       }
     }
   }
@@ -146,13 +177,16 @@ function darken(c: number): number {
 }
 
 export function setStage(k: number): void {
-  if (k < D.StageCount && D.StageW === SCREEN_W && D.StageH === SCREEN_H) {
-    bg.set(D.StagePix[k]);
-  } else {
-    for (let y = 0; y < SCREEN_H; y++) {
-      const t = y / (GROUND_Y - 1);
-      const c = y < GROUND_Y ? RGB(40 + 60 * t, 60 + 80 * t, 120 + 90 * t) : RGB(60, 45, 35);
-      bg.fill(c, y * SCREEN_W, (y + 1) * SCREEN_W);
+  for (let y = 0; y < SCREEN_H; y++) {
+    for (let x = 0; x < SCREEN_W; x++) {
+      let c: number;
+      if (k < D.StageCount && D.StageW === SCREEN_W && D.StageH === SCREEN_H) c = D.StagePix[k][x + y * SCREEN_W];
+      else {
+        const t = y / (GROUND_Y - 1);
+        c = y < GROUND_Y ? RGB(40 + 60 * t, 60 + 80 * t, 120 + 90 * t) : RGB(60, 45, 35);
+      }
+      const p = x * PX + y * PX * PW;
+      bg[p] = c; bg[p + 1] = c; bg[p + PW] = c; bg[p + PW + 1] = c;
     }
   }
   for (let k2 = 0; k2 < bg.length; k2++) bgDark[k2] = darken(bg[k2]);
@@ -186,10 +220,10 @@ export function drawGhost(id: number, x: number, y: number, flip: boolean): void
     const px = ((k % 1024) + 1024) % 1024, py = Math.round((k - px) / 1024);
     if (px < 0 || px >= SCREEN_W || py < 0 || py >= SCREEN_H) continue;
     const edge = !m.has(k + 1) || !m.has(k - 1) || !m.has(k + 1024) || !m.has(k - 1024);
-    if (edge) { back[px + py * SCREEN_W] = RGB(255, 255, 255); continue; }
-    const b = back[px + py * SCREEN_W];
+    if (edge) { block(px * PX, py * PX, RGB(255, 255, 255)); continue; }
+    const b = back[px * PX + py * PX * PW];
     const r = (b & 255) * 0.45 + 150 * 0.55, g = ((b >> 8) & 255) * 0.45 + 190 * 0.55, bl = ((b >> 16) & 255) * 0.45 + 255 * 0.55;
-    back[px + py * SCREEN_W] = RGB(Math.trunc(r), Math.trunc(g), Math.trunc(bl));
+    block(px * PX, py * PX, RGB(Math.trunc(r), Math.trunc(g), Math.trunc(bl)));
   }
 }
 
