@@ -12,8 +12,8 @@ danwoo.walk_0 danwoo/walk0.png 12 55
 danwoo.walk_1 danwoo/walk1.png 11 55
 danwoo.walk_2 danwoo/walk2.png 13 55
 danwoo.walk_3 danwoo/walk3.png 11 55
-danwoo.crouch danwoo/crouch.png 12 41
-danwoo.jump danwoo/jump.png 15 48
+danwoo.crouch danwoo/crouch.png 14 45
+danwoo.jump danwoo/jumptop.png 14 52
 danwoo.lp_0 danwoo/stand0.png 11 55
 danwoo.lp_1 danwoo/jab.png 12 53
 danwoo.hp_p danwoo/stand0.png 11 55
@@ -31,7 +31,7 @@ danwoo.hk_3 danwoo/stand0.png 11 55
 danwoo.clp danwoo/cpunch.png 21 41
 danwoo.clk danwoo/sweep.png 17 41
 danwoo.chk danwoo/sweep.png 17 41
-danwoo.chp_0 danwoo/crouchfist.png 17 41
+danwoo.chp_0 danwoo/crouch.png 14 45
 danwoo.chp_1 danwoo/uppercut.png 14 42
 danwoo.jp danwoo/jpunch.png 21 51
 danwoo.jk danwoo/jkick.png 24 47
@@ -50,8 +50,8 @@ danwoo.ovh_0 danwoo/overhead.png 21 48
 danwoo.ovh_1 danwoo/chop.png 19 45
 danwoo.throw_0 danwoo/grab.png 22 49
 danwoo.throw_1 danwoo/grab.png 22 49
-danwoo.dash danwoo/dash.png 30 49
-danwoo.bdash danwoo/stand0.png 11 55
+danwoo.dash danwoo/dash0.png 22 48
+danwoo.bdash danwoo/bdash0.png 15 48
 danwoo.palm_0 danwoo/palm1.png 26 54
 danwoo.palm_1 danwoo/palm2.png 29 51
 danwoo.sp_0 danwoo/stand0.png 11 55
@@ -63,3 +63,11 @@ danwoo.slam_0 danwoo/stand0.png 11 55
 danwoo.slam_1 danwoo/slam.png 19 45
 danwoo.win danwoo/win.png 13 55
 danwoo.intro danwoo/stand0.png 11 55
+danwoo.crouch_in danwoo/crouchin.png 13 49
+danwoo.jump_prep danwoo/jumpprep.png 12 43
+danwoo.jump_up danwoo/jumpup.png 10 55
+danwoo.jump_down danwoo/jumpdown.png 11 52
+danwoo.land danwoo/land.png 12 43
+danwoo.getup danwoo/getup.png 11 55
+danwoo.dash_1 danwoo/dash1.png 26 41
+danwoo.bdash_1 danwoo/bdash1.png 12 48

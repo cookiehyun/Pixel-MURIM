@@ -44,6 +44,8 @@ export class TFighter {
   sDown0 = 0; sDown1 = 0; sRoll0 = 0; sRoll1 = 0; sRoll2 = 0; sRoll3 = 0; sDash = 0; sBDash = 0;
   sPunchA = 0; sPunchB = 0; sLift = 0; sSlam = 0; sSlashA = 0; sSlashB = 0; sSlashC = 0;
   seqFx = 0; superName = ""; sp1Name = ""; hitCount = 0;
+  // optional extra frames from hi-res art (-1 = not drawn: the single classic frame is used)
+  sCrouchIn = -1; sJumpPrep = -1; sJumpUp = -1; sJumpDown = -1; sLand = -1; sGetup = -1; sDash1 = -1; sBDash1 = -1;
   rage = 0; cineSpr = -1; cineX0 = 0; cineCX = 0; cineCY = 0;
   moves: number[] = new Array(15).fill(0);
   spOrder: number[] = [0, 0, 0];
@@ -56,6 +58,7 @@ const GHOSTS = 4;
 const mGX = [[0, 0, 0, 0], [0, 0, 0, 0]], mGY = [[0, 0, 0, 0], [0, 0, 0, 0]], mGId = [[0, 0, 0, 0], [0, 0, 0, 0]];
 const mGFlip = [[false, false, false, false], [false, false, false, false]];
 const mGN = [0, 0], mPose = [-1, -1], mAwakeShown = [false, false];
+const mLandShow = [0, 0];                     // ticks left of the landing pose after a jump (drawing only)
 let mFrame = 0, mDraw = 0;
 
 export function init(c0: string, c1: string, humanIndex: number): void {
@@ -121,6 +124,9 @@ function loadKit(i: number, kit: string): void {
   f.sCHit = spriteId(p + ".chit"); f.sDown0 = spriteId(p + ".down_0"); f.sDown1 = spriteId(p + ".down_1");
   f.sRoll0 = spriteId(p + ".roll_0"); f.sRoll1 = spriteId(p + ".roll_1"); f.sRoll2 = spriteId(p + ".roll_2");
   f.sRoll3 = spriteId(p + ".roll_3"); f.sDash = spriteId(p + ".dash"); f.sBDash = spriteId(p + ".bdash");
+  const opt = (n: string) => (hasSprite(p + "." + n) ? spriteId(p + "." + n) : -1);
+  f.sCrouchIn = opt("crouch_in"); f.sJumpPrep = opt("jump_prep"); f.sJumpUp = opt("jump_up"); f.sJumpDown = opt("jump_down");
+  f.sLand = opt("land"); f.sGetup = opt("getup"); f.sDash1 = opt("dash_1"); f.sBDash1 = opt("bdash_1");
   f.sPunchA = spriteId(p + ".lp_1"); f.sPunchB = spriteId(p + ".hp_1"); f.sLift = spriteId(p + ".throw_1");
   f.sSlam = spriteId(p + ".sp_1"); f.sSlashA = spriteId(p + ".hp_1"); f.sSlashB = spriteId(p + ".chp_1");
   f.sSlashC = spriteId(p + ".lp_1");
@@ -386,7 +392,7 @@ function updateFighter(i: number): void {
         f.hasHit = false;
         setState(i, ST_ATTACK);
       }
-      if (airStep(i)) setState(i, ST_IDLE);
+      if (airStep(i)) { setState(i, ST_IDLE); mLandShow[i] = 3; }
       break;
     }
     case ST_ATTACK: updateAttack(i, d); break;
@@ -875,6 +881,8 @@ function ghostColor(i: number): number {
 }
 
 function updateGhosts(i: number): void {
+  if (mLandShow[i] > 0 && (F[i].state !== ST_IDLE && F[i].state !== ST_WALK)) mLandShow[i] = 0;
+  else if (mLandShow[i] > 0) mLandShow[i]--;
   if (ghostColor(i) < 0) { mGN[i] = 0; return; }
   const f = F[i];
   let want = false;
@@ -902,12 +910,19 @@ export function currentSprite(i: number): number {
   const f = F[i], t = f.stTick;
   if (f.cineSpr >= 0) return f.cineSpr;
   if (mPose[i] >= 0 && f.onGround && (f.state === ST_IDLE || f.state === ST_WALK || f.state === ST_CROUCH)) return mPose[i];
+  if (mLandShow[i] > 0 && f.sLand >= 0 && (f.state === ST_IDLE || f.state === ST_WALK)) return f.sLand;
   switch (f.state) {
     case ST_IDLE: return animFrame(f.aIdle, t);
     case ST_WALK: return animFrame(f.aWalk, t, f.backward);
-    case ST_CROUCH: case ST_LAND: return f.sCrouch;
-    case ST_JUMP: return f.sJump;
-    case ST_DASH: return f.backward ? f.sBDash : f.sDash;
+    case ST_CROUCH: return t < 2 && f.sCrouchIn >= 0 ? f.sCrouchIn : f.sCrouch;
+    case ST_LAND: return f.sLand >= 0 ? f.sLand : f.sCrouch;
+    case ST_JUMP:
+      if (f.sJumpUp >= 0 && f.vy < -2) return t < 1 && f.sJumpPrep >= 0 ? f.sJumpPrep : f.sJumpUp;
+      if (f.sJumpDown >= 0 && f.vy > 1.5) return f.sJumpDown;
+      return f.sJump;
+    case ST_DASH:
+      if (f.backward) return f.sBDash1 >= 0 && t >= 3 ? f.sBDash1 : f.sBDash;
+      return f.sDash1 >= 0 && t >= 2 ? f.sDash1 : f.sDash;
     case ST_ATTACK: case ST_THROW: {
       const mt = D.MvType[f.mv], mv = f.mv;
       if (f.state === ST_THROW && mt === MT_SUPER_GRAB) {
@@ -958,7 +973,7 @@ export function currentSprite(i: number): number {
           const k = f.rollDir === f.facing ? Math.trunc(t / 2) % 4 : (4 - (Math.trunc(t / 2) % 4)) % 4;
           return [f.sRoll0, f.sRoll1, f.sRoll2, f.sRoll3][k];
         }
-        default: return f.sCrouch;
+        default: return f.sGetup >= 0 && t >= 2 ? f.sGetup : f.sCrouch;
       }
   }
   return animFrame(f.aIdle, t);
