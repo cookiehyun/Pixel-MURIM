@@ -26,8 +26,8 @@ danwoo     chk   C    5       3      10       90     12      8         L     1  
 danwoo     jp    A    3       4      0        60     8       6         O     0  6   -19 7   6   jump       jp        N    0    0  -
 danwoo     jk    A    4       5      0        80     9       7         O     0  9   -11 8   6   jump       jk        N    0    0  -
 danwoo     throw S    3       1      8        110    0       0         H     1  0   -30 16  10  throw_0    throw_1   T    0    0  -
-danwoo  sp1  S  4  4  14  85  14  12  H  0  10  -30  12  14  palm_0  palm_1  R  4.0  0  26P  300
-danwoo  sp2  S  8  3  15  110  16  0  U  1  6  -30  16  12  spin_0  spin_1  R  1.5  0  623P  400
+danwoo  sp1  S  4  4  14  75  14  12  H  0  10  -30  12  14  palm_0  palm_1  R  4.0  0  26P  300
+danwoo  sp2  S  11  3  18  80  16  0  U  1  6  -30  16  12  spin_0  spin_1  R  1.5  0  623P  500
 danwoo  super  S  10  3  16  300  0  0  L  1  -48  -22  96  22  slam_0  slam_1  SQ  0  0  2626P
 danwoo  ovh  S  8  2  10  70  11  6  O  0  9  -29  7  11  ovh_0  ovh_1  N  1.0  0  -
 cheolsan   lp    S    3       2      4        40     6       4         H     0  11  -31 7   5   lp_0       lp_1      N    0    0  -
@@ -62,21 +62,21 @@ muyeong  sp2  S  4  4  14  100  14  6  H  0  10  -30  20  20  rush_0  rush_1  R 
 muyeong  super S  7  1  14  340  12  6  H  1  0  -32  12  24  sp_0  rush_1  SV  72  0  2626P
 muyeong  ovh  S  8  2  10  70  11  6  O  0  12  -36  17  16  ovh_0  ovh_1  N  1.0  0  -
 # seolhwa (speed kicker): fastest normals and movement, lowest health and damage, no projectile
-seolhwa  lp  S  2  2  3  20  6  4  H  0  7  -26  7  5  lp_0  lp_1  N  0  0  -
-seolhwa  hp  S  3  2  6  65  10  7  H  0  8  -25  7  5  hp_0  hp_1  N  1.2  0  -
-seolhwa  lk  S  3  2  4  35  7  5  H  0  12  -18  8  6  lk_0  lk_1  N  0  0  -
-seolhwa  hk  S  4  3  7  75  11  8  H  0  8  -31  8  7  hk_0  hk_1  N  1.2  0  -
-seolhwa    clp   C    2       2      3        22     6       4         H     0  7   -20 7   5   crouch     clp       N    0    0  -
-seolhwa    chp   C    3       3      8        70     10      7         H     0  -2  -36 7   8   chp_0      chp_1     N    0    0  -
-seolhwa    clk   C    2       2      4        26     8       4         L     0  10  -6  8   6   crouch     clk       N    0    0  -
-seolhwa    chk   C    4       3      9        80     12      8         L     1  10  -5  8   5   crouch     chk       N    0    0  -
-seolhwa    jp    A    3       4      0        50     8       6         O     0  6   -20 7   6   jump       jp        N    0    0  -
-seolhwa    jk    A    3       5      0        70     9       7         O     0  11  -15 8   6   jump       jk        N    0    0  -
+seolhwa  lp  S  2  2  3  18  6  4  H  0  7  -26  7  5  lp_0  lp_1  N  0  0  -
+seolhwa  hp  S  3  2  7  55  10  7  H  0  8  -25  7  5  hp_0  hp_1  N  1.2  0  -
+seolhwa  lk  S  3  2  5  28  7  5  H  0  12  -18  8  6  lk_0  lk_1  N  0  0  -
+seolhwa  hk  S  5  3  8  60  11  8  H  0  8  -31  8  7  hk_0  hk_1  N  1.2  0  -
+seolhwa  clp  C  2  2  3  20  6  4  H  0  7  -20  7  5  crouch  clp  N  0  0  -
+seolhwa  chp  C  3  3  8  60  10  7  H  0  -2  -36  7  8  chp_0  chp_1  N  0  0  -
+seolhwa  clk  C  2  2  4  22  8  4  L  0  10  -6  8  6  crouch  clk  N  0  0  -
+seolhwa  chk  C  4  3  9  70  12  8  L  1  10  -5  8  5  crouch  chk  N  0  0  -
+seolhwa  jp  A  3  4  0  45  8  6  O  0  6  -20  7  6  jump  jp  N  0  0  -
+seolhwa  jk  A  3  5  0  60  9  7  O  0  11  -15  8  6  jump  jk  N  0  0  -
 seolhwa    throw S    3       1      8        100    0       0         H     1  0   -30 15  10  throw_0    throw_1   T    0    0  -
-seolhwa  sp1  S  3  6  16  90  10  5  H  0  11  -21  9  8  rush_0  rush_1  R  3.2  3  24K  300
+seolhwa  sp1  S  3  6  16  80  10  5  H  0  11  -21  9  8  rush_0  rush_1  R  3.2  3  24K  300
 seolhwa  sp2  S  1  6  14  85  14  8  H  1  0  -36  10  26  dp_0  dp_1  U  -5  2  623K  300
 seolhwa    super S    4       5      20       300    12      6         H     1  10  -24 16  16  rush_0     rush_1    SR   6    0  2626K
-seolhwa  ovh  S  8  2  10  50  11  6  O  0  8  -29  7  11  ovh_0  ovh_1  N  1.0  0  -
+seolhwa  ovh  S  8  2  10  45  11  6  O  0  8  -29  7  11  ovh_0  ovh_1  N  1.0  0  -
 # heukrim (zoner): fast poison needles and a teleport, but slow normals and average health
 heukrim    lp    S    3       2      5        30     6       4         H     0  10  -29 7   5   lp_0       lp_1      N    0    0  -
 heukrim  hp  S  4  3  9  80  11  8  H  0  11  -29  8  7  hp_0  hp_1  N  1.2  0  -

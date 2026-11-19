@@ -80,7 +80,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
   switch (prefix) {
     case "cheolsan": setup(i, prefix, x, 1.4, 2.6, -4, 1.4, 8, 1080, 34, 25); break;
     case "muyeong": setup(i, prefix, x, 2, 3, -4.4, 1.7, 6, 930, 30, 21); break;
-    case "seolhwa": setup(i, prefix, x, 2.1, 3.3, -4.8, 2, 5, 880, 29, 20); break;
+    case "seolhwa": setup(i, prefix, x, 1.85, 3.0, -4.8, 2, 5, 880, 29, 20); break;
     case "heukrim": setup(i, prefix, x, 2.1, 3.3, -4.4, 1.7, 6, 1000, 31, 22); break;
     case "hongryeon": setup(i, prefix, x, 2, 3.2, -4.6, 1.8, 5, 960, 29, 20); break;
     case "cheonma":
@@ -694,7 +694,7 @@ function techThrow(i: number): void {
 }
 
 const flowChain = (i: number) => F[i].prefix === "seolhwa" && D.MvType[F[i].mv] === MT_NORMAL && F[i].onGround;
-const chainMax = (i: number) => (F[i].prefix === "seolhwa" ? MAX_CHAIN + 1 : MAX_CHAIN);
+const chainMax = (_i: number) => MAX_CHAIN;
 
 function isLight(mv: number): boolean {
   for (let k = 0; k <= 1; k++) {

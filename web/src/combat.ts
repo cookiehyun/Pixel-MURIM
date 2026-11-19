@@ -107,13 +107,16 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     const counter = !isProj && fd.state === ST_ATTACK && fd.stTick < D.MvStartup[fd.mv];
     mCombo[a]++;
     let dmg = D.MvDamage[mv] / hits;
-    if (mCombo[a] >= 3) dmg *= Math.max(0.5, 1 - 0.1 * (mCombo[a] - 2));
+    // combo scaling: from the 3rd hit each hit is worth 12% less, down to 30%
+    if (mCombo[a] >= 3) dmg *= Math.max(0.3, 1 - 0.12 * (mCombo[a] - 2));
     if (counter) dmg *= 1.25;
     if (demonAwake(a)) dmg *= 1.15;
     if (raging(a)) dmg *= 1.25;
     dealDamage(d, Math.floor(dmg + 0.5));
     const ko = F[d].health <= 0;
     let stun = D.MvHitstun[mv];
+    // long combos: hitstun shrinks and pushback grows, so a string can never loop forever
+    if (mCombo[a] >= 4) { stun = Math.max(2, stun - Math.floor((mCombo[a] - 3) * 1.5)); push *= 1 + 0.2 * (mCombo[a] - 3); }
     if (counter) stun += 4;
     const kd = (D.MvKD[mv] && lastHit) || ko;
     applyHit(d, stun, push, kd);
