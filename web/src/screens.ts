@@ -12,6 +12,7 @@ import { RGB } from "./util";
 import * as Online from "./online";
 import * as Account from "./account";
 import * as AccountForm from "./accountform";
+import * as Story from "./story";
 
 const ROSTER = 8, SLOT_CHEONMA = 6, SLOT_RANDOM = 7, GRID_COLS = 4, BOX_W = 15;
 export const ROSTER_SIZE = 6;
@@ -36,7 +37,7 @@ export function drawPortraitAt(k: number, x: number, y: number, w = 20, alt = fa
   R.drawSpriteScaled(spriteId(rPrefix[k] + ".idle_0"), x + Math.trunc(w / 2) - rHeadX[k] * 2, y + 9 - rHeadY[k] * 2, false, 2, x + 1, y + 1, x + w - 2, y + 18, -1, alt);
 }
 
-export function drawBigView(prefix: string, x: number, flip: boolean, clipL: number, clipR: number, alt = false): void {
+export function drawBigView(prefix: string, x: number, flip: boolean, clipL: number, clipR: number, alt: boolean | number = false): void {
   const ref = spriteId(prefix + ".idle_0");
   const sc = D.SprHi[ref] ? R.HI / R.PX : 1;          // hi-res art pixels are smaller than world pixels
   x = Math.round(flip ? x - (D.SprAX[ref] * 2 - D.SprW[ref]) * sc : x - (D.SprW[ref] - D.SprAX[ref] * 2) * sc);
@@ -53,7 +54,7 @@ function randomPick(): number {
 // ---------------------------------------------------------------- title
 
 const LABELS: Record<number, string[]> = {
-  0: ["SINGLE PLAYER", "MULTIPLAYER", "CREATE ACCOUNT", "LOG IN"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
+  0: ["SINGLE PLAYER", "MULTIPLAYER", "CREATE ACCOUNT", "LOG IN"], 1: ["STORY", "ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
   4: ["QUICK MATCH", "RANK GAME", "ROOM", "RANKING"], 6: ["CREATE ROOM", "JOIN ROOM"],
 };
 const PARENT: Record<number, number> = { 1: 0, 2: 0, 4: 2, 6: 4 };
@@ -99,8 +100,9 @@ export function titleTick(): void {
     mMenuLevel = 1 + mCursor; mCursor = 0;
   }
   else if (mMenuLevel === 1) {
-    G.Multi = false; G.WatchMode = false;
-    G.GameMode = mCursor === 0 ? MODE_ARCADE : mCursor === 1 ? MODE_TAG : MODE_TRAINING;
+    G.Multi = false; G.WatchMode = false; G.StoryFight = false;
+    if (mCursor === 0) { Story.open(); return; }
+    G.GameMode = mCursor === 1 ? MODE_ARCADE : mCursor === 2 ? MODE_TAG : MODE_TRAINING;
     selectBegin();
   } else if (mMenuLevel === 2) {
     if (mCursor === 0) { G.Multi = true; G.WatchMode = false; G.GameMode = MODE_TAG; selectBegin(); }

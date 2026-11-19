@@ -6,18 +6,20 @@ import { gameInit, gameTick, gameRender, G, startMatch, MODE_TRAINING } from "./
 import * as Fighter from "./fighter";
 import { C } from "./combat";
 import { setupTouch } from "./touch";
+import * as KF from "./kfont";
+import * as Story from "./story";
 
 const TICK_MS = 50;                    // 20 ticks per second, like the Excel version
 
 async function main(): Promise<void> {
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
-  await loadAll();
+  await Promise.all([loadAll(), KF.load(), Story.load()]);
   await Account.init();
   K.init();
   R.init(canvas);
   gameInit();
   setupTouch();
-  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy };
+  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy, story: Story };
   document.getElementById("loading")?.remove();
   let acc = 0, last = performance.now();
   const frame = (now: number) => {

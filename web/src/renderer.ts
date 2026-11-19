@@ -18,7 +18,6 @@ const bg = new Int32Array(PW * PH);
 const bgDark = new Int32Array(PW * PH);
 let ctx: CanvasRenderingContext2D | null = null;
 let img: ImageData | null = null;
-const altCache = new Map<number, Int32Array>();
 
 export function init(canvas: HTMLCanvasElement): void {
   canvas.width = PW;
@@ -44,7 +43,7 @@ export function backPixel(x: number, y: number): number {
   return back[x * PX + y * PX * PW];
 }
 
-function block(px: number, py: number, color: number, n = PX): void {
+export function block(px: number, py: number, color: number, n = PX): void {
   if (px < 0 || py < 0 || px > PW - n || py > PH - n) {
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const X = px + i, Y = py + j;
@@ -79,20 +78,50 @@ export function drawRectOutline(x: number, y: number, w: number, h: number, colo
   fillRect(x + w - 1, y, 1, h, color);
 }
 
-function pixels(id: number, alt: boolean): ArrayLike<number> {
-  if (!alt) return D.SprPix;
-  let a = altCache.get(id);
+// palette variants: 1 = mirror-match colours, 2.. = story stand-ins (a known fighter recoloured as someone
+// else until that character has art); +SKIN_DIM darkens any of them (people in the back row of a scene)
+export const SKIN_ALT = 1, SKIN_SHADOW = 2, SKIN_PALE = 3, SKIN_BLOOD = 4, SKIN_IRON = 5, SKIN_CORPSE = 6, SKIN_VIOLET = 7,
+  SKIN_GOLD = 8, SKIN_DIM = 16;
+const skinCache = new Map<number, Int32Array>();
+
+function lum(c: number): number { return ((c & 255) * 0.3 + ((c >> 8) & 255) * 0.59 + ((c >> 16) & 255) * 0.11) / 255; }
+function mixRGB(c: number, r: number, g: number, b: number, a: number): number {
+  return RGB((c & 255) + (r - (c & 255)) * a, ((c >> 8) & 255) + (g - ((c >> 8) & 255)) * a, ((c >> 16) & 255) + (b - ((c >> 16) & 255)) * a);
+}
+function shade(l: number, r: number, g: number, b: number): number { return RGB(r * l, g * l, b * l); }
+
+export function skinColor(c: number, skin: number): number {
+  const l = lum(c);
+  switch (skin & 15) {
+    case SKIN_ALT: c = altColor(c); break;
+    case SKIN_SHADOW: c = mixRGB(shade(l * 1.1, 150, 120, 200), c & 255, (c >> 8) & 255, (c >> 16) & 255, 0.25); break;
+    case SKIN_PALE: c = mixRGB(c, 236, 232, 226, 0.45); break;
+    case SKIN_BLOOD: c = shade(Math.min(1, l * 1.25), 255, 70, 60); break;
+    case SKIN_IRON: c = mixRGB(shade(Math.min(1, l * 1.1), 190, 200, 215), c & 255, (c >> 8) & 255, (c >> 16) & 255, 0.2); break;
+    case SKIN_CORPSE: c = shade(Math.min(1, l * 1.05), 150, 170, 140); break;
+    case SKIN_VIOLET: c = mixRGB(c, 150, 80, 190, 0.45); break;
+    case SKIN_GOLD: c = mixRGB(c, 230, 190, 110, 0.35); break;
+  }
+  if (skin & SKIN_DIM) c = RGB((c & 255) * 0.55, ((c >> 8) & 255) * 0.55, ((c >> 16) & 255) * 0.6 + 8);
+  return c;
+}
+
+function pixels(id: number, alt: boolean | number): ArrayLike<number> {
+  const skin = alt === true ? SKIN_ALT : alt === false ? 0 : alt;
+  if (!skin) return D.SprPix;
+  const key = id * 64 + skin;
+  let a = skinCache.get(key);
   if (!a) {
     const off = D.SprOff[id], n = D.SprW[id] * D.SprH[id];
     a = new Int32Array(D.SprPix.length).fill(-1);
-    for (let k = off; k < off + n; k++) a[k] = D.SprPix[k] < 0 ? -1 : altColor(D.SprPix[k]);
-    altCache.set(id, a);
+    for (let k = off; k < off + n; k++) a[k] = D.SprPix[k] < 0 ? -1 : skinColor(D.SprPix[k], skin);
+    skinCache.set(key, a);
   }
   return a;
 }
 
 /** Draw sprite with its anchor (ground point under the hip) on world point (x, y). flip mirrors; tint >= 0 paints it one color. */
-export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt = false): void {
+export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt: boolean | number = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
   x = Math.trunc(x); y = Math.trunc(y);
@@ -124,7 +153,7 @@ export function drawSprite(id: number, x: number, y: number, flip: boolean, tint
 
 /** Sprite enlarged k times, clipped to world rect (cx0, cy0)-(cx1, cy1) (select screens). */
 export function drawSpriteScaled(id: number, x: number, y: number, flip: boolean, k: number,
-  cx0: number, cy0: number, cx1: number, cy1: number, tint = -1, alt = false): void {
+  cx0: number, cy0: number, cx1: number, cy1: number, tint = -1, alt: boolean | number = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
   const B = D.SprHi[id] ? k * HI : k * PX;            // screen pixels per sprite pixel
@@ -300,4 +329,43 @@ export function tintHi(id: number, x: number, y: number, flip: boolean, color: n
         if (X >= 0 && X < PW && Y >= 0 && Y < PH) blendAt(X + Y * PW, color, a);
       }
     }
+}
+
+// ---------------------------------------------------------------- story mode helpers (screen-pixel coordinates)
+
+export const PHYS_W = PW, PHYS_H = PH;
+
+/** Darken / tint a screen-pixel rectangle toward color by a (dialogue boxes). */
+export function shadeRect(x: number, y: number, w: number, h: number, color: number, a: number): void {
+  const x0 = Math.max(0, x), y0 = Math.max(0, y), x1 = Math.min(PW, x + w), y1 = Math.min(PH, y + h);
+  for (let j = y0; j < y1; j++) for (let i = x0; i < x1; i++) blendAt(i + j * PW, color, a);
+}
+export function physRect(x: number, y: number, w: number, h: number, color: number): void {
+  const x0 = Math.max(0, x), y0 = Math.max(0, y), x1 = Math.min(PW, x + w), y1 = Math.min(PH, y + h);
+  for (let j = y0; j < y1; j++) back.fill(color, x0 + j * PW, x1 + j * PW);
+}
+
+/** Recolour the current stage background (night, burnt, black and white, blood moon ...). */
+export const TINT_NONE = 0, TINT_NIGHT = 1, TINT_BURNT = 2, TINT_MONO = 3, TINT_BLOOD = 4, TINT_TORCH = 5, TINT_DARK = 6,
+  TINT_VIOLET = 7, TINT_DAWN = 8, TINT_DUSK = 9, TINT_BLACK = 10;
+export function tintStage(t: number): void {
+  if (!t) return;
+  for (let k = 0; k < bg.length; k++) {
+    const c = bg[k], r = c & 255, g = (c >> 8) & 255, b = (c >> 16) & 255, l = r * 0.3 + g * 0.59 + b * 0.11;
+    let o = c;
+    switch (t) {
+      case TINT_NIGHT: o = RGB(r * 0.45, g * 0.5, b * 0.7 + 18); break;
+      case TINT_BURNT: o = RGB(Math.min(255, l * 1.3 + 30), l * 0.62, l * 0.35); break;
+      case TINT_MONO: o = RGB(l * 0.9, l * 0.9, l * 0.9); break;
+      case TINT_BLOOD: o = RGB(Math.min(255, l * 1.15 + 20), l * 0.3, l * 0.32); break;
+      case TINT_TORCH: o = RGB(Math.min(255, r * 0.7 + 40), g * 0.55 + 12, b * 0.35); break;
+      case TINT_DARK: o = RGB(r * 0.35, g * 0.35, b * 0.45 + 6); break;
+      case TINT_VIOLET: o = RGB(r * 0.75 + 30, g * 0.55, Math.min(255, b * 0.9 + 50)); break;
+      case TINT_DAWN: o = RGB(r * 0.75 + 10, g * 0.8 + 12, Math.min(255, b * 0.9 + 34)); break;
+      case TINT_DUSK: o = RGB(Math.min(255, r * 0.9 + 40), g * 0.7 + 8, b * 0.55); break;
+      case TINT_BLACK: o = RGB(4, 3, 8); break;
+    }
+    bg[k] = o;
+    bgDark[k] = darken(o);
+  }
 }

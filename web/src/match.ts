@@ -11,18 +11,21 @@ import * as K from "./input";
 import * as Lockstep from "./lockstep";
 import { G, MODE_ARCADE, GS_MENU, startMatch, restart } from "./game";
 import * as Arcade from "./arcade";
+import * as Story from "./story";
 import { RGB, clng } from "./util";
 
 export const MP_INTRO = 1, MP_FIGHT = 2, MP_KO = 3, MP_TIMEUP = 4, MP_ROUNDEND = 5, MP_MATCHEND = 6;
 export const M = { RoundTicks: 1200 };
-const WIN_ROUNDS = 2, MAX_ROUNDS = 5, INTRO_TICKS = 50, TIMEUP_TICKS = 40, ROUNDEND_TICKS = 60, REFILL_DELAY = 30;
+let WIN_ROUNDS = 2;
+const MAX_ROUNDS = 5, INTRO_TICKS = 50, TIMEUP_TICKS = 40, ROUNDEND_TICKS = 60, REFILL_DELAY = 30;
 
 let mRounds = false, mTraining = false, mPhase = 0, mT = 0, mRound = 1, mTime = 0;
 const mWins = [0, 0], mCalm = [0, 0];
 let mRoundWinner = -1, mMatchWinner = -1, mPerfect = false;
 
-export function beginMatch(rounds: boolean, training: boolean): void {
+export function beginMatch(rounds: boolean, training: boolean, winRounds = 2): void {
   if (M.RoundTicks <= 0) M.RoundTicks = 1200;
+  WIN_ROUNDS = winRounds;
   mRounds = rounds; mTraining = training; mRound = 1; mWins[0] = mWins[1] = 0;
   startRound(false);
 }
@@ -86,7 +89,9 @@ export function tick(frozen: boolean): void {
       break;
     case MP_MATCHEND:
       if (Lockstep.active()) break;
-      if (G.GameMode === MODE_ARCADE) {
+      if (G.StoryFight) {
+        if (mT >= 40 || (mT >= 15 && K.isPressed(K.BTN_LP))) Story.matchOver(mMatchWinner === G.controlled());
+      } else if (G.GameMode === MODE_ARCADE) {
         if (mT >= 50 || (mT >= 15 && K.isPressed(K.BTN_LP))) Arcade.matchOver(mMatchWinner === G.controlled());
       } else if (K.isPressed(K.BTN_LP)) restart();
       else if (K.isPressed(K.BTN_HP)) G.GameState = GS_MENU;
@@ -132,14 +137,14 @@ export function draw(): void {
 
   switch (mPhase) {
     case MP_INTRO:
-      if (mT < 30) banner(mWins[0] === WIN_ROUNDS - 1 && mWins[1] === WIN_ROUNDS - 1 ? "FINAL ROUND" : "ROUND " + mRound, 30, RGB(255, 236, 190), 2);
+      if (mT < 30) banner(WIN_ROUNDS === 1 ? "READY" : mWins[0] === WIN_ROUNDS - 1 && mWins[1] === WIN_ROUNDS - 1 ? "FINAL ROUND" : "ROUND " + mRound, 30, RGB(255, 236, 190), 2);
       else banner("FIGHT!", 28, RGB(255, 120, 60), 3);
       break;
     case MP_TIMEUP: banner("TIME", 28, RGB(255, 236, 190), 3); break;
     case MP_ROUNDEND:
       if (mRoundWinner < 0) banner("DRAW", 30, RGB(255, 236, 190), 2);
       else {
-        banner(F[mRoundWinner].prefix.toUpperCase() + " WINS", 30, RGB(255, 236, 190), 2);
+        banner((F[mRoundWinner].label || F[mRoundWinner].prefix).toUpperCase() + " WINS", 30, RGB(255, 236, 190), 2);
         if (mPerfect) Font.drawBig("PERFECT", cx, 47, RGB(255, 200, 80), 1);
       }
       break;
@@ -150,7 +155,7 @@ export function draw(): void {
       else if (G.WatchMode) t = F[mMatchWinner].prefix.toUpperCase() + " WINS";
       else t = mMatchWinner === G.controlled() ? "YOU WIN" : "YOU LOSE";
       banner(t, 28, RGB(255, 204, 92), 3);
-      if (G.GameMode !== MODE_ARCADE && !Lockstep.active()) Font.drawText("A = REMATCH   S = MENU", cx, 54, RGB(220, 210, 230), 1, 1);
+      if (G.GameMode !== MODE_ARCADE && !G.StoryFight && !Lockstep.active()) Font.drawText("A = REMATCH   S = MENU", cx, 54, RGB(220, 210, 230), 1, 1);
       break;
     }
   }

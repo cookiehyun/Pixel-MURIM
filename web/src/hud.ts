@@ -26,8 +26,8 @@ export function update(): void {
 export function draw(): void {
   drawBar(0, P1_X, false);
   drawBar(1, P2_X, true);
-  Font.drawText(F[0].prefix.toUpperCase(), P1_X + 1, 8, RGB(230, 230, 240));
-  Font.drawText(F[1].prefix.toUpperCase(), P2_X + BAR_W + 1, 8, RGB(230, 230, 240), 1, 2);
+  Font.drawText((F[0].label || F[0].prefix).toUpperCase(), P1_X + 1, 8, RGB(230, 230, 240));
+  Font.drawText((F[1].label || F[1].prefix).toUpperCase(), P2_X + BAR_W + 1, 8, RGB(230, 230, 240), 1, 2);
   if (Tag.active()) { drawReserve(0, P1_X, false); drawReserve(1, P2_X, true); }
   drawMeter(0, P1_X, false);
   drawMeter(1, SCREEN_W - P1_X - METER_W - 2, true);
@@ -81,7 +81,7 @@ function drawReserve(side: number, ox: number, fromRight: boolean): void {
   const RW = 40, mx = Tag.reserveMax(side);
   const w = ceilDiv(RW * Tag.reserveHealth(side), mx), wr = ceilDiv(RW * Tag.reserveRed(side), mx);
   const c = Tag.reserveHealth(side) <= 0 ? RGB(90, 80, 100) : RGB(140, 130, 160);
-  const nm = Tag.reservePrefix(side).toUpperCase();
+  const nm = (F[2 + side].label || Tag.reservePrefix(side)).toUpperCase();
   if (fromRight) {
     R.fillRect(ox + 1 + BAR_W - RW - 1, BAR_Y + 4, RW + 2, 2, cBorder);
     R.fillRect(ox + 1 + BAR_W - wr, BAR_Y + 4, wr, 1, cRed);

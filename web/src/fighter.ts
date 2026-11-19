@@ -47,6 +47,7 @@ export class TFighter {
   // optional extra frames from hi-res art (-1 = not drawn: the single classic frame is used)
   sCrouchIn = -1; sJumpPrep = -1; sJumpUp = -1; sJumpDown = -1; sLand = -1; sGetup0 = -1; sGetup1 = -1; sDownB = -1; sDash1 = -1; sBDash1 = -1;
   rage = 0; cineSpr = -1; cineX0 = 0; cineCX = 0; cineCY = 0;
+  skin = 0; label = "";                         // story stand-ins: palette and HUD name (0 / "" = the fighter itself)
   moves: number[] = new Array(15).fill(0);
   spOrder: number[] = [0, 0, 0];
 }
@@ -1021,7 +1022,7 @@ function drawOne(i: number): void {
     }
     if (demonAwake(i) && !mAwakeShown[i]) { mAwakeShown[i] = true; Combat.showText("CHEONMA SIMGONG", 40, i); }
   }
-  R.drawSprite(currentSprite(i), x, y, flip, tint, i === 1 && F[0].prefix === F[1].prefix);
+  R.drawSprite(currentSprite(i), x, y, flip, tint, f.skin || (i === 1 && F[0].prefix === F[1].prefix && !F[0].skin));
 }
 
 export function isDrain(i: number): boolean {
