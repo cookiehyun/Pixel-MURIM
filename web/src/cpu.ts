@@ -214,7 +214,7 @@ function neutral(i: number, o: number, v: number, dist: number): number {
 
   const fo = F[o];
   if (fo.crouch && fo.onGround && dist < 30 && (fo.state === ST_CROUCH || fo.state === ST_GUARD) && rnd() < 0.05 * (1 + pAggr)) {
-    qAdd(i, 6, B_HP);
+    qAdd(i, 5, B_HP | B_HK);
     return 5;
   }
 

@@ -299,6 +299,8 @@ function decodeAttack(i: number): number {
   const f = F[i], press = f.inPress;
   if (press === 0) return -1;
   if ((f.inHeld & (B_LP | B_LK)) === (B_LP | B_LK) && (press & (B_LP | B_LK)) !== 0) return MV_THROW;
+  // overhead = both heavy buttons (S + X); walking forward with S stays a plain strong punch
+  if ((f.inHeld & (B_HP | B_HK)) === (B_HP | B_HK) && (press & (B_HP | B_HK)) !== 0) return MV_OVH;
   const isP = (press & (B_LP | B_HP)) !== 0, isK = (press & (B_LK | B_HK)) !== 0;
   for (let k = 0; k <= 2; k++) {
     const slot = f.spOrder[k], cmd = D.MvCmd[f.moves[slot]];
@@ -316,7 +318,7 @@ function decodeAttack(i: number): number {
   let r = -1;
   if (press & B_LP) r = MV_LP;
   if (press & B_LK) r = MV_LK;
-  if (press & B_HP) r = f.inDir === 6 ? MV_OVH : MV_HP;
+  if (press & B_HP) r = MV_HP;
   if (press & B_HK) r = MV_HK;
   return r;
 }
