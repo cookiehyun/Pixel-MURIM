@@ -1,0 +1,94 @@
+{
+ "cell": [
+  48,
+  48
+ ],
+ "ground_row": 44,
+ "scale": 10,
+ "sheets": {
+  "01": [
+   "idle_0",
+   "idle_1",
+   "crouch",
+   "jump"
+  ],
+  "02": [
+   "walk_0",
+   "walk_1",
+   "walk_2",
+   "walk_3"
+  ],
+  "03": [
+   "lp_0",
+   "lp_1",
+   "hp_p",
+   "hp_0"
+  ],
+  "04": [
+   "hp_1",
+   "hp_2",
+   "hp_3",
+   "guard"
+  ],
+  "05": [
+   "lk_0",
+   "lk_1",
+   "hk_p",
+   "hk_0"
+  ],
+  "06": [
+   "hk_1",
+   "hk_2",
+   "hk_3",
+   "cguard"
+  ],
+  "07": [
+   "clp",
+   "chp_0",
+   "chp_1",
+   "clk"
+  ],
+  "08": [
+   "chk",
+   "jp",
+   "jk",
+   "dash"
+  ],
+  "09": [
+   "hit_0",
+   "hit_1",
+   "chit",
+   "bdash"
+  ],
+  "10": [
+   "down_0",
+   "down_1",
+   "roll_0",
+   "roll_1"
+  ],
+  "11": [
+   "roll_2",
+   "roll_3",
+   "throw_0",
+   "throw_1"
+  ],
+  "12": [
+   "palm_0",
+   "palm_1",
+   "sp_0",
+   "ovh_0"
+  ],
+  "13": [
+   "spin_0",
+   "spin_t",
+   "spin_1",
+   "ovh_1"
+  ],
+  "14": [
+   "slam_0",
+   "slam_1",
+   "intro",
+   "win"
+  ]
+ }
+}
