@@ -53,78 +53,37 @@ function randomPick(): number {
 // ---------------------------------------------------------------- title
 
 const LABELS: Record<number, string[]> = {
-  0: ["SINGLE PLAYER", "MULTIPLAYER", "CREATE ACCOUNT"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
+  0: ["SINGLE PLAYER", "MULTIPLAYER", "CREATE ACCOUNT", "LOG IN"], 1: ["ARCADE", "VS CPU", "TRAINING"], 2: ["2P", "ONLINE"],
   4: ["QUICK MATCH", "RANK GAME", "ROOM", "RANKING"], 6: ["CREATE ROOM", "JOIN ROOM"],
 };
 const PARENT: Record<number, number> = { 1: 0, 2: 0, 4: 2, 6: 4 };
 
-/** Back from the account screen: the online menu with the cursor on CREATE ACCOUNT. */
+/** Back from the ranking screen: the online menu with the cursor on RANKING. */
 export function openOnlineMenu(): void { mMenuLevel = 4; mCursor = 3; mNotice = 0; }
 
-const LV_ACCOUNT = 10;                       // account page (not a list)
-const label = (lv: number, k: number) => (lv === 0 && k === 2 && Account.loggedIn() ? "ACCOUNT" : LABELS[lv][k]);
+// title: CREATE ACCOUNT always opens the sign-up form (a new account made while logged in replaces the
+// current one); the last row is LOG IN, or LOG OUT while logged in.
+const label = (lv: number, k: number) => (lv === 0 && k === 3 && Account.loggedIn() ? "LOG OUT" : LABELS[lv][k]);
 const needsAccount = (lv: number, k: number) => lv === 4 && k < 3 && !Account.loggedIn();
 
 let mFormOpen = false;
+let mInfo = "", mInfoT = 0;                    // short message under the menu (logged in / out)
 
-// account page: a short note on top, then a menu (logged out: CREATE ACCOUNT / LOG IN, logged in: LOG OUT)
-let mAccSel = 0;
-const accItems = () => (Account.loggedIn() ? ["LOG OUT", "BACK"] : ["CREATE ACCOUNT", "LOG IN", "BACK"]);
-
-function accountTick(): void {
-  if (mFormOpen) return;
-  const items = accItems();
-  if (mAccSel >= items.length) mAccSel = 0;
-  if (K.isPressed(K.BTN_UP)) mAccSel = (mAccSel + items.length - 1) % items.length;
-  if (K.isPressed(K.BTN_DOWN)) mAccSel = (mAccSel + 1) % items.length;
-  const back = () => { mMenuLevel = 0; mCursor = 2; mAccSel = 0; };
-  if (K.isPressed(K.BTN_QUIT) || K.isPressed(K.BTN_HP)) { back(); return; }
-  if (!K.isPressed(K.BTN_LP)) return;
-  const it = items[mAccSel];
-  if (it === "BACK") back();
-  else if (it === "LOG OUT") { Account.logOut(); mAccSel = 0; }
-  else {
-    mFormOpen = true;
-    AccountForm.open(it === "LOG IN" ? "login" : "create").then((ok) => { mFormOpen = false; if (ok) back(); });
-  }
-}
-
-function accountRender(): void {
-  const cx = SCREEN_W / 2;
-  R.beginFrame(true);
-  R.fillRect(0, 0, SCREEN_W, SCREEN_H, RGB(12, 10, 22));
-  Font.drawBig("ACCOUNT", cx, 4, cGold, 1);
-  if (!Account.configured()) {
-    Font.drawText("ACCOUNTS ARE NOT SET UP YET", cx, 40, RGB(255, 140, 90), 1, 1);
-    Font.drawText("S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
-    return;
-  }
-  if (Account.loggedIn()) {
-    Font.drawText("LOGGED IN AS", cx, 20, cDim, 1, 1);
-    Font.drawBig(Account.name(), cx, 29, RGB(255, 240, 210), 2);
-    Font.drawText("RANKING AND SAVES ARE ON THIS ACCOUNT", cx, 50, cDim, 1, 1);
-  } else {
-    Font.drawText("AN ACCOUNT KEEPS YOUR RANKING", cx, 20, RGB(200, 190, 210), 1, 1);
-    Font.drawText("AND SAVES ON ANY DEVICE", cx, 27, RGB(200, 190, 210), 1, 1);
-    Font.drawText("ONLINE PLAY NEEDS AN ACCOUNT", cx, 37, cDim, 1, 1);
-  }
-  const items = accItems(), y0 = Account.loggedIn() ? 62 : 52;
-  for (let k = 0; k < items.length; k++) {
-    const y = y0 + k * 11, on = k === mAccSel;
-    R.fillRect(cx - 40, y - 2, 80, 9, on ? RGB(40, 28, 20) : RGB(20, 16, 26));
-    if (on) {
-      R.drawRectOutline(cx - 40, y - 2, 80, 9, RGB(230, 180, 80));
-      if (Math.trunc(mMenuTick / 6) % 2 === 0) { Font.drawText(">", cx - 36, y, RGB(255, 200, 90)); Font.drawText("<", cx + 34, y, RGB(255, 200, 90)); }
-    }
-    Font.drawText(items[k], cx, y, on ? RGB(255, 236, 180) : RGB(130, 120, 150), 1, 1);
-  }
-  Font.drawText("UP DOWN = SELECT    A = OK    S = BACK", cx, 92, RGB(110, 100, 130), 1, 1);
+function accountAction(k: number): void {
+  if (!Account.configured()) { mInfo = "ACCOUNTS ARE NOT SET UP YET"; mInfoT = 60; return; }
+  if (k === 3 && Account.loggedIn()) { Account.logOut(); mInfo = "LOGGED OUT"; mInfoT = 50; return; }
+  mFormOpen = true;
+  AccountForm.open(k === 2 ? "create" : "login").then((ok) => {
+    mFormOpen = false;
+    if (ok) { mInfo = "LOGGED IN AS " + Account.name(); mInfoT = 60; }
+  });
 }
 
 export function titleTick(): void {
   mMenuTick++;
   if (mNotice > 0) mNotice--;
-  if (mMenuLevel === LV_ACCOUNT) { accountTick(); return; }
+  if (mInfoT > 0) mInfoT--;
+  if (mFormOpen) return;
   const n = LABELS[mMenuLevel].length;
   if (K.isPressed(K.BTN_UP)) mCursor = (mCursor + n - 1) % n;
   if (K.isPressed(K.BTN_DOWN)) mCursor = (mCursor + 1) % n;
@@ -136,7 +95,7 @@ export function titleTick(): void {
   }
   if (!K.isPressed(K.BTN_LP)) return;
   if (mMenuLevel === 0) {
-    if (mCursor === 2) { mMenuLevel = LV_ACCOUNT; mAccSel = 0; return; }
+    if (mCursor >= 2) { accountAction(mCursor); return; }
     mMenuLevel = 1 + mCursor; mCursor = 0;
   }
   else if (mMenuLevel === 1) {
@@ -163,7 +122,6 @@ export function titleTick(): void {
 
 export function titleRender(): void {
   const cx = SCREEN_W / 2;
-  if (mMenuLevel === LV_ACCOUNT) { accountRender(); return; }
   R.beginFrame(true);
   R.drawSprite(animFrame(F[0].aIdle, mMenuTick), 30, GROUND_Y, false);
   R.drawSprite(animFrame(F[1].aIdle, mMenuTick), SCREEN_W - 30, GROUND_Y, true);
@@ -191,7 +149,9 @@ export function titleRender(): void {
     }
     Font.drawText(label(mMenuLevel, k), cx, y, c, 1, 1);
   }
-  if (mNotice > 0) Font.drawText("CREATE AN ACCOUNT FIRST", cx, 92, RGB(255, 140, 90), 1, 1);
+  if (mNotice > 0) Font.drawText("LOG IN OR CREATE AN ACCOUNT FIRST", cx, 92, RGB(255, 140, 90), 1, 1);
+  else if (mInfoT > 0) Font.drawText(mInfo, cx, 92, RGB(150, 230, 160), 1, 1);
+  else if (mMenuLevel === 0 && Account.loggedIn()) Font.drawText("PLAYER " + Account.name(), cx, 92, RGB(200, 180, 120), 1, 1);
   else Font.drawText(mMenuLevel === 0 ? "UP DOWN = SELECT    A = OK" : "UP DOWN = SELECT    A = OK    S = BACK", cx, 92, RGB(150, 140, 170), 1, 1);
 }
 

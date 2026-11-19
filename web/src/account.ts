@@ -87,21 +87,35 @@ export async function signUp(idRaw: string, pw: string): Promise<void> {
   if (!id) throw new Error("ID: LETTERS AND NUMBERS, UP TO 10");
   if (pw.length < 6) throw new Error("PASSWORD: AT LEAST 6 CHARACTERS");
   if (await call("/rest/v1/rpc/name_taken", { n: id })) throw new Error("THIS ID IS TAKEN");
-  takeSession(await call("/auth/v1/signup", { email: mailOf(id), password: pw }));
-  const row = { id: session!.uid, name: id, server_token: newToken(), save: {} };   // every account its own ranking
-  await call("/rest/v1/profiles", row, "POST", true, { Prefer: "return=minimal" });
-  await loadProfile();
+  // made while logged in: the new account replaces the old one, but only once it fully exists
+  const oldSession = session, oldProfile = profile;
+  try {
+    takeSession(await call("/auth/v1/signup", { email: mailOf(id), password: pw }));
+    const row = { id: session!.uid, name: id, server_token: newToken(), save: {} };   // every account its own ranking
+    await call("/rest/v1/profiles", row, "POST", true, { Prefer: "return=minimal" });
+    await loadProfile();
+  } catch (e) {
+    session = oldSession; profile = oldProfile;
+    lsSet(LS_SESSION, session ? JSON.stringify(session) : "");
+    throw e;
+  }
+  if (oldSession && oldSession.uid !== session!.uid) {
+    fetch(SUPABASE_URL + "/auth/v1/logout", { method: "POST", headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + oldSession.access } }).catch(() => undefined);
+  }
 }
 
 export async function logIn(idRaw: string, pw: string): Promise<void> {
   if (!configured()) throw new Error("ACCOUNTS ARE NOT SET UP YET");
   const id = cleanId(idRaw);
+  const oldSession = session, oldProfile = profile;
   try {
     takeSession(await call("/auth/v1/token?grant_type=password", { email: mailOf(id), password: pw }));
+    await loadProfile();
   } catch (e) {
+    session = oldSession; profile = oldProfile;
+    lsSet(LS_SESSION, session ? JSON.stringify(session) : "");
     throw new Error(/invalid/i.test(String(e)) ? "WRONG ID OR PASSWORD" : String((e as Error).message));
   }
-  await loadProfile();
 }
 
 export function logOut(): void {
