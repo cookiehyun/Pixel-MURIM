@@ -125,7 +125,7 @@ def main():
 
     # glyphs: every character of the story plus the Korean text in the story screens' source
     chars = set(js)
-    for f in ("story.ts", "storytext.ts"):
+    for f in ("story.ts", "storytext.ts", "plays.ts", "field.ts"):
         p = os.path.join(ROOT, "web", "src", f)
         if os.path.exists(p): chars |= set(open(p, encoding="utf-8").read())
     chars |= {chr(c) for c in range(32, 127)}

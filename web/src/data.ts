@@ -45,7 +45,7 @@ function hexColor(hx: string): number {
   return RGB(parseInt(hx.slice(0, 2), 16), parseInt(hx.slice(2, 4), 16), parseInt(hx.slice(4, 6), 16));
 }
 
-const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "fx"];
+const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "fx", "npc"];
 const STAGES = ["sanmun", "MOUNTAIN GATE", "bamboo", "BAMBOO FOREST", "inn", "NIGHT INN", "snow", "SNOW PEAK", "waterfall", "WATERFALL"];
 
 export async function loadAll(): Promise<void> {

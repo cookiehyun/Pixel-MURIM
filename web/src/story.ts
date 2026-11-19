@@ -12,6 +12,8 @@ import * as Screens from "./screens";
 import { animId, animFrame } from "./data";
 import { G, GS_STORY, GS_MENU, MODE_TAG, MODE_VSCPU, startMatch } from "./game";
 import { RGB } from "./util";
+import * as Field from "./field";
+import { PLAYS } from "./plays";
 
 // ---------------------------------------------------------------- data
 
@@ -139,7 +141,8 @@ function addClue(text: string): void {
 
 // ---------------------------------------------------------------- screens
 
-const V_ROUTES = 0, V_CHAPTERS = 1, V_BOOK = 2, V_PLAY = 3, V_PICK = 4, V_LOST = 5;
+const V_ROUTES = 0, V_CHAPTERS = 1, V_BOOK = 2, V_PLAY = 3, V_PICK = 4, V_LOST = 5, V_FIELD = 6;
+let mField = false;
 let mView = V_ROUTES, mSel = 0, mChSel = 0, mT = 0, mMsg = "", mMsgT = 0, mBookSel = 0;
 let mRoute = 0, mChap = 0;
 
@@ -174,6 +177,7 @@ export function tick(): void {
     case V_PLAY: playTick(); break;
     case V_PICK: pickTick(); break;
     case V_LOST: lostTick(); break;
+    case V_FIELD: fieldTick(); break;
   }
 }
 
@@ -185,6 +189,7 @@ export function render(): void {
     case V_PLAY: playRender(); break;
     case V_PICK: pickRender(); break;
     case V_LOST: playRender(); lostRender(); break;
+    case V_FIELD: Field.render(); if (mQuitT > 0) KF.draw("ESC 한 번 더 = 장 목록", R.PHYS_W - 16, 276, RGB(255, 170, 120), 2, 2); break;
   }
   if (mMsgT > 0) { R.shadeRect(0, 132, R.PHYS_W, 36, cBox, 0.9); KF.draw(mMsg, R.PHYS_W / 2, 140, cGold, 2, 1); }
 }
@@ -307,6 +312,8 @@ function setBg(bg: Bg): void {
 }
 
 function beginChapter(k: number): void {
+  Field.stop();
+  mField = !!PLAYS[routes[mRoute].id]?.[k];
   mChap = k; mView = V_PLAY; mSec = "pre"; mEv = 0; mTitleT = 0; mFight = 0;
   mCast = []; mOrder = 0; mPage = []; mBanner = ""; mBannerT = 0;
   const ch = chapter();
@@ -422,6 +429,23 @@ function skipSection(): void {
   nextStep();
 }
 
+const fieldHost: Field.Host = {
+  events: (sec, a, b) => (chapter() as unknown as Record<string, Ev[]>)[sec].slice(a, b + 1),
+  look: (n) => look(n),
+  clue: (t) => { addClue(t); writeSave(); },
+  fight: () => { mFight = 0; startFight(); },
+  done: () => chapterDone(),
+};
+
+function fieldTick(): void {
+  if (mQuitT > 0) mQuitT--;
+  if (K.isPressed(K.BTN_QUIT)) {
+    if (mQuitT > 0) { Field.stop(); mView = route().chapters.length > 1 ? V_CHAPTERS : V_ROUTES; mChSel = mChap; return; }
+    mQuitT = 50;
+  }
+  Field.tick();
+}
+
 function chapterDone(): void {
   const rt = route();
   S.done[rt.id] = Math.max(doneOf(rt), mChap + 1);
@@ -441,7 +465,11 @@ function playTick(): void {
   }
   if (mTitleT < 40) {                           // chapter title card
     mTitleT++;
-    if (mTitleT >= 40 || (mTitleT > 6 && K.isPressed(K.BTN_LP))) { mTitleT = 40; mEv = 0; nextStep(); }
+    if (mTitleT >= 40 || (mTitleT > 6 && K.isPressed(K.BTN_LP))) {
+      mTitleT = 40; mEv = 0;
+      if (mField) { mView = V_FIELD; Field.begin(fieldHost, PLAYS[route().id][mChap]); return; }
+      nextStep();
+    }
     return;
   }
   if (!mPage.length) return;
@@ -546,6 +574,7 @@ export function matchOver(won: boolean): void {
   if (won) {
     mFight++;
     if (mFight < fightCount()) { G.StoryFight = true; startFight(); return; }
+    if (mField) { mView = V_FIELD; Field.afterFight(); return; }
     mSec = "post"; mEv = 0; mPage = [];
     const ch = chapter();
     if (ch.fight) setBg(stageOf(ch.fight.stage, ch.fight.variant));
@@ -566,7 +595,7 @@ function lostTick(): void {
   if (K.isPressed(K.BTN_UP) || K.isPressed(K.BTN_DOWN)) mLostSel = 1 - mLostSel;
   if (!K.isPressed(K.BTN_LP)) return;
   if (mLostSel === 0) { mFight = 0; mView = V_PLAY; startFight(); }
-  else { mView = route().chapters.length > 1 ? V_CHAPTERS : V_ROUTES; mChSel = mChap; }
+  else { Field.stop(); mView = route().chapters.length > 1 ? V_CHAPTERS : V_ROUTES; mChSel = mChap; }
 }
 function lostRender(): void {
   const items = ["다시 싸운다", "장 목록으로"];
@@ -612,3 +641,6 @@ export function debugPlay(routeId: string, k: number): void {
   beginChapter(k);
 }
 export const debugView = () => ({ view: mView, sec: mSec, ev: mEv, who: mWho, kind: mKind, page: mPage.join("/"), cast: mCast.map((a) => a.name + a.side), fight: mFight });
+export const fieldDebug = () => Field.debug();
+export const fieldKill = () => Field.debugKill();
+export const fieldWarp = (x: number) => Field.debugWarp(x);

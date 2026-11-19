@@ -81,7 +81,7 @@ export function drawRectOutline(x: number, y: number, w: number, h: number, colo
 // palette variants: 1 = mirror-match colours, 2.. = story stand-ins (a known fighter recoloured as someone
 // else until that character has art); +SKIN_DIM darkens any of them (people in the back row of a scene)
 export const SKIN_ALT = 1, SKIN_SHADOW = 2, SKIN_PALE = 3, SKIN_BLOOD = 4, SKIN_IRON = 5, SKIN_CORPSE = 6, SKIN_VIOLET = 7,
-  SKIN_GOLD = 8, SKIN_DIM = 16;
+  SKIN_GOLD = 8, SKIN_CULT = 9, SKIN_DIM = 16;
 const skinCache = new Map<number, Int32Array>();
 
 function lum(c: number): number { return ((c & 255) * 0.3 + ((c >> 8) & 255) * 0.59 + ((c >> 16) & 255) * 0.11) / 255; }
@@ -101,6 +101,7 @@ export function skinColor(c: number, skin: number): number {
     case SKIN_CORPSE: c = shade(Math.min(1, l * 1.05), 150, 170, 140); break;
     case SKIN_VIOLET: c = mixRGB(c, 150, 80, 190, 0.45); break;
     case SKIN_GOLD: c = mixRGB(c, 230, 190, 110, 0.35); break;
+    case SKIN_CULT: c = (c & 255) > 200 && ((c >> 8) & 255) > 150 ? c : shade(Math.min(1, l * 0.75 + 0.04), 120, 96, 110); break;   // black-robed cultist, skin kept
   }
   if (skin & SKIN_DIM) c = RGB((c & 255) * 0.55, ((c >> 8) & 255) * 0.55, ((c >> 16) & 255) * 0.6 + 8);
   return c;
@@ -367,5 +368,19 @@ export function tintStage(t: number): void {
     }
     bg[k] = o;
     bgDark[k] = darken(o);
+  }
+}
+
+/** A soft disc blended over the frame (screen-pixel centre and radius): smoke, dust. */
+export function shadeCircle(cx: number, cy: number, r: number, color: number, a: number): void {
+  if (a <= 0 || r <= 0) return;
+  const x0 = Math.max(0, Math.floor(cx - r)), x1 = Math.min(PW - 1, Math.ceil(cx + r));
+  const y0 = Math.max(0, Math.floor(cy - r)), y1 = Math.min(PH - 1, Math.ceil(cy + r));
+  const r2 = r * r;
+  // quantised to 2 x 2 blocks so it stays pixel-art
+  for (let y = y0 & ~1; y <= y1; y += 2) for (let x = x0 & ~1; x <= x1; x += 2) {
+    const dx = x - cx, dy = y - cy;
+    if (dx * dx + dy * dy > r2) continue;
+    for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) if (x + i < PW && y + j < PH) blendAt(x + i + (y + j) * PW, color, a);
   }
 }
