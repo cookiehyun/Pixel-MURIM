@@ -6,7 +6,7 @@
 - 다음에 할 일: 사용자가 두 사람 화면 사진 + 연결 방식(QUICK MATCH / ROOM CODE / DIRECT IP, 누가 방장)을 보내 주면 두 줄을 비교해 원인을 고친다.
 
 ## 스토리
-- docs_edit/ 가 원본. 서장 → 단우 편 순서로 세부 수정 중. 다 고친 뒤 docs/story 를 docs_edit 내용으로 교체.
+- 각본 정리 끝 (2026-11-19): docs/story 가 최종본. 다음은 웹판 스토리 모드 구현.
 
 ## 웹판 온라인 (2026-11-18)
 - 서버: `server/install_web.sh pixelmurim.duckdns.org` (Caddy가 TLS, 게임 서버는 127.0.0.1:47701 웹소켓). 오라클 보안 목록에 TCP 80/443 열기.
