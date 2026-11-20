@@ -21,7 +21,7 @@ sd_heukrim.tuck sd/heukrim/tuck.png 10 37
 sd_heukrim.wall sd/heukrim/wall.png 9 37
 sd_heukrim.sneak sd/heukrim/sneak.png 11 35
 ANIM sd_heukrim.idle 10 tuck tuck
-ANIM sd_heukrim.walk 6 sneak sneak
+ANIM sd_heukrim.walk 4 sneak_0 sneak_1 sneak_2 sneak_3
 sd_cheolsan.block sd/cheolsan/block.png 16 31
 sd_cheolsan.kneel sd/cheolsan/kneel.png 13 27
 sd_cheolsan.beads sd/cheolsan/beads.png 11 33
@@ -39,7 +39,7 @@ sd_gangsi.walk_1 sd/gangsi/walk_1.png 10 35
 sd_gangsi.walk_2 sd/gangsi/walk_2.png 10 35
 sd_gangsi.stab sd/gangsi/stab.png 13 35
 ANIM sd_cheolsan.idle 10 block block
-ANIM sd_cheolsan.walk 5 walk block
+ANIM sd_cheolsan.walk 3 run_0 run_1 run_2 run_3
 ANIM sd_hyegong.idle 10 stagger stagger
 ANIM sd_hyegong.walk 8 stagger kneel
 ANIM sd_monk.idle 10 run_0 run_0
@@ -124,3 +124,11 @@ ANIM sd_jeogun.idle 10 jg_kneel jg_kneel
 ANIM sd_jeogun.walk 10 jg_kneel jg_kneel
 ANIM sd_dang.idle 10 dang_kneel dang_kneel
 ANIM sd_dang.walk 10 dang_bow dang_bow
+sd_heukrim.sneak_0 sd/heukrim/sneak_0.png 10 34
+sd_heukrim.sneak_1 sd/heukrim/sneak_1.png 11 35
+sd_heukrim.sneak_2 sd/heukrim/sneak_2.png 9 35
+sd_heukrim.sneak_3 sd/heukrim/sneak_3.png 10 35
+sd_cheolsan.run_0 sd/cheolsan/run_0.png 13 31
+sd_cheolsan.run_1 sd/cheolsan/run_1.png 14 29
+sd_cheolsan.run_2 sd/cheolsan/run_2.png 10 31
+sd_cheolsan.run_3 sd/cheolsan/run_3.png 11 32

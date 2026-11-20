@@ -197,6 +197,12 @@ function exec(s: Step): boolean {
     }
     case "cam": camTarget = String(s.follow ?? ""); camFixed = typeof s.x === "number" ? s.x : null; return true;
     case "wait": mWait = Number(s.n); return false;
+    case "swap": {                                 // the same place, changed (the bamboo after the cut): people and camera stay
+      const name = String(s.map);
+      if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
+      map = mapCache.get(name)!;
+      return true;
+    }
     case "flash": mFlash = Number(s.n ?? 8); return true;
     case "shake": mShake = Number(s.n ?? 10); return true;
     case "caption": mCap = String(s.text); mCapT = Number(s.n ?? 70); return true;
