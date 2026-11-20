@@ -121,7 +121,7 @@ let quest: Step | null = null, questText = "", questCount = "", control = false;
 let mHitStop = 0, mFallen = 0, mCheck: { ents: Ent[]; step: number } | null = null, mNotice = "", mNoticeT = 0;
 // dialogue
 let queue: string[][] = [], page: string[] = [], pageAt = 0, shown = 0, who = "", kind = "", dir = "";
-let mActive = false, mSnap = false;
+let mActive = false, mSnap = false, mFlash = 0;
 
 export const active = () => mActive;
 
@@ -190,6 +190,7 @@ function exec(s: Step): boolean {
     }
     case "cam": camTarget = String(s.follow ?? ""); camFixed = typeof s.x === "number" ? s.x : null; return true;
     case "wait": mWait = Number(s.n); return false;
+    case "flash": mFlash = Number(s.n ?? 8); return true;
     case "ev": queue.push(...host!.events(String(s.sec), Number(s.a), Number(s.b ?? s.a))); nextLine(); return false;
     case "say": queue.push(["say", String(s.who), String(s.text), String(s.dir ?? "")]); nextLine(); return false;
     case "clue": host!.clue(String(s.text)); queue.push(["clue", String(s.text)]); nextLine(); return false;
@@ -495,6 +496,7 @@ export function render(): void {
     const left = Number(quest.dir ?? 1) < 0;
     KF.draw(left ? "◀" : "▶", left ? 10 : R.PHYS_W - 10, 150, RGB(255, 210, 90), 3, left ? 0 : 2);
   }
+  if (mFlash > 0) { R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(250, 248, 255), Math.min(1, mFlash / 6)); mFlash--; }
   hud();
   if (talking()) dialogueRender();
   if (mNoticeT > 0) { R.shadeRect(0, 132, R.PHYS_W, 36, RGB(14, 11, 22), 0.9); KF.draw(mNotice, R.PHYS_W / 2, 140, RGB(240, 196, 96), 2, 1); }

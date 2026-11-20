@@ -16,13 +16,15 @@ export interface FieldMap {
   flags: { x: number; y: number }[];            // pole top of a black-flame flag
   glow: number;                                 // colour of the embers
   img?: { w: number; h: number; pix: Int32Array };
-  noAsh?: boolean;                              // indoors / no fire: no drifting ash   // a finished picture (screen pixels) instead of drawn layers
+  noAsh?: boolean;
+  rain?: boolean;                              // indoors / no fire: no drifting ash   // a finished picture (screen pixels) instead of drawn layers
 }
 
 // ---------------------------------------------------------------- picture maps (data/maps/<name>.png, see tools/bg_add.py)
 
 const pictures = new Map<string, { w: number; h: number; pix: Int32Array }>();
-export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard"];
+export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut"];
+const RAIN_MAPS = ["bamboo_hut"];
 const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard"];
 
 export async function preload(): Promise<void> {
@@ -47,7 +49,7 @@ export async function preload(): Promise<void> {
 export function pictureMap(name: string): FieldMap {
   const img = pictures.get(name);
   const w = img ? Math.round(img.w / PX) : SCREEN_W;
-  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, noAsh: !FIRE_MAPS.includes(name) };
+  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, noAsh: !FIRE_MAPS.includes(name), rain: RAIN_MAPS.includes(name) };
 }
 
 const T = -1;
@@ -301,6 +303,12 @@ export function drawBack(m: FieldMap, camX: number, t: number): void {
 
 export function drawFront(m: FieldMap, camX: number, t: number): void {
   for (const L of m.front) drawLayer(L, camX);
+  if (m.rain) {
+    for (let k = 0; k < 90; k++) {
+      const x = (k * 97 + Math.floor(t * 1.3) * 7 + k * k) % (R.PHYS_W + 40) - 20, y = (k * 53 + t * 26) % (R.PHYS_H + 30) - 30;
+      for (let j = 0; j < 12; j += 2) R.shadeRect(x - j / 4, y + j, 2, 2, RGB(190, 196, 214), 0.45);
+    }
+  }
   if (m.noAsh) return;
   // drifting ash and a few sparks
   for (let k = 0; k < 26; k++) {

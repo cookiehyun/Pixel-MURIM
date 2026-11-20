@@ -48,3 +48,21 @@ ANIM sd_gangsi.idle 10 walk_0 walk_0
 ANIM sd_gangsi.walk 6 walk_0 walk_1 walk_2 walk_1
 ANIM sd_gangsi.stab_idle 10 stab stab
 ANIM sd_gangsi.stab_run 8 stab walk_1
+sd_jinmu.stand sd/jinmu/stand.png 7 29
+sd_jinmu.point sd/jinmu/point.png 12 29
+sd_jinmu.slash sd/jinmu/slash.png 14 29
+sd_jinmu.lie sd/jinmu/lie.png 25 12
+sd_yacha.stand sd/yacha/stand.png 10 31
+sd_yacha.slash sd/yacha/slash.png 18 29
+sd_yacha.lower sd/yacha/lower.png 10 28
+sd_yacha.walk sd/yacha/walk.png 9 31
+sd_muyeong.lie sd/muyeong/lie.png 19 13
+sd_muyeong.stand sd/muyeong/stand.png 10 29
+sd_muyeong.walk_0 sd/muyeong/walk_0.png 10 29
+sd_muyeong.walk_1 sd/muyeong/walk_1.png 10 29
+ANIM sd_jinmu.idle 10 stand stand
+ANIM sd_jinmu.walk 6 stand point
+ANIM sd_yacha.idle 10 stand stand
+ANIM sd_yacha.walk 6 walk lower
+ANIM sd_muyeong.idle 10 stand stand
+ANIM sd_muyeong.walk 5 walk_0 stand walk_1 stand
