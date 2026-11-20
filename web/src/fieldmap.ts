@@ -24,9 +24,9 @@ export interface FieldMap {
 // ---------------------------------------------------------------- picture maps (data/maps/<name>.png, see tools/bg_add.py)
 
 const pictures = new Map<string, { w: number; h: number; pix: Int32Array }>();
-export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut", "emei_snow"];
+export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut", "emei_snow", "namgung_fire"];
 const RAIN_MAPS = ["bamboo_hut"], SNOW_MAPS = ["emei_snow"];
-const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard"];
+const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard", "namgung_fire"];
 
 export async function preload(): Promise<void> {
   await Promise.all(PICTURE_MAPS.map(async (n) => {

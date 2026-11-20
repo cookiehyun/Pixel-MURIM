@@ -80,3 +80,17 @@ ANIM sd_baekmyeon.carry_idle 10 carry_0 carry_0
 ANIM sd_baekmyeon.carry_run 7 carry_0 carry_1
 ANIM sd_seolhwa.idle 10 shout shout
 ANIM sd_seolhwa.walk 3 run_0 run_1
+sd_hongryeon.run_0 sd/hongryeon/run_0.png 10 29
+sd_hongryeon.run_1 sd/hongryeon/run_1.png 10 29
+sd_hongryeon.startle sd/hongryeon/startle.png 9 31
+sd_hongryeon.ask sd/hongryeon/ask.png 8 30
+sd_yussi.yu_walk_0 sd/yussi/yu_walk_0.png 8 28
+sd_yussi.yu_walk_1 sd/yussi/yu_walk_1.png 8 28
+sd_namgungrin.rin_sword sd/namgungrin/rin_sword.png 6 32
+sd_namgungrin.rin_away sd/namgungrin/rin_away.png 7 31
+ANIM sd_hongryeon.idle 10 ask ask
+ANIM sd_hongryeon.walk 3 run_0 run_1
+ANIM sd_yussi.idle 10 yu_walk_0 yu_walk_0
+ANIM sd_yussi.walk 7 yu_walk_0 yu_walk_1
+ANIM sd_namgungrin.idle 10 rin_sword rin_sword
+ANIM sd_namgungrin.walk 8 rin_sword rin_away
