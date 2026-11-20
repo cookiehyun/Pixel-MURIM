@@ -117,7 +117,7 @@ sd_jeogun.jg_kneel sd/jeogun/jg_kneel.png 12 25
 sd_dang.dang_kneel sd/dang/dang_kneel.png 11 24
 sd_dang.dang_bow sd/dang/dang_bow.png 8 33
 ANIM sd_cheonma.idle 10 stand stand
-ANIM sd_cheonma.walk 8 stand moon
+ANIM sd_cheonma.walk 5 walk_0 walk_1 walk_2 walk_3
 ANIM sd_geumgang.idle 10 gg_kneel gg_kneel
 ANIM sd_geumgang.walk 10 gg_kneel gg_kneel
 ANIM sd_jeogun.idle 10 jg_kneel jg_kneel
@@ -132,3 +132,7 @@ sd_cheolsan.run_0 sd/cheolsan/run_0.png 13 31
 sd_cheolsan.run_1 sd/cheolsan/run_1.png 14 29
 sd_cheolsan.run_2 sd/cheolsan/run_2.png 10 31
 sd_cheolsan.run_3 sd/cheolsan/run_3.png 11 32
+sd_cheonma.walk_0 sd/cheonma/walk_0.png 7 35
+sd_cheonma.walk_1 sd/cheonma/walk_1.png 7 35
+sd_cheonma.walk_2 sd/cheonma/walk_2.png 7 35
+sd_cheonma.walk_3 sd/cheonma/walk_3.png 7 35
