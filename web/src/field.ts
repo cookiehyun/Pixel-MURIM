@@ -121,7 +121,7 @@ let quest: Step | null = null, questText = "", questCount = "", control = false;
 let mHitStop = 0, mFallen = 0, mCheck: { ents: Ent[]; step: number } | null = null, mNotice = "", mNoticeT = 0;
 // dialogue
 let queue: string[][] = [], page: string[] = [], pageAt = 0, shown = 0, who = "", kind = "", dir = "";
-let mActive = false;
+let mActive = false, mSnap = false;
 
 export const active = () => mActive;
 
@@ -132,7 +132,8 @@ export function begin(h: Host, play: Step[]): void {
 }
 export function stop(): void { mActive = false; }
 
-const MAPS: Record<string, () => FM.FieldMap> = { cheongpung: FM.cheongpung, cheongpung_fire: () => FM.pictureMap("cheongpung_fire") };
+const MAPS: Record<string, () => FM.FieldMap> = { cheongpung: FM.cheongpung };
+for (const n of FM.PICTURE_MAPS) MAPS[n] = () => FM.pictureMap(n);
 const mapCache = new Map<string, FM.FieldMap>();
 
 /** Run steps until one has to wait (dialogue, a walk, a quest). */
@@ -156,6 +157,7 @@ function exec(s: Step): boolean {
       const name = String(s.map);
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
       map = mapCache.get(name)!;
+      ents = []; mSnap = true;                     // a new place: nobody carried over, the camera jumps
       return true;
     }
     case "spawn": {
@@ -286,6 +288,7 @@ function camera(): void {
   if (!map) return;
   const t = camFixed !== null ? camFixed : (ent(camTarget)?.x ?? player()?.x ?? 0) - SCREEN_W / 2 + (camTarget === "player" ? (player()?.face ?? 1) * 18 : 0);
   const want = Math.max(0, Math.min(map.w - SCREEN_W, t));
+  if (mSnap) { camX = want; mSnap = false; }
   camX += (want - camX) * 0.12;
   if (Math.abs(want - camX) < 0.3) camX = want;
 }

@@ -16,3 +16,9 @@ ANIM sd_danwoo.carry_run 3 carry_run_0 carry_run_1 carry_run_2 carry_run_3
 ANIM sd_danwoo.carry_idle 10 carry_turn carry_turn
 ANIM sd_cultist.idle 10 idle_0 idle_0
 ANIM sd_cultist.walk 5 walk_0 idle_0
+sd_heukrim.tear sd/heukrim/tear.png 11 37
+sd_heukrim.tuck sd/heukrim/tuck.png 10 37
+sd_heukrim.wall sd/heukrim/wall.png 9 37
+sd_heukrim.sneak sd/heukrim/sneak.png 11 35
+ANIM sd_heukrim.idle 10 tuck tuck
+ANIM sd_heukrim.walk 6 sneak sneak

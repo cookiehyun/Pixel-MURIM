@@ -15,13 +15,15 @@ export interface FieldMap {
   embers: { x: number; y: number }[];           // smouldering pixels on the main layer (flicker)
   flags: { x: number; y: number }[];            // pole top of a black-flame flag
   glow: number;                                 // colour of the embers
-  img?: { w: number; h: number; pix: Int32Array };   // a finished picture (screen pixels) instead of drawn layers
+  img?: { w: number; h: number; pix: Int32Array };
+  noAsh?: boolean;                              // indoors / no fire: no drifting ash   // a finished picture (screen pixels) instead of drawn layers
 }
 
 // ---------------------------------------------------------------- picture maps (data/maps/<name>.png, see tools/bg_add.py)
 
 const pictures = new Map<string, { w: number; h: number; pix: Int32Array }>();
-export const PICTURE_MAPS = ["cheongpung_fire"];
+export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard"];
+const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard"];
 
 export async function preload(): Promise<void> {
   await Promise.all(PICTURE_MAPS.map(async (n) => {
@@ -45,7 +47,7 @@ export async function preload(): Promise<void> {
 export function pictureMap(name: string): FieldMap {
   const img = pictures.get(name);
   const w = img ? Math.round(img.w / PX) : SCREEN_W;
-  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img };
+  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, noAsh: !FIRE_MAPS.includes(name) };
 }
 
 const T = -1;
@@ -299,6 +301,7 @@ export function drawBack(m: FieldMap, camX: number, t: number): void {
 
 export function drawFront(m: FieldMap, camX: number, t: number): void {
   for (const L of m.front) drawLayer(L, camX);
+  if (m.noAsh) return;
   // drifting ash and a few sparks
   for (let k = 0; k < 26; k++) {
     const x = ((k * 53 + t * (0.4 + (k % 3) * 0.2)) % (SCREEN_W + 20)) - 10, y = (k * 37 + Math.sin(t * 0.05 + k) * 8 + t * 0.15) % SCREEN_H;

@@ -9,6 +9,7 @@ const 교도: [string, number, string] = ["muyeong", SKIN_CULT, "CULTIST"];
 
 const 단우업음: [string, number, string] = ["sd_danwoo:carry", 0, "DANWOO"];
 const 교도SD: [string, number, string] = ["sd_cultist", 0, "CULTIST"];
+const 흑림SD: [string, number, string] = ["sd_heukrim", 0, "HEUKRIM"];
 
 export const PLAYS: Record<string, Record<number, Step[]>> = {
   prologue: {
@@ -38,7 +39,23 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "cam", follow: "player" },
       { t: "move", id: "c1", x: 108 }, { t: "move", id: "c2", x: 120 }, { t: "move", id: "c3", x: 132 },
       { t: "quest", text: "불길 사이를 달리시오", goal: "reach", x: 288 },
-      { t: "cutscene", sec: "pre", a: 11 },
+      // 2. 소림: Heukrim in the sutra library, the screams in the yard
+      { t: "map", map: "shaolin_library" },
+      { t: "spawn", id: "heukrim", look: 흑림SD, x: 72, face: 1, pose: "tear" },
+      { t: "cam", x: 10 },
+      { t: "ev", sec: "pre", a: 12, b: 13 },
+      { t: "pose", id: "heukrim", pose: "tuck" },
+      { t: "wait", n: 14 },
+      { t: "move", id: "heukrim", x: 148, wait: true },
+      { t: "pose", id: "heukrim", pose: "wall" },
+      { t: "cam", x: 60 },
+      { t: "ev", sec: "pre", a: 14, b: 15 },
+      { t: "map", map: "shaolin_yard" },
+      { t: "cam", x: 0 },
+      { t: "wait", n: 10 },
+      { t: "cam", x: 108 },
+      { t: "ev", sec: "pre", a: 16, b: 18 },
+      { t: "cutscene", sec: "pre", a: 19 },
     ],
   },
   danwoo: {
