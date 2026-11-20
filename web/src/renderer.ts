@@ -384,3 +384,15 @@ export function shadeCircle(cx: number, cy: number, r: number, color: number, a:
     for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) if (x + i < PW && y + j < PH) blendAt(x + i + (y + j) * PW, color, a);
   }
 }
+
+/** Copy a picture in screen pixels (pw x ph, -1 = transparent) to the frame, its column sx at the left edge. */
+export function blitPhys(pix: Int32Array, pw: number, ph: number, sx: number, sy = 0): void {
+  sx = Math.round(sx);
+  const x0 = Math.max(0, -sx), x1 = Math.min(PW, pw - sx);
+  for (let y = 0; y < ph; y++) {
+    const ty = y + sy;
+    if (ty < 0 || ty >= PH) continue;
+    const so = y * pw + sx, to = ty * PW;
+    for (let x = x0; x < x1; x++) { const c = pix[so + x]; if (c !== -1) back[to + x] = c; }
+  }
+}

@@ -22,6 +22,7 @@ export interface Host {
   clue(text: string): void;
   fight(o?: { opp: string[]; stage?: string; variant?: string }): void;   // the chapter's boss fight, or an encounter (calls afterFight)
   done(): void;                                             // chapter finished
+  cutscene(sec: string, a: number): void;                   // hand the rest of the chapter to the plain cut-scene player
 }
 
 // ---------------------------------------------------------------- people
@@ -31,13 +32,17 @@ const GROUND = 88, GRAV = 0.5;
 
 interface Kit {
   idle: number; walk: number; jump: number; hit: number; down0: number; down1: number; crouch: number;
-  moves: number[]; walkSpeed: number; jumpVY: number; halfW: number; hurtH: number;
+  moves: number[]; walkSpeed: number; jumpVY: number; halfW: number; hurtH: number; base?: string;
 }
 const kits = new Map<string, Kit>();
 function kit(prefix: string): Kit {
   let k = kits.get(prefix);
   if (k) return k;
-  if (prefix === "npc") {
+  if (prefix.startsWith("sd_")) {
+    const [ch, set] = prefix.split(":");
+    const a = (n: string) => animId(ch + "." + (set ? set + "_" + (n === "walk" ? "run" : n) : n));
+    k = { idle: a("idle"), walk: a("walk"), jump: -1, hit: -1, down0: -1, down1: -1, crouch: -1, moves: [], walkSpeed: set ? 3.2 : 1.6, jumpVY: 0, halfW: 5, hurtH: 22, base: ch };
+  } else if (prefix === "npc") {
     const i = animId("npc.arong_idle");
     k = { idle: i, walk: animId("npc.arong_walk"), jump: -1, hit: -1, down0: -1, down1: -1, crouch: -1, moves: [], walkSpeed: 1.6, jumpVY: 0, halfW: 4, hurtH: 22 };
   } else {
@@ -127,7 +132,7 @@ export function begin(h: Host, play: Step[]): void {
 }
 export function stop(): void { mActive = false; }
 
-const MAPS: Record<string, () => FM.FieldMap> = { cheongpung: FM.cheongpung };
+const MAPS: Record<string, () => FM.FieldMap> = { cheongpung: FM.cheongpung, cheongpung_fire: () => FM.pictureMap("cheongpung_fire") };
 const mapCache = new Map<string, FM.FieldMap>();
 
 /** Run steps until one has to wait (dialogue, a walk, a quest). */
@@ -194,6 +199,7 @@ function exec(s: Step): boolean {
     }
     case "fight": control = false; host!.fight(s.opp ? { opp: s.opp as string[], stage: s.stage as string | undefined, variant: s.variant as string | undefined } : undefined); return false;
     case "end": mActive = false; host!.done(); return false;
+    case "cutscene": mActive = false; host!.cutscene(String(s.sec), Number(s.a)); return false;
   }
   return true;
 }
@@ -201,7 +207,8 @@ function exec(s: Step): boolean {
 function setPose(e: Ent, p: string): void {
   if (p === "idle") { setSt(e, ST_IDLE); return; }
   const k = e.kit;
-  const id = p === "down" ? k.down1 : p === "crouch" ? k.crouch : p === "hit" ? k.hit : hasSprite(e.look[0] + "." + p) ? spriteId(e.look[0] + "." + p) : -1;
+  const base = k.base ?? e.look[0];
+  const id = p === "down" ? k.down1 : p === "crouch" ? k.crouch : p === "hit" ? k.hit : hasSprite(base + "." + p) ? spriteId(base + "." + p) : -1;
   if (id < 0) return;
   e.pose = id; setSt(e, ST_POSE);
 }
@@ -291,8 +298,9 @@ function playerInput(p: Ent): void {
   // interact
   const near = target();
   if (near && K.isPressed(K.BTN_LP) && p.st <= ST_WALK) { interact(near); return; }
+  if (p.st === ST_POSE && (L || Rt)) setSt(p, ST_IDLE);          // a scene pose ends when the player moves
   if (p.st === ST_IDLE || p.st === ST_WALK) {
-    if (K.isPressed(K.BTN_UP)) { p.vy = p.kit.jumpVY * 1.05; p.vx = (Rt ? 1 : L ? -1 : 0) * 1.9; setSt(p, ST_JUMP); return; }
+    if (K.isPressed(K.BTN_UP) && p.kit.jumpVY) { p.vy = p.kit.jumpVY * 1.05; p.vx = (Rt ? 1 : L ? -1 : 0) * 1.9; setSt(p, ST_JUMP); return; }
     const motion = hist.lastIndexOf(2) >= 0 && hist.lastIndexOf(6) > hist.lastIndexOf(2);
     if (K.isPressed(K.BTN_LP) && motion && !near) { attack(p, MV_SP1); hist.length = 0; return; }
     if (K.isPressed(K.BTN_LP)) { attack(p, MV_LP); return; }
@@ -492,7 +500,7 @@ export function render(): void {
 function hud(): void {
   const p = player();
   if (!p) return;
-  if (control || quest) {
+  if ((control || quest) && p.kit.moves.length) {
     R.physRect(12, 10, 154, 12, RGB(20, 14, 18)); R.physRect(14, 12, Math.round(150 * Math.max(0, p.hp) / p.maxHp), 8, RGB(240, 196, 96));
     Font.drawText(p.look[2], 5, 8, RGB(230, 230, 240));
   }
@@ -503,7 +511,7 @@ function hud(): void {
     R.physRect(R.PHYS_W - w - 10, 8, 3, 34, RGB(240, 196, 96));
     KF.draw(t, R.PHYS_W - 22, 15, RGB(255, 236, 190), 2, 2);
   }
-  if (control && !talking()) Font.drawText(target() ? "A = TALK" : "ARROWS MOVE  UP JUMP  A S Z X ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
+  if (control && !talking()) Font.drawText(target() ? "A = TALK" : !p.kit.moves.length ? "LEFT RIGHT = RUN" : "ARROWS MOVE  UP JUMP  A S Z X ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
 }
 
 function dialogueRender(): void {

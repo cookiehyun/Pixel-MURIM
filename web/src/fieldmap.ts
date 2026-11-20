@@ -15,6 +15,37 @@ export interface FieldMap {
   embers: { x: number; y: number }[];           // smouldering pixels on the main layer (flicker)
   flags: { x: number; y: number }[];            // pole top of a black-flame flag
   glow: number;                                 // colour of the embers
+  img?: { w: number; h: number; pix: Int32Array };   // a finished picture (screen pixels) instead of drawn layers
+}
+
+// ---------------------------------------------------------------- picture maps (data/maps/<name>.png, see tools/bg_add.py)
+
+const pictures = new Map<string, { w: number; h: number; pix: Int32Array }>();
+export const PICTURE_MAPS = ["cheongpung_fire"];
+
+export async function preload(): Promise<void> {
+  await Promise.all(PICTURE_MAPS.map(async (n) => {
+    try {
+      const r = await fetch("maps/" + n + ".png");
+      if (!r.ok) return;
+      const bmp = await createImageBitmap(await r.blob());
+      const cv = document.createElement("canvas");
+      cv.width = bmp.width; cv.height = bmp.height;
+      const c2 = cv.getContext("2d")!;
+      c2.drawImage(bmp, 0, 0);
+      const d = c2.getImageData(0, 0, bmp.width, bmp.height).data;
+      const pix = new Int32Array(bmp.width * bmp.height);
+      for (let k = 0; k < pix.length; k++) pix[k] = d[k * 4 + 3] < 128 ? -1 : RGB(d[k * 4], d[k * 4 + 1], d[k * 4 + 2]);
+      pictures.set(n, { w: bmp.width, h: bmp.height, pix });
+    } catch { /* missing picture: the map stays empty */ }
+  }));
+}
+
+/** A map made of one picture as wide as the scene. */
+export function pictureMap(name: string): FieldMap {
+  const img = pictures.get(name);
+  const w = img ? Math.round(img.w / PX) : SCREEN_W;
+  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img };
 }
 
 const T = -1;
@@ -233,6 +264,7 @@ function drawLayer(L: Layer, camX: number): void {
 }
 
 export function drawBack(m: FieldMap, camX: number, t: number): void {
+  if (m.img) { R.physRect(0, 0, R.PHYS_W, R.PHYS_H, 0); R.blitPhys(m.img.pix, m.img.w, m.img.h, camX * PX); return; }
   for (let y = 0; y < SCREEN_H; y++) R.physRect(0, y * PX, R.PHYS_W, PX, m.sky[y]);
   for (const L of m.layers) drawLayer(L, camX);
   // embers glowing on the burnt thatch

@@ -1,2 +1,18 @@
 # Hi-res sprites (PNG art) that replace classic ones. Empty: the game uses the classic sprites.
 # <sprite name> <png under data/hi/> <anchorX> <anchorY>   |   ANIM <char.anim> <ticks per frame> <frames...>
+sd_danwoo.carry_run_0 sd/danwoo/carry_run_0.png 11 32
+sd_danwoo.carry_run_1 sd/danwoo/carry_run_1.png 11 33
+sd_danwoo.carry_run_2 sd/danwoo/carry_run_2.png 11 32
+sd_danwoo.carry_run_3 sd/danwoo/carry_run_3.png 11 33
+sd_danwoo.carry_stop sd/danwoo/carry_stop.png 11 31
+sd_danwoo.carry_look_0 sd/danwoo/carry_look_0.png 10 32
+sd_danwoo.carry_look_1 sd/danwoo/carry_look_1.png 11 32
+sd_danwoo.carry_turn sd/danwoo/carry_turn.png 10 31
+sd_cultist.idle_0 sd/cultist/idle_0.png 11 29
+sd_cultist.shout sd/cultist/shout.png 12 39
+sd_cultist.torch sd/cultist/torch.png 11 36
+sd_cultist.walk_0 sd/cultist/walk_0.png 11 29
+ANIM sd_danwoo.carry_run 3 carry_run_0 carry_run_1 carry_run_2 carry_run_3
+ANIM sd_danwoo.carry_idle 10 carry_turn carry_turn
+ANIM sd_cultist.idle 10 idle_0 idle_0
+ANIM sd_cultist.walk 5 walk_0 idle_0

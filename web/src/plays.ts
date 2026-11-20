@@ -7,7 +7,40 @@ import { SKIN_PALE, SKIN_CULT } from "./renderer";
 
 const 교도: [string, number, string] = ["muyeong", SKIN_CULT, "CULTIST"];
 
+const 단우업음: [string, number, string] = ["sd_danwoo:carry", 0, "DANWOO"];
+const 교도SD: [string, number, string] = ["sd_cultist", 0, "CULTIST"];
+
 export const PLAYS: Record<string, Record<number, Step[]>> = {
+  prologue: {
+    // 1. 청풍촌: the burning village, Danwoo runs with Arong on his back (the rest of the prologue plays as cut scenes)
+    0: [
+      { t: "map", map: "cheongpung_fire" },
+      { t: "cam", x: 140 },
+      { t: "ev", sec: "pre", a: 0, b: 3 },
+      { t: "cam", x: 0 },
+      { t: "ev", sec: "pre", a: 5 },
+      { t: "spawn", id: "player", look: 단우업음, x: 8, face: 1 },
+      { t: "cam", follow: "player" },
+      { t: "ev", sec: "pre", a: 6 },
+      { t: "quest", text: "불길 사이를 달리시오", goal: "reach", x: 150 },
+      { t: "pose", id: "player", pose: "carry_stop" },
+      { t: "spawn", id: "c1", look: 교도SD, x: 86, face: 1, pose: "torch" },
+      { t: "spawn", id: "c2", look: 교도SD, x: 102, face: 1, pose: "shout" },
+      { t: "spawn", id: "c3", look: 교도SD, x: 117, face: 1, pose: "idle_0" },
+      { t: "cam", x: 70 },
+      { t: "wait", n: 8 },
+      { t: "pose", id: "player", pose: "carry_look_0" },
+      { t: "ev", sec: "pre", a: 7, b: 8 },
+      { t: "pose", id: "player", pose: "carry_look_1" },
+      { t: "ev", sec: "pre", a: 9 },
+      { t: "pose", id: "player", pose: "carry_turn" },
+      { t: "ev", sec: "pre", a: 10 },
+      { t: "cam", follow: "player" },
+      { t: "move", id: "c1", x: 108 }, { t: "move", id: "c2", x: 120 }, { t: "move", id: "c3", x: 132 },
+      { t: "quest", text: "불길 사이를 달리시오", goal: "reach", x: 288 },
+      { t: "cutscene", sec: "pre", a: 11 },
+    ],
+  },
   danwoo: {
     // 1장 「잿더미」 청풍촌, the morning after
     0: [

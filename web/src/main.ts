@@ -8,12 +8,13 @@ import { C } from "./combat";
 import { setupTouch } from "./touch";
 import * as KF from "./kfont";
 import * as Story from "./story";
+import * as FM from "./fieldmap";
 
 const TICK_MS = 50;                    // 20 ticks per second, like the Excel version
 
 async function main(): Promise<void> {
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
-  await Promise.all([loadAll(), KF.load(), Story.load()]);
+  await Promise.all([loadAll(), KF.load(), Story.load(), FM.preload()]);
   await Account.init();
   K.init();
   R.init(canvas);

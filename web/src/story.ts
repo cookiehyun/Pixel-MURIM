@@ -435,6 +435,11 @@ const fieldHost: Field.Host = {
   clue: (t) => { addClue(t); writeSave(); },
   fight: (o) => { mFight = 0; mLevelSaved = G.CpuLevel; if (o) G.CpuLevel = 0; mFightOverride = o ? { raw: "", opp: o.opp, seq: 1, tag: false, team: [], pick: false, stage: o.stage ?? chapter().fight?.stage ?? "산문", variant: o.variant ?? chapter().fight?.variant ?? "" } : null; startFight(); },
   done: () => chapterDone(),
+  cutscene: (sec, a) => {
+    mField = false; mView = V_PLAY; mSec = sec as "pre" | "post" | "lose"; mEv = a; mTitleT = 40; mPage = [];
+    if (route().id === "prologue") setBg([0, TINT_BLOOD]);
+    nextStep();
+  },
 };
 
 function fieldTick(): void {
