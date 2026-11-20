@@ -13,6 +13,7 @@ import { animId, animFrame } from "./data";
 import { G, GS_STORY, GS_MENU, MODE_TAG, MODE_VSCPU, startMatch } from "./game";
 import { RGB } from "./util";
 import * as Field from "./field";
+import * as FM from "./fieldmap";
 import { PLAYS } from "./plays";
 
 // ---------------------------------------------------------------- data
@@ -470,6 +471,7 @@ function playTick(): void {
   }
   if (mTitleT < 40) {                           // chapter title card
     mTitleT++;
+    if (mField && !FM.ready()) { mTitleT = Math.min(mTitleT, 39); return; }    // the scene pictures are still downloading
     if (mTitleT >= 40 || (mTitleT > 6 && K.isPressed(K.BTN_LP))) {
       mTitleT = 40; mEv = 0;
       if (mField) { mView = V_FIELD; Field.begin(fieldHost, PLAYS[route().id][mChap]); return; }
@@ -508,6 +510,7 @@ function playRender(): void {
     if (route().title !== ch.title) KF.draw(route().title, R.PHYS_W / 2, 92, cDim, 2, 1);
     KF.draw(ch.title, R.PHYS_W / 2, 124, cGold, 3, 1);
     if (ch.place) KF.wrap(ch.place, 500, 2).forEach((l, i) => KF.draw(l, R.PHYS_W / 2, 176 + i * 24, cNarr, 2, 1));
+    if (mField && !FM.ready() && mTitleT >= 39) KF.draw("불러오는 중…", R.PHYS_W / 2, 260, cDim, 2, 1);
     return;
   }
   if (mBg[1] !== TINT_BLACK) drawActors();

@@ -15,8 +15,8 @@ ap.add_argument("--height", type=int, default=300); ap.add_argument("--colors", 
 a = ap.parse_args()
 im = Image.open(a.picture).convert("RGB")
 w = round(im.width * a.height / im.height)
-im = im.resize((w, a.height), Image.BOX).quantize(colors=a.colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert("RGB")
+im = im.resize((w, a.height), Image.BOX).quantize(colors=a.colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)   # 8-bit palette PNG: small download
 os.makedirs(os.path.join(ROOT, "web", "data", "maps"), exist_ok=True)
 out = os.path.join(ROOT, "web", "data", "maps", a.name + ".png")
-im.save(out)
+im.save(out, optimize=True)
 print(out, im.size, "= world", round(w / 3), "px wide")

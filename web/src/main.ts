@@ -14,8 +14,9 @@ const TICK_MS = 50;                    // 20 ticks per second, like the Excel ve
 
 async function main(): Promise<void> {
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
-  await Promise.all([loadAll(), KF.load(), Story.load(), FM.preload()]);
-  await Account.init();
+  // the big story pictures load in the background; the story waits for them only when it needs them
+  FM.preload();
+  await Promise.all([loadAll(), KF.load(), Story.load(), Account.init()]);
   K.init();
   R.init(canvas);
   gameInit();

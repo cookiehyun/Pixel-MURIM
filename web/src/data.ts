@@ -73,6 +73,18 @@ async function loadHiSprites(): Promise<void> {
   let lines: string[];
   try { lines = await fetchLines("hi/manifest.txt"); } catch { return; }
   const cache = new Map<string, ImageData>();
+  // download every picture at once (one by one was a round trip each: slow start on the web)
+  const files = [...new Set(lines.map((l) => l.trim().split(/\s+/)).filter((p) => p.length >= 4 && p[0] !== "ANIM" && !p[0].startsWith("#")).map((p) => p[1]))];
+  await Promise.all(files.map(async (f) => {
+    try {
+      const bmp = await createImageBitmap(await (await fetch("hi/" + f)).blob());
+      const cv = document.createElement("canvas");
+      cv.width = bmp.width; cv.height = bmp.height;
+      const c2 = cv.getContext("2d")!;
+      c2.drawImage(bmp, 0, 0);
+      cache.set(f, c2.getImageData(0, 0, bmp.width, bmp.height));
+    } catch { /* a missing picture: that sprite stays classic */ }
+  }));
   for (const ln of lines) {
     const p = ln.trim().split(/\s+/);
     if (p[0] === "ANIM" && p.length >= 4) {
@@ -86,20 +98,11 @@ async function loadHiSprites(): Promise<void> {
       continue;
     }
     if (p.length < 4 || p[0].startsWith("#")) continue;
+    const data = cache.get(p[1]);
+    if (!data) continue;
     if (!sprIdx.has(p[0])) {                              // a new frame that classic art never had
       const nid = D.SprCount++;
       sprIdx.set(p[0], nid); D.SprName[nid] = p[0];
-    }
-    let data = cache.get(p[1]);
-    if (!data) {
-      const blob = await (await fetch("hi/" + p[1])).blob();
-      const bmp = await createImageBitmap(blob);
-      const cv = document.createElement("canvas");
-      cv.width = bmp.width; cv.height = bmp.height;
-      const c2 = cv.getContext("2d")!;
-      c2.drawImage(bmp, 0, 0);
-      data = c2.getImageData(0, 0, bmp.width, bmp.height);
-      cache.set(p[1], data);
     }
     const id = sprIdx.get(p[0])!, w = data.width, h = data.height, breathe = p[4] === "breathe";
     D.SprW[id] = w; D.SprH[id] = h; D.SprAX[id] = +p[2]; D.SprAY[id] = +p[3]; D.SprHi[id] = true;

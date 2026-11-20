@@ -28,7 +28,13 @@ export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard
 const RAIN_MAPS = ["bamboo_hut"], SNOW_MAPS = ["emei_snow"];
 const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard", "namgung_fire"];
 
-export async function preload(): Promise<void> {
+let loading: Promise<void> | null = null, loaded = false;
+export const ready = () => loaded;
+export function preload(): Promise<void> {
+  if (!loading) loading = loadPictures().then(() => { loaded = true; });
+  return loading;
+}
+async function loadPictures(): Promise<void> {
   await Promise.all(PICTURE_MAPS.map(async (n) => {
     try {
       const r = await fetch("maps/" + n + ".png");
