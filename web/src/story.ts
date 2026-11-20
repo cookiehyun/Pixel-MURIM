@@ -655,3 +655,4 @@ export const debugView = () => ({ view: mView, sec: mSec, ev: mEv, who: mWho, ki
 export const fieldDebug = () => Field.debug();
 export const fieldKill = () => Field.debugKill();
 export const fieldWarp = (x: number) => Field.debugWarp(x);
+export const playSteps = (r: string, k: number) => PLAYS[r]?.[k] ?? [];

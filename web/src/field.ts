@@ -121,7 +121,12 @@ let quest: Step | null = null, questText = "", questCount = "", control = false;
 let mHitStop = 0, mFallen = 0, mCheck: { ents: Ent[]; step: number } | null = null, mNotice = "", mNoticeT = 0;
 // dialogue
 let queue: string[][] = [], page: string[] = [], pageAt = 0, shown = 0, who = "", kind = "", dir = "";
-let mActive = false, mSnap = false, mFlash = 0;
+let mActive = false, mSnap = false, mFlash = 0, mShake = 0;
+// scene dressing drawn in code: props (things on the ground, a falling beam, writing on a board), a place caption,
+// the opening moon and the closing title
+interface Prop { id: string; kind: string; x: number; y: number; t: number; text?: string }
+let props: Prop[] = [];
+let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0;
 
 export const active = () => mActive;
 
@@ -157,7 +162,7 @@ function exec(s: Step): boolean {
       const name = String(s.map);
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
       map = mapCache.get(name)!;
-      ents = []; mSnap = true;                     // a new place: nobody carried over, the camera jumps
+      ents = []; props = []; mMoon = -1; mSnap = true;   // a new place: nobody carried over, the camera jumps
       return true;
     }
     case "spawn": {
@@ -193,6 +198,12 @@ function exec(s: Step): boolean {
     case "cam": camTarget = String(s.follow ?? ""); camFixed = typeof s.x === "number" ? s.x : null; return true;
     case "wait": mWait = Number(s.n); return false;
     case "flash": mFlash = Number(s.n ?? 8); return true;
+    case "shake": mShake = Number(s.n ?? 10); return true;
+    case "caption": mCap = String(s.text); mCapT = Number(s.n ?? 70); return true;
+    case "moon": mMoon = 0; return true;
+    case "prop": props = props.filter((q) => q.id !== s.id); props.push({ id: String(s.id), kind: String(s.kind), x: Number(s.x), y: Number(s.y ?? GROUND), t: 0, text: s.text as string | undefined }); return true;
+    case "unprop": props = props.filter((q) => q.id !== s.id); return true;
+    case "title": mTitle = true; mTitleT = 0; return false;
     case "ev": queue.push(...host!.events(String(s.sec), Number(s.a), Number(s.b ?? s.a))); nextLine(); return false;
     case "say": queue.push(["say", String(s.who), String(s.text), String(s.dir ?? "")]); nextLine(); return false;
     case "clue": host!.clue(String(s.text)); queue.push(["clue", String(s.text)]); nextLine(); return false;
@@ -265,6 +276,15 @@ const puffs: { x: number; y: number; t: number }[] = [];
 
 export function tick(): void {
   mTick++;
+  if (mCapT > 0) mCapT--;
+  if (mShake > 0) mShake--;
+  if (mMoon >= 0) mMoon++;
+  for (const q of props) q.t++;
+  if (mTitle) {
+    mTitleT++;
+    if (mTitleT > 30 && K.isPressed(K.BTN_LP)) { mTitle = false; mStep++; run(); }
+    return;
+  }
   if (mNoticeT > 0) mNoticeT--;
   if (mHitStop > 0) { mHitStop--; FX.update(); return; }
   if (talking()) dialogueTick();
@@ -294,6 +314,7 @@ function camera(): void {
   if (mSnap) { camX = want; mSnap = false; }
   camX += (want - camX) * 0.12;
   if (Math.abs(want - camX) < 0.3) camX = want;
+  if (mShake > 0) camX += (mShake % 2 ? 1 : -1) * Math.min(3, mShake * 0.4);
 }
 
 // --- player
@@ -469,7 +490,9 @@ function hitOne(a: Ent, b: Ent): void {
 export function render(): void {
   R.beginFrame(false);
   if (!map) return;
+  if (mTitle) { titleRender(); return; }
   FM.drawBack(map, camX, mTick);
+  for (const q of props) if (q.kind !== "beam") drawProp(q);
   const order = ents.slice().sort((a, b) => (a.small ? 1 : 0) - (b.small ? 1 : 0) || (a.id === "player" ? 1 : 0) - (b.id === "player" ? 1 : 0));
   for (const e of order) {
     if (e.st === ST_DEAD && e.t > 10 && Math.trunc(e.t / 3) % 2 === 0) continue;
@@ -481,7 +504,15 @@ export function render(): void {
   }
   for (const pf of puffs) for (let k = 0; k < 5; k++) R.shadeCircle((pf.x - camX + (k - 2) * 5) * PX, (pf.y - pf.t * 0.3 - (k % 2) * 4) * PX, (5 + pf.t * 0.4) * PX, RGB(70, 66, 76), 0.5 * (1 - pf.t / 30));
   FX.draw();
+  for (const q of props) if (q.kind === "beam") drawProp(q);
   FM.drawFront(map, camX, mTick);
+  if (mMoon >= 0) moonRender();
+  if (mCapT > 0 && !talking()) {
+    const a = Math.min(1, mCapT / 12, (70 - mCapT + 12) / 12);
+    R.shadeRect(0, 200, KF.width(mCap, 2) + 56, 34, RGB(10, 8, 14), 0.75 * a);
+    R.physRect(0, 200, 4, 34, RGB(240, 196, 96));
+    KF.draw(mCap, 22, 206, RGB(255, 236, 190), 2);
+  }
   // enemy health bars and the "!" over the quest target
   for (const e of ents) if (e.hostile && e.st !== ST_DEAD && e.hp < e.maxHp) {
     const x = Math.round(e.x - camX) - 8, y = Math.round(e.y) - e.kit.hurtH - 7;
@@ -545,3 +576,56 @@ function dialogueRender(): void {
 export const debug = () => JSON.stringify({ cam: Math.round(camX), step: mStep, t: steps[mStep]?.t, quest: questText, talk: talking(), page: page[0] ?? "", ents: ents.map((e) => e.id + ":" + Math.round(e.x) + ":" + e.st + ":" + e.hp) });
 export function debugKill(): void { for (const e of ents) if (e.hostile) { e.hp = 0; setSt(e, ST_DEAD); e.t = 99; } }
 export function debugWarp(x: number): void { const p = player(); if (p) p.x = x; }
+
+// ---------------------------------------------------------------- scene dressing
+
+function drawProp(q: Prop): void {
+  const sx = (q.x - camX) * PX, sy = q.y * PX;
+  switch (q.kind) {
+    case "beads":                                          // a broken string of wooden prayer beads, scattered
+      for (const [dx, dy] of [[-14, 0], [-9, -1], [-4, 1], [2, 0], [7, -1], [12, 1], [17, 0], [22, 1]])
+        { R.physRect(sx + dx * 3, sy - 6 + dy * 2, 6, 6, RGB(92, 58, 30)); R.physRect(sx + dx * 3 + 1, sy - 5 + dy * 2, 2, 2, RGB(160, 112, 64)); }
+      break;
+    case "hairpin": {                                      // half a silver hairpin in the snow, red thread wound on it
+      for (let k = 0; k < 16; k++) R.physRect(sx + k * 2, sy - 6 - Math.floor(k / 4), 3, 3, k > 12 ? RGB(150, 150, 170) : RGB(214, 218, 230));
+      for (let k = 3; k < 9; k += 2) R.physRect(sx + k * 2, sy - 8 - Math.floor(k / 4), 3, 5, RGB(200, 30, 40));
+      R.physRect(sx + 18, sy - 3, 8, 2, RGB(200, 30, 40));
+      if (Math.trunc(q.t / 10) % 3 === 0) R.physRect(sx + 4, sy - 12, 2, 2, RGB(255, 255, 255));
+      break;
+    }
+    case "text":                                           // writing on something in the picture (a name board)
+      KF.draw(q.text ?? "", sx, sy, RGB(52, 26, 14), 3, 1, -1);
+      break;
+    case "beam": {                                         // a burning roof beam falls, then a wall of fire
+      const fall = Math.min(1, q.t / 10), y = 30 + (q.y - 30) * fall * fall;
+      if (fall >= 1 && q.t === 10) mShake = 10;
+      for (let k = 0; k < 6; k++) {                        // fire on the beam / rising from where it lies
+        const h = fall >= 1 ? 40 + ((q.t * 7 + k * 13) % 18) : 10;
+        for (let j = 0; j < h; j += 3) {
+          const c = j < h * 0.3 ? RGB(255, 220, 90) : j < h * 0.7 ? RGB(255, 130, 30) : RGB(190, 40, 20);
+          R.shadeRect(sx - 30 + k * 12 + ((j + q.t) % 5) - 2, y * PX - 6 - j, 8, 4, c, 0.85);
+        }
+      }
+      R.physRect(sx - 36, y * PX - 6, 72, 9, RGB(60, 34, 20));
+      R.physRect(sx - 36, y * PX - 6, 72, 2, RGB(110, 70, 40));
+      break;
+    }
+  }
+}
+
+function moonRender(): void {
+  R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(4, 2, 6));
+  const r = Math.min(46, 2 + mMoon * 0.6);
+  R.shadeCircle(R.PHYS_W / 2, 110, r + 10, RGB(120, 10, 16), 0.35);
+  R.shadeCircle(R.PHYS_W / 2, 110, r, RGB(214, 36, 40), 1);
+  if (r > 20) for (const [dx, dy, rr] of [[-12, -8, 8], [10, 6, 10], [-4, 16, 5]]) R.shadeCircle(R.PHYS_W / 2 + dx * r / 46, 110 + dy * r / 46, rr * r / 46, RGB(160, 20, 28), 0.6);
+}
+
+function titleRender(): void {
+  R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(4, 2, 6));
+  const a = Math.min(1, mTitleT / 20);
+  R.shadeCircle(R.PHYS_W / 2, 120, 70, RGB(200, 30, 36), a);
+  R.shadeCircle(R.PHYS_W / 2, 120, 84, RGB(120, 10, 16), 0.3 * a);
+  if (mTitleT > 14) { KF.draw("혈월", R.PHYS_W / 2, 206, RGB(255, 210, 120), 4, 1); KF.draw("血月", R.PHYS_W / 2, 262, RGB(170, 120, 90), 2, 1); }
+  if (mTitleT > 30 && Math.trunc(mTitleT / 8) % 2 === 0) Font.drawText("A", SCREEN_W - 6, 92, RGB(150, 140, 170), 1, 2);
+}
