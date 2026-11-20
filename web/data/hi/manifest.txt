@@ -108,3 +108,19 @@ ANIM sd_child.idle 10 kid_stand kid_stand
 ANIM sd_child.walk 8 kid_stand kid_hide
 ANIM sd_villager.idle 10 stand stand
 ANIM sd_villager.walk 3 run_0 run_1
+sd_cheonma.sit sd/cheonma/sit.png 10 31
+sd_cheonma.moon sd/cheonma/moon.png 7 35
+sd_cheonma.ribbon sd/cheonma/ribbon.png 10 34
+sd_cheonma.stand sd/cheonma/stand.png 7 35
+sd_geumgang.gg_kneel sd/geumgang/gg_kneel.png 15 31
+sd_jeogun.jg_kneel sd/jeogun/jg_kneel.png 12 25
+sd_dang.dang_kneel sd/dang/dang_kneel.png 11 24
+sd_dang.dang_bow sd/dang/dang_bow.png 8 33
+ANIM sd_cheonma.idle 10 stand stand
+ANIM sd_cheonma.walk 8 stand moon
+ANIM sd_geumgang.idle 10 gg_kneel gg_kneel
+ANIM sd_geumgang.walk 10 gg_kneel gg_kneel
+ANIM sd_jeogun.idle 10 jg_kneel jg_kneel
+ANIM sd_jeogun.walk 10 jg_kneel jg_kneel
+ANIM sd_dang.idle 10 dang_kneel dang_kneel
+ANIM sd_dang.walk 10 dang_bow dang_bow

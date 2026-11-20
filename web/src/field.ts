@@ -164,6 +164,7 @@ function exec(s: Step): boolean {
       const e = spawn(String(s.id), lookOf(s.look), Number(s.x), Number(s.face ?? 1));
       if (s.pose) setPose(e, String(s.pose));
       if (s.hp) e.hp = e.maxHp = Number(s.hp);
+      if (typeof s.y === "number") e.y = s.y;                 // standing on something (a throne, a roof)
       return true;
     }
     case "pose": { const e = ent(String(s.id)); if (e) setPose(e, String(s.pose)); return true; }
