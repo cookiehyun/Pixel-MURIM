@@ -41,7 +41,7 @@ function kit(prefix: string): Kit {
   if (prefix.startsWith("sd_")) {
     const [ch, set] = prefix.split(":");
     const a = (n: string) => animId(ch + "." + (set ? set + "_" + (n === "walk" ? "run" : n) : n));
-    k = { idle: a("idle"), walk: a("walk"), jump: -1, hit: -1, down0: -1, down1: -1, crouch: -1, moves: [], walkSpeed: set ? 3.2 : 1.6, jumpVY: 0, halfW: 5, hurtH: 22, base: ch };
+    k = { idle: a("idle"), walk: a("walk"), jump: -1, hit: -1, down0: -1, down1: -1, crouch: -1, moves: [], walkSpeed: set === "carry" ? 3.2 : 1.6, jumpVY: 0, halfW: 5, hurtH: 22, base: ch };
   } else if (prefix === "npc") {
     const i = animId("npc.arong_idle");
     k = { idle: i, walk: animId("npc.arong_walk"), jump: -1, hit: -1, down0: -1, down1: -1, crouch: -1, moves: [], walkSpeed: 1.6, jumpVY: 0, halfW: 4, hurtH: 22 };
@@ -58,7 +58,7 @@ function kit(prefix: string): Kit {
 interface Ent {
   id: string; look: Look; kit: Kit; x: number; y: number; vx: number; vy: number; face: number;
   st: number; t: number; mv: number; hitDone: boolean; hp: number; maxHp: number; stun: number;
-  hostile: boolean; goal: number | null; run: boolean; follow: string; gap: number; pose: number;
+  hostile: boolean; goal: number | null; run: boolean; spd: number; follow: string; gap: number; pose: number;
   cool: number; windup: number; inv: number; kills: boolean; small: boolean;
 }
 
@@ -68,7 +68,7 @@ const player = () => ent("player")!;
 
 function spawn(id: string, look: Look, x: number, face: number): Ent {
   const e: Ent = { id, look, kit: kit(look[0]), x, y: GROUND, vx: 0, vy: 0, face, st: ST_IDLE, t: 0, mv: -1, hitDone: false,
-    hp: 160, maxHp: 160, stun: 0, hostile: false, goal: null, run: false, follow: "", gap: 14, pose: -1, cool: 30, windup: 0,
+    hp: 160, maxHp: 160, stun: 0, hostile: false, goal: null, run: false, spd: 0, follow: "", gap: 14, pose: -1, cool: 30, windup: 0,
     inv: 0, kills: false, small: look[0] === "npc" };
   if (id === "player") { e.maxHp = e.hp = 600; }
   ents = ents.filter((o) => o.id !== id);
@@ -176,7 +176,7 @@ function exec(s: Step): boolean {
     case "move": {
       const e = ent(String(s.id)); if (!e) return true;
       e.goal = typeof s.x === "number" ? s.x : (ent(String(s.x))?.x ?? e.x) + Number(s.dx ?? 0);
-      e.run = !!s.run; e.follow = "";
+      e.run = !!s.run; e.spd = Number(s.speed ?? 0); e.follow = "";
       if (e.st === ST_POSE) setSt(e, ST_IDLE);
       return !s.wait;
     }
@@ -378,7 +378,7 @@ function think(e: Ent): void {
   }
   if (e.hostile && e.goal === null) { enemyAI(e); return; }
   if (e.goal !== null) {
-    const d = e.goal - e.x, sp = e.kit.walkSpeed * (e.run ? 1.9 : 1);
+    const d = e.goal - e.x, sp = e.spd || e.kit.walkSpeed * (e.run ? 1.9 : 1);
     if (Math.abs(d) <= sp) { e.x = e.goal; e.goal = null; e.vx = 0; if (e.st !== ST_POSE) setSt(e, ST_IDLE); }
     else { e.face = d > 0 ? 1 : -1; e.vx = Math.sign(d) * sp; if (e.st !== ST_WALK) setSt(e, ST_WALK); }
   } else if (e.st === ST_WALK) { e.vx = 0; setSt(e, ST_IDLE); }
