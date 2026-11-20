@@ -730,6 +730,130 @@ MOVE_ANIMS = {
 
 # ---------------------------------------------------------------- rasterizer
 
+
+# ---------------------------------------------------------------- story cast heads (tools/gen_cast.py)
+
+def _trim(cv, pt, fx, fy, ux, uy, tm, col="w"):
+    trim = seg_mask(pt["neck"], (pt["neck"][0] + fx * 1.5 - ux * 2.5, pt["neck"][1] + fy * 1.5 - uy * 2.5), 0.7) & tm
+    cv.c[trim] = col
+
+def _hood(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):          # cult soldier: black head cloth
+    cv.c[hm & ((hu > 0.2) | (hf < -0.4))] = "h"
+    a0 = (cx - fx * (r - 0.2) + ux * 0.8, cy - fy * (r - 0.2) + uy * 0.8)
+    cv.put(seg_mask(a0, (a0[0] - fx * 3.0 - ux * 2.5, a0[1] - fy * 3.0 - uy * 2.5), 0.6) & ~hm, "h")   # knot tail
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _jiangshi(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):       # blood corpse: lank hair, iron nail
+    cv.c[hm & ((hu > 0.9) | (hf < -0.6))] = "h"
+    for k_, off in enumerate((-0.6, 0.9)):
+        a0 = (cx + fx * off + ux * (r - 0.6), cy + fy * off + uy * (r - 0.6))
+        cv.put(seg_mask(a0, (a0[0] - fx * 0.8 - ux * (6.5 - k_ * 1.5), a0[1] - fy * 0.8 - uy * (6.5 - k_ * 1.5)), 0.8) & ~(hm & (hf > 0.4)), "h")
+    nail = (cx + fx * 0.6 + ux * (r + 0.2), cy + fy * 0.6 + uy * (r + 0.2))
+    cv.put(seg_mask(nail, (nail[0] + ux * 1.8, nail[1] + uy * 1.8), 0.5), "N")
+    cv.put(circle_mask((pt["shoulder"][0] - fx * 0.5, pt["shoulder"][1] - fy * 0.5), 0.7), "N")
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _monk(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):           # shaved head
+    cv.c[hm & (hu > 0.3) & (hu <= 0.9) & (hf > 0.8)] = "h"
+    cv.c[hm & (hu > 2.0) & (hf > -1.5) & (hf < 0.2)] = "W"
+    if spec.get("beads"):
+        bc = (pt["neck"][0] - ux * 1.5, pt["neck"][1] - uy * 1.5)
+        for i, t in enumerate(np.linspace(-1.2, 1.2, 6)):
+            bx = bc[0] + fx * math.sin(t) * 3.0 - ux * (math.cos(t) * 2.2)
+            by = bc[1] + fy * math.sin(t) * 3.0 - uy * (math.cos(t) * 2.2)
+            cv.c[circle_mask((bx, by), 0.8)] = "E" if i % 2 else "e"
+
+def _abbot(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):          # old abbot: long white brows and beard
+    _monk(cv, dict(spec, beads=True), pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm)
+    cv.c[hm & (hu > 0.2) & (hu <= 1.0) & (hf > 0.3)] = "H"
+    brow = (cx + fx * 1.2 + ux * 0.7, cy + fy * 1.2 + uy * 0.7)
+    cv.put(seg_mask(brow, (brow[0] + fx * 2.5 - ux * 2.0, brow[1] + fy * 2.5 - uy * 2.0), 0.4), "H")
+    chin = (cx + fx * 1.4 - ux * (r - 0.9), cy + fy * 1.4 - uy * (r - 0.9))
+    cv.put(seg_mask(chin, (chin[0] + fx * 0.6 - ux * 5.0, chin[1] + fy * 0.6 - uy * 5.0), 1.0), "H")
+
+def _sage(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):           # old swordsman: white topknot, long beard
+    cv.c[hm & ((hu > 0.8) | (hf < -0.9))] = "h"
+    cv.put(circle_mask((cx - fx * 0.6 + ux * (r + 0.8), cy - fy * 0.6 + uy * (r + 0.8)), 1.3), "h")
+    cv.put(seg_mask((cx - fx * 1.6 + ux * (r + 0.6), cy - fy * 1.6 + uy * (r + 0.6)), (cx + fx * 0.6 + ux * (r + 0.6), cy + fy * 0.6 + uy * (r + 0.6)), 0.35), spec.get("pin", "y"))
+    chin = (cx + fx * 1.5 - ux * (r - 0.9), cy + fy * 1.5 - uy * (r - 0.9))
+    ln = spec.get("beard", 5.5)
+    if ln:
+        cv.put(seg_mask(chin, (chin[0] + fx * 0.8 - ux * ln, chin[1] + fy * 0.8 - uy * ln), 0.9), "h")
+        cv.put(seg_mask(chin, (chin[0] + fx * 0.8 - ux * ln, chin[1] + fy * 0.8 - uy * ln), 0.35), "H")
+    if spec.get("tail"):
+        a0 = (cx - fx * (r + 0.2) + ux * 1.0, cy - fy * (r + 0.2) + uy * 1.0)
+        cv.put(seg_mask(a0, (a0[0] - fx * 2.5 - ux * 6.0, a0[1] - fy * 2.5 - uy * 6.0), 0.8) & ~hm, "h")
+    cv.c[hm & (hu > 0.2) & (hu <= 0.9) & (hf > 0.6)] = "H"
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _yacha(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):          # long wild hair falling over the face
+    cv.c[hm & ((hu > 0.1) | (hf < -0.5))] = "h"
+    for k_, (lx, ly, wd) in enumerate(((3.5, 9.5, 1.5), (5.0, 6.5, 1.1), (1.0, 5.0, 0.8))):
+        a0 = (cx - fx * (r - 0.4) + ux * 0.6, cy - fy * (r - 0.4) + uy * 0.6)
+        cv.put(seg_mask(a0, (a0[0] - fx * lx - ux * ly, a0[1] - fy * lx - uy * ly), wd) & ~hm, "h" if k_ != 1 else "H")
+    bang = (cx + fx * (r - 0.4) + ux * 1.2, cy + fy * (r - 0.4) + uy * 1.2)
+    cv.put(seg_mask(bang, (bang[0] + fx * 0.6 - ux * 3.2, bang[1] + fy * 0.6 - uy * 3.2), 0.7), "h")     # a lock over the eye
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _helmet(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):         # iron guardian: helmet, thick beard
+    cv.c[hm & ((hu > 0.5) | (hf < -1.0))] = "a"
+    P_ = lambda f_, u_: (cx + fx * f_ + ux * u_, cy + fy * f_ + uy * u_)
+    cv.put(seg_mask(P_(-3.2, 0.6), P_(3.0, 0.6), 0.6) & ~(hm & (hu < 0.2) & (hf > 0.5)), "A")           # brim
+    cv.put(seg_mask(P_(-0.5, r), P_(-1.5, r + 2.6), 0.8), "r")                                         # red plume
+    cv.c[hm & (hu < -0.6) & (hf > -0.4)] = "h"                                                         # beard
+    cv.put(seg_mask(P_(1.2, -r + 0.6), P_(0.4, -r - 1.4), 1.1), "h")
+
+def _bun(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):            # woman: high bun with a pin (Dang) / low knot (Yu)
+    cv.c[hm & ((hu > 0.7) | (hf < -0.9) | ((hu > -0.2) & (hf < -0.2)))] = "h"
+    low = spec.get("low_bun")
+    c_ = (cx - fx * (r + 0.4) - ux * 1.2, cy - fy * (r + 0.4) - uy * 1.2) if low else (cx - fx * 0.8 + ux * (r + 1.0), cy - fy * 0.8 + uy * (r + 1.0))
+    cv.put(circle_mask(c_, 1.6), "h")
+    cv.put(seg_mask((c_[0] - fx * 2.0, c_[1] - fy * 2.0 + (0 if low else 0.6)), (c_[0] + fx * 2.0, c_[1] + fy * 2.0), 0.35), "y")
+    if spec.get("veil"):
+        a0 = (cx - fx * 0.6 + ux * (r + 0.4), cy - fy * 0.6 + uy * (r + 0.4))
+        cv.put(seg_mask(a0, (a0[0] - fx * 2.0 - ux * 7.0, a0[1] - fy * 2.0 - uy * 7.0), 0.6) & ~hm, "v")
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _guan(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):           # noble: topknot under a small metal crown
+    cv.c[hm & ((hu > 0.8) | (hf < -0.9))] = "h"
+    if spec.get("grey"):
+        cv.c[hm & (hu > 0.8) & (hf < -0.3) & (hf > -1.6)] = "H"
+    top = (cx - fx * 0.5 + ux * (r + 0.9), cy - fy * 0.5 + uy * (r + 0.9))
+    cv.put(circle_mask(top, 1.3), "h")
+    cv.put(seg_mask((top[0] - fx * 1.3, top[1] - fy * 1.3), (top[0] + fx * 1.3, top[1] + fy * 1.3), 0.8), "y")
+    cv.put(seg_mask((top[0] - fx * 2.0 + ux * 0.2, top[1] - fy * 2.0 + uy * 0.2), (top[0] + fx * 2.2, top[1] + fy * 2.2), 0.3), "y")
+    if spec.get("beard"):
+        chin = (cx + fx * 1.6 - ux * (r - 0.9), cy + fy * 1.6 - uy * (r - 0.9))
+        cv.put(seg_mask(chin, (chin[0] + fx * 0.5 - ux * spec["beard"], chin[1] + fy * 0.5 - uy * spec["beard"]), 0.6), "h")
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _mask(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):           # white mask, white hood
+    cv.c[hm] = "h"
+    face = hm & (hf > -0.2) & (hu < 1.4) & (hu > -2.6)
+    cv.c[face] = "M"
+    cv.c[circle_mask((cx + fx * (r * 0.55), cy + fy * (r * 0.55)), 0.55) & face] = "k"
+    a0 = (cx - fx * (r - 0.3), cy - fy * (r - 0.3))
+    cv.put(seg_mask(a0, (a0[0] - fx * 2.0 - ux * 4.0, a0[1] - fy * 2.0 - uy * 4.0), 0.9) & ~hm, "h")
+
+def _band(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):           # working man / villager: cloth headband
+    cv.c[hm & ((hu > 0.6) | (hf < -1.0))] = "h"
+    cv.c[hm & (hu > 0.2) & (hu <= 1.1) & (hf > -1.2)] = "r"
+    cv.put(seg_mask((cx - fx * r, cy - fy * r), (cx - fx * (r + 2.2) - ux * 1.6, cy - fy * (r + 2.2) - uy * 1.6), 0.5) & ~hm, "r")
+    if spec.get("stubble"):
+        cv.c[hm & (hu < -1.6) & (hf > 0.2)] = "S"
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+def _kid(cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm):            # child: little topknot
+    cv.c[hm & ((hu > 0.5) | (hf < -0.8))] = "h"
+    cv.put(circle_mask((cx - fx * 0.2 + ux * (r + 0.7), cy - fy * 0.2 + uy * (r + 0.7)), 1.0), "h")
+    if spec.get("pin"):
+        cv.put(seg_mask((cx - fx * 1.5 + ux * (r + 0.8), cy - fy * 1.5 + uy * (r + 0.8)), (cx + fx * 0.8 + ux * (r + 0.8), cy + fy * 0.8 + uy * (r + 0.8)), 0.3), "y")
+        cv.put(circle_mask((cx - fx * 1.7 + ux * (r + 0.6), cy - fy * 1.7 + uy * (r + 0.6)), 0.4), "r")
+    _trim(cv, pt, fx, fy, ux, uy, tm)
+
+CAST_HEADS = {"hood": _hood, "jiangshi": _jiangshi, "monk": _monk, "abbot": _abbot, "sage": _sage, "yacha": _yacha,
+              "helmet": _helmet, "bun": _bun, "guan": _guan, "mask": _mask, "band": _band, "kid": _kid}
+
 class Canvas:
     def __init__(self):
         self.c = np.full((N, N), "", dtype="<U1")
@@ -964,6 +1088,8 @@ def build(spec, pose):
         cv.put(tail & ~hm, "r")
         trim = seg_mask(pt["neck"], (pt["neck"][0] + fx * 1.5 - ux * 2.5, pt["neck"][1] + fy * 1.5 - uy * 2.5), 0.7) & tm
         cv.c[trim] = "w"
+    elif spec["head"] in CAST_HEADS:
+        CAST_HEADS[spec["head"]](cv, spec, pt, hm, hu, hf, cx, cy, r, ux, uy, fx, fy, tm)
     else:
         brow = hm & (hu > 0.3) & (hu <= 1.0) & (hf > 0.8)
         cv.c[brow] = "h"

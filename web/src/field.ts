@@ -20,7 +20,7 @@ export interface Host {
   events(sec: string, a: number, b: number): string[][];   // dialogue / cuts of the chapter's script
   look(name: string): Look | null;
   clue(text: string): void;
-  fight(): void;                                            // the chapter's boss fight (calls afterFight when over)
+  fight(o?: { opp: string[]; stage?: string; variant?: string }): void;   // the chapter's boss fight, or an encounter (calls afterFight)
   done(): void;                                             // chapter finished
 }
 
@@ -192,7 +192,7 @@ function exec(s: Step): boolean {
       if (s.goal === "kill") mCheck = { ents: ents.map((e) => ({ ...e })), step: mStep };
       return false;
     }
-    case "fight": control = false; host!.fight(); return false;
+    case "fight": control = false; host!.fight(s.opp ? { opp: s.opp as string[], stage: s.stage as string | undefined, variant: s.variant as string | undefined } : undefined); return false;
     case "end": mActive = false; host!.done(); return false;
   }
   return true;

@@ -2,7 +2,7 @@
 // stage, dialogue box with Korean text), story fights (one round, sequences, tag teams) and the notebook.
 // The scripts live in docs/story/*.md; tools/story_build.py turns them into data/story.json.
 import * as R from "./renderer";
-import { SCREEN_W, GROUND_Y, PX, SKIN_ALT, SKIN_SHADOW, SKIN_PALE, SKIN_BLOOD, SKIN_IRON, SKIN_CORPSE, SKIN_VIOLET, SKIN_GOLD, SKIN_DIM,
+import { SCREEN_W, GROUND_Y, PX, SKIN_ALT, SKIN_SHADOW, SKIN_PALE, SKIN_BLOOD, SKIN_IRON, SKIN_CORPSE, SKIN_VIOLET, SKIN_GOLD, SKIN_CULT, SKIN_DIM,
   TINT_NONE, TINT_NIGHT, TINT_BURNT, TINT_MONO, TINT_BLOOD, TINT_TORCH, TINT_DARK, TINT_VIOLET, TINT_DAWN, TINT_DUSK, TINT_BLACK } from "./renderer";
 import * as Font from "./font";
 import * as KF from "./kfont";
@@ -41,7 +41,7 @@ const LOOK: Record<string, Look> = {
   백무진: ["cheonma", SKIN_PALE, "BAEK MUJIN"], 혈마: ["cheonma", SKIN_BLOOD, "HYEOLMA"], 위극: ["cheonma", SKIN_SHADOW, "WI GEUK"],
   흑사: ["heukrim", SKIN_SHADOW, "HEUKSA"], 혈사: ["heukrim", SKIN_BLOOD, "HYEOLSA"], 혈강시: ["cheolsan", SKIN_CORPSE, "GANGSI"],
   갑주: ["cheolsan", SKIN_IRON, "ARMORED GANGSI"], 백면: ["seolhwa", SKIN_PALE, "BAEKMYEON"], 소연: ["seolhwa", SKIN_PALE, "SOYEON"],
-  청사: ["heukrim", SKIN_ALT, "CHEONGSA"], 교도: ["danwoo", SKIN_SHADOW, "CULTIST"], 무사: ["muyeong", SKIN_IRON, "GUARD"],
+  청사: ["heukrim", SKIN_ALT, "CHEONGSA"], 교도: ["muyeong", SKIN_CULT, "CULTIST"], 무사: ["muyeong", SKIN_IRON, "GUARD"],
   추격대: ["muyeong", SKIN_IRON, "PURSUER"], 무승: ["cheolsan", SKIN_ALT, "MONK"], 혜공: ["cheolsan", SKIN_PALE, "HYEGONG"],
   사태: ["seolhwa", SKIN_PALE, "SATAE"],
 };
@@ -433,7 +433,7 @@ const fieldHost: Field.Host = {
   events: (sec, a, b) => (chapter() as unknown as Record<string, Ev[]>)[sec].slice(a, b + 1),
   look: (n) => look(n),
   clue: (t) => { addClue(t); writeSave(); },
-  fight: () => { mFight = 0; startFight(); },
+  fight: (o) => { mFight = 0; mLevelSaved = G.CpuLevel; if (o) G.CpuLevel = 0; mFightOverride = o ? { raw: "", opp: o.opp, seq: 1, tag: false, team: [], pick: false, stage: o.stage ?? chapter().fight?.stage ?? "산문", variant: o.variant ?? chapter().fight?.variant ?? "" } : null; startFight(); },
   done: () => chapterDone(),
 };
 
@@ -536,8 +536,11 @@ function playRender(): void {
 
 // ---------------------------------------------------------------- fights
 
+let mFightOverride: Fight | null = null, mLevelSaved = 1;            // a field encounter (underlings) instead of the chapter's fight
+const curFight = () => mFightOverride ?? chapter().fight!;
+
 function startFight(): void {
-  const f = chapter().fight!;
+  const f = curFight();
   const opp = f.opp;
   const bg = stageOf(f.stage, f.variant);
   const team = mTeam.length ? mTeam : [route().owner ?? "단우"];
@@ -563,7 +566,7 @@ function startFight(): void {
   R.tintStage(bg[1]);
 }
 
-const fightCount = () => { const f = chapter().fight!; return f.tag || f.pick ? 1 : f.seq > 1 ? f.seq : f.opp.length; };
+const fightCount = () => { const f = curFight(); return f.tag || f.pick ? 1 : f.seq > 1 ? f.seq : f.opp.length; };
 
 /** End of a story fight (Match calls this after the last round). */
 export function matchOver(won: boolean): void {
@@ -574,7 +577,7 @@ export function matchOver(won: boolean): void {
   if (won) {
     mFight++;
     if (mFight < fightCount()) { G.StoryFight = true; startFight(); return; }
-    if (mField) { mView = V_FIELD; Field.afterFight(); return; }
+    if (mField) { mView = V_FIELD; mFightOverride = null; G.CpuLevel = mLevelSaved; Field.afterFight(); return; }
     mSec = "post"; mEv = 0; mPage = [];
     const ch = chapter();
     if (ch.fight) setBg(stageOf(ch.fight.stage, ch.fight.variant));

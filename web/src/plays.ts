@@ -43,8 +43,10 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "move", id: "arong", x: 400, run: true },
       { t: "say", who: "흑사", text: "쳐라.", dir: "턱짓한다" },
       { t: "move", id: "heuksa", x: 650 },
-      { t: "hostile", ids: ["c1", "c2", "c3"] },
-      { t: "quest", text: "교도 셋을 쓰러뜨리시오", goal: "kill", ids: ["c1", "c2", "c3"] },
+      // the three cultists: touch them and it is a fight in the fighting engine (three short bouts in a row)
+      { t: "quest", text: "교도 셋을 쓰러뜨리시오", goal: "talk", id: "c1" },
+      { t: "fight", opp: ["교도", "교도", "교도"] },
+      { t: "pose", id: "c1", pose: "down" }, { t: "pose", id: "c2", pose: "down" }, { t: "pose", id: "c3", pose: "down" },
       { t: "face", id: "heuksa", to: "player" },
       { t: "say", who: "흑사", text: "제법이군.", dir: "손뼉을 친다" },
       { t: "say", who: "흑사", text: "이리 오시오, 소교주.\n내가 직접 모시지." },
