@@ -58,7 +58,7 @@ function kit(prefix: string): Kit {
 interface Ent {
   id: string; look: Look; kit: Kit; x: number; y: number; vx: number; vy: number; face: number;
   st: number; t: number; mv: number; hitDone: boolean; hp: number; maxHp: number; stun: number;
-  hostile: boolean; goal: number | null; run: boolean; spd: number; follow: string; gap: number; pose: number;
+  hostile: boolean; goal: number | null; run: boolean; spd: number; flash: number; follow: string; gap: number; pose: number;
   cool: number; windup: number; inv: number; kills: boolean; small: boolean;
 }
 
@@ -68,7 +68,7 @@ const player = () => ent("player")!;
 
 function spawn(id: string, look: Look, x: number, face: number): Ent {
   const e: Ent = { id, look, kit: kit(look[0]), x, y: GROUND, vx: 0, vy: 0, face, st: ST_IDLE, t: 0, mv: -1, hitDone: false,
-    hp: 160, maxHp: 160, stun: 0, hostile: false, goal: null, run: false, spd: 0, follow: "", gap: 14, pose: -1, cool: 30, windup: 0,
+    hp: 160, maxHp: 160, stun: 0, hostile: false, goal: null, run: false, spd: 0, flash: 0, follow: "", gap: 14, pose: -1, cool: 30, windup: 0,
     inv: 0, kills: false, small: look[0] === "npc" };
   if (id === "player") { e.maxHp = e.hp = 600; }
   ents = ents.filter((o) => o.id !== id);
@@ -210,6 +210,14 @@ function exec(s: Step): boolean {
     case "prop": props = props.filter((q) => q.id !== s.id); props.push({ id: String(s.id), kind: String(s.kind), x: Number(s.x), y: Number(s.y ?? GROUND), t: 0, text: s.text as string | undefined }); return true;
     case "unprop": props = props.filter((q) => q.id !== s.id); return true;
     case "title": mTitle = true; mTitleT = 0; return false;
+    case "duel": {
+      const foe = ent(String(s.foe));
+      if (!foe || !player()) return true;
+      duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0 };
+      quest = s; questText = String(s.text ?? ""); questCount = "";
+      foe.goal = null; player()!.goal = null;
+      return false;
+    }
     case "ev": queue.push(...host!.events(String(s.sec), Number(s.a), Number(s.b ?? s.a))); nextLine(); return false;
     case "say": queue.push(["say", String(s.who), String(s.text), String(s.dir ?? "")]); nextLine(); return false;
     case "clue": host!.clue(String(s.text)); queue.push(["clue", String(s.text)]); nextLine(); return false;
@@ -288,7 +296,7 @@ export function tick(): void {
   for (const q of props) q.t++;
   if (mTitle) {
     mTitleT++;
-    if (mTitleT > 30 && K.isPressed(K.BTN_LP)) { mTitle = false; mStep++; run(); }
+    if (mTitleT > 60 && K.isPressed(K.BTN_LP)) { mTitle = false; mStep++; run(); }
     return;
   }
   if (mNoticeT > 0) mNoticeT--;
@@ -297,6 +305,8 @@ export function tick(): void {
   else if (mWait > 0) { mWait--; if (mWait === 0) { mStep++; run(); } }
 
   const p = player();
+  for (const e of ents) if (e.flash > 0) e.flash--;
+  if (duel && !talking()) { duelTick(); camera(); FX.update(); return; }
   if (control && !talking() && p) playerInput(p);
   for (const e of ents) think(e);
   for (const e of ents) physics(e);
@@ -506,7 +516,7 @@ export function render(): void {
     const id = sprite(e, mTick);
     if (id < 0) continue;
     const x = Math.round(e.x - camX), y = Math.round(e.y);
-    R.drawSprite(id, x, y, e.face < 0, -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0));
+    R.drawSprite(id, x, y, e.face < 0, e.flash > 0 && e.flash % 2 === 1 ? RGB(255, 255, 255) : -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0));
   }
   for (const pf of puffs) for (let k = 0; k < 5; k++) R.shadeCircle((pf.x - camX + (k - 2) * 5) * PX, (pf.y - pf.t * 0.3 - (k % 2) * 4) * PX, (5 + pf.t * 0.4) * PX, RGB(70, 66, 76), 0.5 * (1 - pf.t / 30));
   FX.draw();
@@ -555,6 +565,7 @@ function hud(): void {
     R.physRect(R.PHYS_W - w - 10, 8, 3, 34, RGB(240, 196, 96));
     KF.draw(t, R.PHYS_W - 22, 15, RGB(255, 236, 190), 2, 2);
   }
+  if (duel && !talking()) Font.drawText("LEFT RIGHT = MOVE   A S Z X = ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
   if (control && !talking()) Font.drawText(target() ? "A = TALK" : !p.kit.moves.length ? "LEFT RIGHT = RUN" : "ARROWS MOVE  UP JUMP  A S Z X ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
 }
 
@@ -576,7 +587,10 @@ function dialogueRender(): void {
     left -= [...ls[k]].length;
     KF.draw(s, kind === "cut" ? 30 : tx, BY + 8 + k * 24, c, 2);
   }
-  if (shown >= pageLen() && Math.trunc(mTick / 6) % 2 === 0) KF.draw("▼", R.PHYS_W - 34, BY + BH - 24, RGB(240, 196, 96), 2);
+  if (shown >= pageLen()) {
+    KF.draw("A", R.PHYS_W - 52, BY + BH - 24, RGB(170, 160, 190), 2);
+    if (Math.trunc(mTick / 6) % 2 === 0) KF.draw("▼", R.PHYS_W - 34, BY + BH - 24, RGB(240, 196, 96), 2);
+  }
 }
 
 export const debug = () => JSON.stringify({ cam: Math.round(camX), step: mStep, t: steps[mStep]?.t, quest: questText, talk: talking(), page: page[0] ?? "", ents: ents.map((e) => e.id + ":" + Math.round(e.x) + ":" + e.st + ":" + e.hp) });
@@ -586,7 +600,7 @@ export function debugWarp(x: number): void { const p = player(); if (p) p.x = x;
 // ---------------------------------------------------------------- scene dressing
 
 function drawProp(q: Prop): void {
-  const sx = (q.x - camX) * PX, sy = q.y * PX;
+  const sx = Math.round((q.x - camX) * PX), sy = Math.round(q.y * PX);
   switch (q.kind) {
     case "beads":                                          // a broken string of wooden prayer beads, scattered
       for (const [dx, dy] of [[-14, 0], [-9, -1], [-4, 1], [2, 0], [7, -1], [12, 1], [17, 0], [22, 1]])
@@ -600,7 +614,7 @@ function drawProp(q: Prop): void {
       break;
     }
     case "text":                                           // writing on something in the picture (a name board)
-      KF.draw(q.text ?? "", sx, sy, RGB(52, 26, 14), 3, 1, -1);
+      KF.draw(q.text ?? "", sx, sy, RGB(46, 22, 12), 2, 1, -1);
       break;
     case "beam": {                                         // a burning roof beam falls, then a wall of fire
       const fall = Math.min(1, q.t / 10), y = 30 + (q.y - 30) * fall * fall;
@@ -629,9 +643,74 @@ function moonRender(): void {
 
 function titleRender(): void {
   R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(4, 2, 6));
-  const a = Math.min(1, mTitleT / 20);
-  R.shadeCircle(R.PHYS_W / 2, 120, 70, RGB(200, 30, 36), a);
-  R.shadeCircle(R.PHYS_W / 2, 120, 84, RGB(120, 10, 16), 0.3 * a);
-  if (mTitleT > 14) { KF.draw("혈월", R.PHYS_W / 2, 206, RGB(255, 210, 120), 4, 1); KF.draw("血月", R.PHYS_W / 2, 262, RGB(170, 120, 90), 2, 1); }
-  if (mTitleT > 30 && Math.trunc(mTitleT / 8) % 2 === 0) Font.drawText("A", SCREEN_W - 6, 92, RGB(150, 140, 170), 1, 2);
+  const r = Math.min(70, 2 + mTitleT * 1.7);
+  R.shadeCircle(R.PHYS_W / 2, 120, r + 14, RGB(120, 10, 16), 0.3);
+  R.shadeCircle(R.PHYS_W / 2, 120, r, RGB(200, 30, 36), 1);
+  if (r > 30) for (const [dx, dy, rr] of [[-18, -12, 12], [16, 10, 15], [-6, 24, 8]]) R.shadeCircle(R.PHYS_W / 2 + dx * r / 70, 120 + dy * r / 70, rr * r / 70, RGB(150, 18, 26), 0.55);
+  if (r >= 70) { KF.draw("혈월", R.PHYS_W / 2, 206, RGB(255, 210, 120), 4, 1); KF.draw("血月", R.PHYS_W / 2, 262, RGB(170, 120, 90), 2, 1); }
+  if (mTitleT > 60 && Math.trunc(mTitleT / 8) % 2 === 0) Font.drawText("A = NEXT", SCREEN_W - 4, 92, RGB(150, 140, 170), 1, 2);
+}
+
+// ---------------------------------------------------------------- duels: a short SD fight right where the scene is
+
+interface Duel { foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number }
+let duel: Duel | null = null;
+
+/** The first of these frames the character has (SD art grows over time; older sets fall back to a near pose). */
+function frame(e: Ent, names: string[]): number {
+  const base = e.kit.base ?? e.look[0];
+  for (const n of names) if (hasSprite(base + "." + n)) return spriteId(base + "." + n);
+  return animFrame(e.kit.idle, mTick);
+}
+const ATK0 = ["atk_0", "block", "walk_2", "lower", "stand"], ATK1 = ["atk_1", "block", "walk_0", "slash", "walk_1"];
+function showPose(e: Ent, id: number): void { e.pose = id; e.st = ST_POSE; e.vx = 0; }
+
+function duelTick(): void {
+  const d = duel!, p = player()!, f = d.foe;
+  d.t++;
+  const dist = Math.abs(f.x - p.x), dirToFoe = f.x > p.x ? 1 : -1;
+  p.face = dirToFoe; f.face = -dirToFoe;
+  // --- the player
+  if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
+  else if (d.pAtk >= 0) {
+    d.pAtk++;
+    showPose(p, frame(p, d.pAtk < 4 ? ATK0 : ATK1));
+    if (d.pAtk === 4 && dist < 32) {
+      FX.spawnHit(f.x - camX - dirToFoe * 4, f.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
+      mHitStop = 3;
+      if (d.guard) { f.flash = 4; showPose(f, frame(f, ["guard", "lower"])); d.fHit = 6; }
+      else { d.hits++; f.flash = 8; f.x += dirToFoe * 7; d.fHit = 10; d.fAtk = -1; showPose(f, frame(f, ["hit", "walk_1"])); }
+    }
+    if (d.pAtk >= 10) d.pAtk = -1;
+  } else {
+    const L = K.isDown(K.BTN_LEFT), Rt = K.isDown(K.BTN_RIGHT);
+    if (K.isPressed(K.BTN_LP) || K.isPressed(K.BTN_HP) || K.isPressed(K.BTN_LK) || K.isPressed(K.BTN_HK)) d.pAtk = 0;
+    else if ((L || Rt) && !(Rt && dirToFoe > 0 && dist < 20) && !(L && dirToFoe < 0 && dist < 20)) {
+      p.vx = (Rt ? 1 : -1) * 1.6; p.x += p.vx; if (p.st !== ST_WALK) setSt(p, ST_WALK); else p.t++;
+    } else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
+  }
+  // --- the foe: closes in, winds up, strikes
+  if (d.fHit > 0) d.fHit--;
+  else if (d.fAtk >= 0) {
+    d.fAtk++;
+    showPose(f, frame(f, d.fAtk < 10 ? ATK0 : ATK1));
+    if (d.fAtk === 10 && dist < 30 && d.pAtk < 0) {
+      FX.spawnHit(p.x - camX + dirToFoe * 4, p.y - 14, false, "");
+      d.pHit = 10; p.flash = 6; p.x -= dirToFoe * 6;
+    }
+    if (d.fAtk >= 16) { d.fAtk = -1; d.fCool = 34 + Math.floor(Math.random() * 30); }
+  } else {
+    if (d.fCool > 0) d.fCool--;
+    if (dist > 22) { f.x -= dirToFoe * 0.7; if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++; }
+    else if (d.fCool <= 0) d.fAtk = 0;
+    else if (f.st !== ST_IDLE) setSt(f, ST_IDLE);
+  }
+  if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); f.x = Math.max(6, Math.min(map.w - 6, f.x)); }
+  // --- the end: enough hits (the foe falls back), or the time is up (the scene decides what happens)
+  if ((d.need && d.hits >= d.need) || (d.time && d.t >= d.time)) {
+    duel = null; quest = null; questText = "";
+    if (d.need) { setSt(f, ST_IDLE); f.goal = f.x + dirToFoe * 28; f.spd = 1.2; }
+    setSt(p, ST_IDLE); p.vx = 0;
+    mStep++; run();
+  }
 }
