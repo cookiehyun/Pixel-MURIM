@@ -94,3 +94,17 @@ ANIM sd_yussi.idle 10 yu_walk_0 yu_walk_0
 ANIM sd_yussi.walk 7 yu_walk_0 yu_walk_1
 ANIM sd_namgungrin.idle 10 rin_sword rin_sword
 ANIM sd_namgungrin.walk 8 rin_sword rin_away
+sd_mabu.token sd/mabu/token.png 7 31
+sd_mabu.reach sd/mabu/reach.png 14 22
+sd_child.kid_hide sd/child/kid_hide.png 6 15
+sd_child.kid_stand sd/child/kid_stand.png 5 17
+sd_villager.run_0 sd/villager/run_0.png 9 27
+sd_villager.run_1 sd/villager/run_1.png 8 26
+sd_villager.startle sd/villager/startle.png 8 27
+sd_villager.stand sd/villager/stand.png 7 27
+ANIM sd_mabu.idle 10 token token
+ANIM sd_mabu.walk 8 token reach
+ANIM sd_child.idle 10 kid_stand kid_stand
+ANIM sd_child.walk 8 kid_stand kid_hide
+ANIM sd_villager.idle 10 stand stand
+ANIM sd_villager.walk 3 run_0 run_1
