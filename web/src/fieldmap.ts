@@ -17,14 +17,15 @@ export interface FieldMap {
   glow: number;                                 // colour of the embers
   img?: { w: number; h: number; pix: Int32Array };
   noAsh?: boolean;
-  rain?: boolean;                              // indoors / no fire: no drifting ash   // a finished picture (screen pixels) instead of drawn layers
+  rain?: boolean;
+  snow?: boolean;                              // indoors / no fire: no drifting ash   // a finished picture (screen pixels) instead of drawn layers
 }
 
 // ---------------------------------------------------------------- picture maps (data/maps/<name>.png, see tools/bg_add.py)
 
 const pictures = new Map<string, { w: number; h: number; pix: Int32Array }>();
-export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut"];
-const RAIN_MAPS = ["bamboo_hut"];
+export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut", "emei_snow"];
+const RAIN_MAPS = ["bamboo_hut"], SNOW_MAPS = ["emei_snow"];
 const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard"];
 
 export async function preload(): Promise<void> {
@@ -49,7 +50,7 @@ export async function preload(): Promise<void> {
 export function pictureMap(name: string): FieldMap {
   const img = pictures.get(name);
   const w = img ? Math.round(img.w / PX) : SCREEN_W;
-  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, noAsh: !FIRE_MAPS.includes(name), rain: RAIN_MAPS.includes(name) };
+  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, noAsh: !FIRE_MAPS.includes(name), rain: RAIN_MAPS.includes(name), snow: SNOW_MAPS.includes(name) };
 }
 
 const T = -1;
@@ -307,6 +308,14 @@ export function drawFront(m: FieldMap, camX: number, t: number): void {
     for (let k = 0; k < 90; k++) {
       const x = (k * 97 + Math.floor(t * 1.3) * 7 + k * k) % (R.PHYS_W + 40) - 20, y = (k * 53 + t * 26) % (R.PHYS_H + 30) - 30;
       for (let j = 0; j < 12; j += 2) R.shadeRect(x - j / 4, y + j, 2, 2, RGB(190, 196, 214), 0.45);
+    }
+  }
+  if (m.snow) {
+    for (let k = 0; k < 120; k++) {
+      const x = ((k * 131 + k * k * 7) % (R.PHYS_W + 60)) - 30 - ((t * (3 + (k % 4))) % (R.PHYS_W + 60)) + R.PHYS_W;
+      const y = (k * 71 + t * (2 + (k % 3))) % (R.PHYS_H + 10) - 10;
+      const xx = ((x % (R.PHYS_W + 60)) + R.PHYS_W + 60) % (R.PHYS_W + 60) - 30;
+      R.shadeRect(xx + Math.sin(t * 0.07 + k) * 6, y, k % 5 === 0 ? 4 : 2, k % 5 === 0 ? 4 : 2, RGB(240, 240, 250), 0.85);
     }
   }
   if (m.noAsh) return;

@@ -177,6 +177,7 @@ function exec(s: Step): boolean {
       const e = ent(String(s.id)); if (!e) return true;
       e.goal = typeof s.x === "number" ? s.x : (ent(String(s.x))?.x ?? e.x) + Number(s.dx ?? 0);
       e.run = !!s.run; e.spd = Number(s.speed ?? 0); e.follow = "";
+      if (map) e.goal = Math.max(6, Math.min(map.w - 6, e.goal));      // walking off the map: stop at its edge
       if (e.st === ST_POSE) setSt(e, ST_IDLE);
       return !s.wait;
     }

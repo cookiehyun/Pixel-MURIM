@@ -66,3 +66,17 @@ ANIM sd_yacha.idle 10 stand stand
 ANIM sd_yacha.walk 6 walk lower
 ANIM sd_muyeong.idle 10 stand stand
 ANIM sd_muyeong.walk 5 walk_0 stand walk_1 stand
+sd_baekmyeon.walk_0 sd/baekmyeon/walk_0.png 11 28
+sd_baekmyeon.walk_1 sd/baekmyeon/walk_1.png 10 28
+sd_baekmyeon.carry_0 sd/baekmyeon/carry_0.png 12 27
+sd_baekmyeon.carry_1 sd/baekmyeon/carry_1.png 12 27
+sd_seolhwa.run_0 sd/seolhwa/run_0.png 10 30
+sd_seolhwa.run_1 sd/seolhwa/run_1.png 9 29
+sd_seolhwa.shout sd/seolhwa/shout.png 10 31
+sd_seolhwa.kneel sd/seolhwa/kneel.png 13 23
+ANIM sd_baekmyeon.idle 10 walk_0 walk_0
+ANIM sd_baekmyeon.walk 6 walk_0 walk_1
+ANIM sd_baekmyeon.carry_idle 10 carry_0 carry_0
+ANIM sd_baekmyeon.carry_run 7 carry_0 carry_1
+ANIM sd_seolhwa.idle 10 shout shout
+ANIM sd_seolhwa.walk 3 run_0 run_1
