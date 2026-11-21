@@ -134,7 +134,7 @@ export const active = () => mActive;
 export function begin(h: Host, play: Step[]): void {
   host = h; steps = play; mStep = 0; mWait = 0; mTick = 0; ents = []; quest = null; control = false; queue = []; page = [];
   camTarget = "player"; camFixed = null; mFallen = 0; mCheck = null; mActive = true;
-  map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0;
+  map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0; mCarryG = 0; mSkillT = 0; auras.length = 0;
   run();
 }
 export function stop(): void { mActive = false; }
@@ -235,7 +235,8 @@ function exec(s: Step): boolean {
       if (!foe || !player()) return true;
       const p = player()!, hpMode = !!s.hp;
       duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0, mv: MOVES[0],
-        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, fx0: foe.x };
+        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, fx0: foe.x,
+        fMv: null, pNg: 1000, fNg: 500, pG: mCarryG, fG: 0, ngFlash: 0, hist: [] };
       if (hpMode) {
         if (p.maxHp !== 100) p.maxHp = p.hp = 100;           // the player's health carries over from bout to bout in a scene
         foe.maxHp = foe.hp = Math.round(Number(s.hp) * DIFF.hp[mDiff]);
@@ -336,12 +337,14 @@ export function tick(): void {
 
   const p = player();
   for (const e of ents) if (e.flash > 0) e.flash--;
+  for (let k = puffs.length - 1; k >= 0; k--) if (++puffs[k].t > 30) puffs.splice(k, 1);
+  for (let k = auras.length - 1; k >= 0; k--) if (++auras[k].t > auras[k].life) auras.splice(k, 1);
+  if (mSkillT > 0) mSkillT--;
   if (duel && !talking()) { duelTick(); camera(); FX.update(); return; }
   if (control && !talking() && p) playerInput(p);
   for (const e of ents) think(e);
   for (const e of ents) physics(e);
   combat();
-  for (let k = puffs.length - 1; k >= 0; k--) if (++puffs[k].t > 30) puffs.splice(k, 1);
   FX.update();
   if (!talking() && quest) checkQuest();
   // a blocking walk ("move" with wait): done when the walker has arrived
@@ -553,6 +556,21 @@ export function render(): void {
     const x = Math.round(e.x - camX), y = Math.round(e.y);
     R.drawSprite(id, x, y, e.face < 0, e.flash > 0 && e.flash % 2 === 1 ? RGB(255, 255, 255) : -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0));
   }
+  for (const a of auras) {
+    const q = a.t / a.life;
+    R.shadeCircle((a.x - camX) * PX, a.y * PX, (a.r + a.t * a.grow) * PX, a.c, 0.55 * (1 - q));
+    R.shadeCircle((a.x - camX) * PX, a.y * PX, (a.r * 0.45 + a.t * a.grow * 0.5) * PX, RGB(255, 255, 255), 0.35 * (1 - q));
+  }
+  if (duel) {                                             // a skill gathering in the hands during its wind-up
+    const d = duel, p = player();
+    const glow = (e: Ent, mv: DuelMove | null, t: number) => {
+      if (!mv?.aura || t < 0 || t >= mv.wind) return;
+      const r = 5 + 3 * Math.sin(mTick * 0.8) + t * 0.4;
+      R.shadeCircle((e.x - camX + e.face * 7) * PX, (e.y - 15) * PX, r * PX, mv.aura, 0.45);
+    };
+    if (p && d.pAtk >= 0) glow(p, d.mv, d.pAtk);
+    if (d.fAtk >= 0) glow(d.foe, d.fMv, d.fAtk);
+  }
   for (const pf of puffs) for (let k = 0; k < 5; k++) R.shadeCircle((pf.x - camX + (k - 2) * 5) * PX, (pf.y - pf.t * 0.3 - (k % 2) * 4) * PX, (5 + pf.t * 0.4) * PX, RGB(70, 66, 76), 0.5 * (1 - pf.t / 30));
   FX.draw();
   for (const q of props) if (q.kind === "beam") drawProp(q);
@@ -583,16 +601,38 @@ export function render(): void {
   if (mFlash > 0) { R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(250, 248, 255), Math.min(1, mFlash / 6)); }
   if (mWaitA && Math.trunc(mTick / 6) % 2 === 0) KF.draw("A ▼", R.PHYS_W - 20, R.PHYS_H - 34, RGB(240, 196, 96), 2, 2);
   hud();
+  if (mSkillT > 0 && !talking()) {
+    const a = Math.min(1, mSkillT / 8);
+    R.shadeRect(0, 96, R.PHYS_W, 40, RGB(8, 6, 12), 0.55 * a);
+    KF.draw(mSkill, R.PHYS_W / 2, 104, mSkillC, 3, 1);
+  }
   if (talking()) dialogueRender();
   const dark = mFadeOut > 0 ? 1 - mFadeOut / 10 : mFadeIn / 12;
   if (dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0), Math.min(1, dark));
   if (mNoticeT > 0) { R.shadeRect(0, 132, R.PHYS_W, 36, RGB(14, 11, 22), 0.9); KF.draw(mNotice, R.PHYS_W / 2, 140, RGB(240, 196, 96), 2, 1); }
 }
 
+/** Health (gold / red), 내공 (green, flashes red when short) and the 궁극 gauge (blue, glows when full; -1 = none). */
+function bars(x: number, hp: number, ng: number, g: number, short: boolean, _top: boolean, mine: boolean, y = 10): void {
+  const right = !mine;
+  const fill = (yy: number, h: number, v: number, c: number) => {
+    R.physRect(x, yy, 154, h + 4, RGB(20, 14, 18));
+    const w = Math.round(150 * Math.max(0, Math.min(1, v)));
+    R.physRect(right ? x + 152 - w : x + 2, yy + 2, w, h, c);
+  };
+  fill(y, 8, hp, mine ? RGB(240, 196, 96) : RGB(220, 60, 50));
+  fill(y + 12, 3, ng, short && Math.trunc(mTick / 3) % 2 === 0 ? RGB(230, 60, 50) : RGB(90, 200, 110));
+  if (g >= 0) fill(y + 19, 3, g, g >= 1 ? (Math.trunc(mTick / 4) % 2 === 0 ? RGB(150, 220, 255) : RGB(80, 150, 255)) : RGB(70, 120, 230));
+}
+
 function hud(): void {
   const p = player();
   if (!p) return;
-  if (((control || quest) && p.kit.moves.length) || (duel && duel.hpMode)) {
+  if (duel && duel.hpMode && !talking()) {
+    const d = duel;
+    bars(12, p.hp / p.maxHp, d.pNg / 1000, d.pG / 100, d.ngFlash > 0, false, true);
+    Font.drawText(p.look[2], 5, 14, RGB(230, 230, 240));
+  } else if ((control || quest) && p.kit.moves.length) {
     R.physRect(12, 10, 154, 12, RGB(20, 14, 18)); R.physRect(14, 12, Math.round(150 * Math.max(0, p.hp) / p.maxHp), 8, RGB(240, 196, 96));
     Font.drawText(p.look[2], 5, 8, RGB(230, 230, 240));
   }
@@ -603,12 +643,16 @@ function hud(): void {
     R.physRect(R.PHYS_W - w - 10, 8, 3, 34, RGB(240, 196, 96));
     KF.draw(t, R.PHYS_W - 22, 15, RGB(255, 236, 190), 2, 2);
   }
-  if (duel && duel.hpMode && !talking()) {                 // the foe's health, top right under the quest
-    const f = duel.foe;
-    R.physRect(R.PHYS_W - 166, 48, 154, 12, RGB(20, 14, 18));
-    const w = Math.round(150 * Math.max(0, f.hp) / f.maxHp);
-    R.physRect(R.PHYS_W - 14 - w, 50, w, 8, RGB(220, 60, 50));
-    Font.drawText(f.look[2], SCREEN_W - 5, 21, RGB(230, 230, 240), 1, 2);
+  if (duel && duel.hpMode && !talking()) {                 // the foe's bars, top right under the quest
+    const d = duel, f = d.foe, boss = !!SKILLS[f.kit.base ?? f.look[0]];
+    bars(R.PHYS_W - 166, f.hp / f.maxHp, d.fNg / 1000, boss ? d.fG / 100 : -1, false, true, false, 48);
+    Font.drawText(f.look[2], SCREEN_W - 5, boss ? 28 : 26, RGB(230, 230, 240), 1, 2);
+  }
+  const mine = duel?.hpMode ? SKILLS[p.kit.base ?? p.look[0]] : undefined;
+  if (mine && !talking()) {                               // the player's skill commands
+    const t = SKILL_HINT[p.kit.base ?? p.look[0]] ?? "";
+    R.shadeRect(0, 250, R.PHYS_W, 22, RGB(8, 6, 12), 0.5);
+    KF.draw(t, R.PHYS_W / 2, 252, RGB(190, 210, 240), 2, 1);
   }
   if (duel && !talking()) Font.drawText("LEFT RIGHT = MOVE   A S Z X = ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
   if (control && !talking()) Font.drawText(target() ? "A = TALK" : !p.kit.moves.length ? "LEFT RIGHT = RUN" : "ARROWS MOVE  UP JUMP  A S Z X ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
@@ -701,12 +745,15 @@ function titleRender(): void {
 interface Duel {
   foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number; mv: DuelMove;
   hpMode: boolean; dmg: number; block: number; ko: number; px0: number; fx0: number;    // health duel: both sides take damage, the player can fall (then the bout starts over)
+  fMv: DuelMove | null;                                   // the foe's current move (null = its plain attack)
+  pNg: number; fNg: number; pG: number; fG: number; ngFlash: number; hist: number[];   // 내공 (0..1000, refills), 궁극 gauge (0..100, hits), stick history
 }
 let duel: Duel | null = null;
+let mCarryG = 0;                                          // the player's 궁극 gauge carries over from bout to bout in a scene
 // difficulty chosen at a route's first chapter: 0 easy, 1 normal, 2 hard (foe damage, foe pace, foe health, foe wind-up, foe blocking)
 let mDiff = 1;
 export function setDifficulty(n: number): void { mDiff = Math.max(0, Math.min(2, n)); }
-const DIFF = { dmg: [0.55, 1, 1.5], cool: [1.6, 1, 0.6], hp: [0.75, 1, 1.25], wind: [15, 10, 7], block: [0.4, 1, 1.6] };
+const DIFF = { dmg: [0.55, 1, 1.5], cool: [1.6, 1, 0.6], hp: [0.75, 1, 1.25], wind: [15, 10, 7], block: [0.4, 1, 1.6], skill: [0.5, 1, 1.5] };
 
 /** The first of these frames the character has (SD art grows over time; older sets fall back to a near pose). */
 function frame(e: Ent, names: string[]): number {
@@ -716,15 +763,76 @@ function frame(e: Ent, names: string[]): number {
 }
 const ATK0 = ["atk_0", "block", "walk_2", "lower", "stand"], ATK1 = ["atk_1", "block", "walk_0", "slash", "walk_1"];
 // the four buttons: light hand, heavy hand, light kick, heavy kick (frames <name>_0 wind-up, <name>_1 strike;
-// a character without them uses its light attack)
-interface DuelMove { name: string; wind: number; len: number; reach: number; push: number; stop: number; dmg: number }
+// a character without them uses its light attack). Skills add a command (numpad, relative to facing), a 내공 cost
+// or the full 궁극 gauge, a dash, a glow colour and how the hit looks.
+interface DuelMove {
+  name: string; wind: number; len: number; reach: number; push: number; stop: number; dmg: number;
+  label?: string; cmd?: string; cost?: number; ult?: boolean; dash?: number; aura?: number; kind?: "rush" | "spin" | "slam" | "bomb" | "bind" | "power"; breaks?: boolean;
+}
 const MOVES: DuelMove[] = [
   { name: "atk", wind: 4, len: 10, reach: 32, push: 7, stop: 3, dmg: 8 },
   { name: "hvy", wind: 7, len: 15, reach: 34, push: 13, stop: 5, dmg: 13 },
   { name: "kick", wind: 4, len: 11, reach: 34, push: 8, stop: 3, dmg: 9 },
   { name: "hkick", wind: 7, len: 16, reach: 38, push: 14, stop: 5, dmg: 15 },
 ];
+const BLUE = RGB(110, 180, 255), SMOKE = RGB(60, 52, 72), VIOLET = RGB(120, 60, 150), EMBER = RGB(235, 60, 40);
+// the same commands as in the fighting game (README): P = A or S
+const SKILLS: Record<string, DuelMove[]> = {
+  sd_danwoo: [
+    { name: "slam", label: "청풍진천", cmd: "2626", ult: true, wind: 14, len: 30, reach: 90, push: 26, stop: 12, dmg: 40, aura: BLUE, kind: "slam" },
+    { name: "spin", label: "벽력권", cmd: "623", cost: 500, wind: 8, len: 18, reach: 36, push: 18, stop: 8, dmg: 22, aura: BLUE, kind: "spin", breaks: true },
+    { name: "palm", label: "청풍장", cmd: "236", cost: 300, wind: 5, len: 16, reach: 40, push: 16, stop: 6, dmg: 18, dash: 24, aura: BLUE, kind: "rush" },
+  ],
+  sd_heuksa: [
+    { name: "bind", label: "흑사천망", ult: true, wind: 18, len: 32, reach: 130, push: 20, stop: 12, dmg: 32, aura: VIOLET, kind: "bind" },
+    { name: "bomb", label: "흑연탄", cost: 450, wind: 10, len: 20, reach: 120, push: 8, stop: 5, dmg: 12, aura: SMOKE, kind: "bomb" },
+    { name: "snake", label: "흑사장", cost: 300, wind: 9, len: 18, reach: 44, push: 14, stop: 6, dmg: 16, dash: 22, aura: VIOLET, kind: "rush" },
+  ],
+};
+const SKILL_HINT: Record<string, string> = { sd_danwoo: "↓↘→A 청풍장  →↓↘A 벽력권  ↓→↓→A 청풍진천" };
+// underlings have one: a powered-up blow (glowing red), a little stronger than their plain attack
+const POWER: DuelMove = { name: "power", label: "", cost: 700, wind: 14, len: 20, reach: 34, push: 10, stop: 5, dmg: 0, aura: EMBER, kind: "power" };
 function showPose(e: Ent, id: number): void { e.pose = id; e.st = ST_POSE; e.vx = 0; }
+
+// glows and shock rings (drawn as soft circles), and the name of a skill as it is used
+const auras: { x: number; y: number; t: number; life: number; r: number; c: number; grow: number }[] = [];
+let mSkill = "", mSkillT = 0, mSkillC = 0;
+function aura(x: number, y: number, r: number, c: number, life = 14, grow = 0.6): void { auras.push({ x, y, t: 0, life, r, c, grow }); }
+function callSkill(mv: DuelMove): void { if (mv.label) { mSkill = mv.label; mSkillT = 36; mSkillC = mv.aura ?? RGB(255, 236, 190); } }
+
+/** The stick as a numpad digit relative to the facing (6 = toward the foe). */
+function stickDir(face: number): number {
+  const up = K.isDown(K.BTN_UP), dn = K.isDown(K.BTN_DOWN);
+  const fw = face > 0 ? K.isDown(K.BTN_RIGHT) : K.isDown(K.BTN_LEFT), bk = face > 0 ? K.isDown(K.BTN_LEFT) : K.isDown(K.BTN_RIGHT);
+  if (dn) return fw ? 3 : bk ? 1 : 2;
+  if (up) return fw ? 9 : bk ? 7 : 8;
+  return fw ? 6 : bk ? 4 : 5;
+}
+/** Was the command entered in the last ticks (in order, last step recent)? 2 matches any down direction. */
+function entered(hist: number[], cmd: string, window: number): boolean {
+  let j = cmd.length, first = -1;
+  for (let t = 0; t <= window && t < hist.length; t++) {
+    const want = +cmd[j - 1], got = hist[hist.length - 1 - t];
+    if (want === 2 ? got >= 1 && got <= 3 : want === got) { if (first < 0) first = t; j--; if (j === 0) return first <= 4; }
+  }
+  return false;
+}
+
+/** A blow lands (either side): damage, glow, shake, gauges. Returns true when the defender is knocked out. */
+function land(d: Duel, atk: Ent, def: Ent, mv: DuelMove, dmg: number, dir: number, blocked: boolean, playerHits: boolean): void {
+  const c = mv.aura;
+  if (mv.kind === "slam") { for (const s of [-1, 1]) for (let k = 0; k < 3; k++) aura(atk.x + s * (10 + k * 16), GROUND - 4, 8 + k * 2, c!, 18 + k * 4, 0.9); mShake = 12; mFlash = 4; }
+  else if (mv.kind === "bind") { for (let k = 0; k < 5; k++) aura(def.x + (k - 2) * 5, def.y - 6 - k * 5, 9, c!, 26, 0.3); mShake = 10; mFlash = 3; }
+  else if (mv.kind === "bomb") { for (let k = 0; k < 4; k++) aura(def.x + (k - 1.5) * 7, def.y - 10 - (k % 2) * 6, 10, c!, 30, 0.5); puffs.push({ x: def.x, y: def.y - 14, t: 0 }); }
+  else if (c !== undefined) { aura(atk.x + dir * 16, atk.y - 16, mv.kind === "spin" ? 12 : 10, c, 16, 0.8); if (mv.kind !== "power") mShake = Math.max(mShake, 6); }
+  if (blocked) { def.flash = 4; showPose(def, frame(def, ["guard", "lower"])); def.x += dir * 2; dmg = mv.cost || mv.ult ? Math.ceil(dmg * 0.2) : 0; }
+  else { def.flash = 8; def.x += dir * mv.push; showPose(def, frame(def, ["hit", "walk_1"])); }
+  if (d.hpMode && dmg > 0) def.hp -= dmg;
+  if (d.hpMode) {
+    if (playerHits) { if (!mv.ult) d.pG = Math.min(100, d.pG + (blocked ? 3 : 9)); d.fG = Math.min(100, d.fG + 6); }
+    else { if (!mv.ult) d.fG = Math.min(100, d.fG + (blocked ? 3 : 9)); d.pG = Math.min(100, d.pG + 7); }
+  }
+}
 
 function duelTick(): void {
   const d = duel!, p = player()!, f = d.foe;
@@ -736,62 +844,104 @@ function duelTick(): void {
     if (f.st !== ST_IDLE && f.st !== ST_POSE) setSt(f, ST_IDLE);
     if (d.ko === 40) { mNotice = "쓰러졌다… 다시 한 번"; mNoticeT = 60; }
     if (d.ko >= 100) {
-      d.ko = 0; d.t = 0; d.hits = 0; d.pAtk = -1; d.fAtk = -1; d.pHit = 0; d.fHit = 0; d.fCool = 50;
+      d.ko = 0; d.t = 0; d.hits = 0; d.pAtk = -1; d.fAtk = -1; d.pHit = 0; d.fHit = 0; d.fCool = 50; d.fMv = null;
       p.hp = p.maxHp; f.hp = f.maxHp; p.x = d.px0; f.x = d.fx0; setSt(p, ST_IDLE); setSt(f, ST_IDLE);
+      d.pNg = 1000; d.fNg = 500; d.fG = 0;
     }
     return;
   }
   p.face = dirToFoe; f.face = -dirToFoe;
+  const boss = SKILLS[f.kit.base ?? f.look[0]];
+  if (d.hpMode) {
+    d.pNg = Math.min(1000, d.pNg + 6); d.fNg = Math.min(1000, d.fNg + (boss ? 5 : 4));
+    d.hist.push(stickDir(dirToFoe)); if (d.hist.length > 40) d.hist.shift();
+    if (d.ngFlash > 0) d.ngFlash--;
+  }
   // --- the player
   if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
   else if (d.pAtk >= 0) {
     d.pAtk++;
     const mv = d.mv;
     showPose(p, frame(p, d.pAtk < mv.wind ? [mv.name + "_0", ...ATK0] : [mv.name + "_1", ...ATK1]));
-    if (d.pAtk === mv.wind && dist < mv.reach) {
+    if (mv.dash && d.pAtk < mv.wind && dist > 18) p.x += dirToFoe * mv.dash / mv.wind;
+    if (d.pAtk === mv.wind && Math.abs(f.x - p.x) < mv.reach) {
       FX.spawnHit(f.x - camX - dirToFoe * 4, f.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
       mHitStop = mv.stop;
-      const blocked = d.guard || (d.hpMode && d.fAtk < 0 && Math.random() < d.block * DIFF.block[mDiff]);
-      if (blocked) { f.flash = 4; showPose(f, frame(f, ["guard", "lower"])); d.fHit = 6; f.x += dirToFoe * 2; }
-      else { d.hits++; f.hp -= mv.dmg; f.flash = 8; f.x += dirToFoe * mv.push; d.fHit = 8 + mv.stop; d.fAtk = -1; showPose(f, frame(f, ["hit", "walk_1"])); }
-      if (mv.stop >= 5) mShake = 5;
-    }
+      const blocked = d.guard || (!mv.breaks && !mv.ult && d.hpMode && d.fAtk < 0 && Math.random() < d.block * DIFF.block[mDiff]);
+      land(d, p, f, mv, mv.dmg, dirToFoe, blocked, true);
+      if (!blocked) { d.hits++; d.fHit = 8 + mv.stop; d.fAtk = -1; d.fMv = null; } else d.fHit = 6;
+      if (mv.stop >= 5) mShake = Math.max(mShake, 5);
+    } else if (d.pAtk === mv.wind && mv.kind === "slam") land(d, p, f, mv, 0, dirToFoe, true, true);   // the shock waves show even on a miss
     if (d.pAtk >= mv.len) d.pAtk = -1;
   } else {
     const L = K.isDown(K.BTN_LEFT), Rt = K.isDown(K.BTN_RIGHT);
     const b = K.isPressed(K.BTN_LP) ? 0 : K.isPressed(K.BTN_HP) ? 1 : K.isPressed(K.BTN_LK) ? 2 : K.isPressed(K.BTN_HK) ? 3 : -1;
-    if (b >= 0) { d.mv = MOVES[b]; d.pAtk = 0; }
+    if (b >= 0) {
+      let mv = MOVES[b];
+      const mine = SKILLS[p.kit.base ?? p.look[0]];
+      if (d.hpMode && mine && b <= 1) for (const s of mine) {
+        if (!entered(d.hist, s.cmd!, s.ult ? 30 : 16)) continue;
+        if (s.ult ? d.pG < 100 : d.pNg < s.cost!) { if (!s.ult) d.ngFlash = 20; continue; }
+        mv = s;
+        if (s.ult) { d.pG = 0; mHitStop = 10; mFlash = 3; } else d.pNg -= s.cost!;
+        callSkill(s);
+        break;
+      }
+      d.mv = mv; d.pAtk = 0;
+    }
     else if ((L || Rt) && !(Rt && dirToFoe > 0 && dist < 20) && !(L && dirToFoe < 0 && dist < 20)) {
       p.vx = (Rt ? 1 : -1) * 1.6; p.x += p.vx; if (p.st !== ST_WALK) setSt(p, ST_WALK); else p.t++;
     } else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
   }
-  // --- the foe: closes in, winds up, strikes
+  // --- the foe: closes in, winds up, strikes (bosses use their skills, underlings a powered-up blow)
   if (d.fHit > 0) d.fHit--;
   else if (d.fAtk >= 0) {
     d.fAtk++;
-    const w = d.hpMode ? DIFF.wind[mDiff] : 10;
-    showPose(f, frame(f, d.fAtk < w ? ATK0 : ATK1));
-    if (d.fAtk === w && dist < 30 && d.pAtk < 0) {
-      FX.spawnHit(p.x - camX + dirToFoe * 4, p.y - 14, false, "");
-      d.pHit = 10; p.flash = 6; p.x -= dirToFoe * 6;
+    const mv = d.fMv, w = mv ? Math.round(mv.wind * DIFF.wind[mDiff] / 10) : d.hpMode ? DIFF.wind[mDiff] : 10;
+    showPose(f, frame(f, d.fAtk < w ? (mv ? [mv.name + "_0", ...ATK0] : ATK0) : (mv ? [mv.name + "_1", ...ATK1] : ATK1)));
+    if (mv?.dash && d.fAtk < w && dist > 18) f.x -= dirToFoe * mv.dash / w;
+    if (d.fAtk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0) {
+      FX.spawnHit(p.x - camX + dirToFoe * 4, p.y - 14, !!mv, mv && boss ? "heukrim" : "");
+      d.pHit = mv ? 14 : 10; p.flash = 6;
+      const base = mv ? (mv.kind === "power" ? d.dmg * 1.8 : mv.dmg) : d.dmg;
+      if (mv) { mHitStop = mv.stop; land(d, f, p, mv, 0, -dirToFoe, false, false); } else { p.x -= dirToFoe * 6; if (d.hpMode) { d.fG = Math.min(100, d.fG + 9); d.pG = Math.min(100, d.pG + 7); } }
       if (d.hpMode) {
-        p.hp -= Math.max(1, Math.round(d.dmg * DIFF.dmg[mDiff]));
-        if (p.hp <= 0) { p.hp = 0; d.ko = 1; mShake = 6; d.fAtk = -1; return; }
+        p.hp -= Math.max(1, Math.round(base * DIFF.dmg[mDiff]));
+        if (p.hp <= 0) { p.hp = 0; d.ko = 1; mShake = 6; d.fAtk = -1; d.fMv = null; return; }
       }
-    }
-    if (d.fAtk >= w + 6) { d.fAtk = -1; d.fCool = Math.round((34 + Math.floor(Math.random() * 30)) * (d.hpMode ? DIFF.cool[mDiff] : 1)); }
+    } else if (d.fAtk === w && mv && (mv.kind === "bomb" || mv.kind === "bind")) land(d, f, p, mv, 0, -dirToFoe, true, false);
+    if (d.fAtk >= (mv ? mv.len : w + 6)) { d.fAtk = -1; d.fMv = null; d.fCool = Math.round((34 + Math.floor(Math.random() * 30)) * (d.hpMode ? DIFF.cool[mDiff] : 1)); }
   } else {
     if (d.fCool > 0) d.fCool--;
-    if (dist > 22) { f.x -= dirToFoe * 0.7; if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++; }
-    else if (d.fCool <= 0) d.fAtk = 0;
+    // a skill from where it stands (bosses: the smoke bomb from afar, the ultimate when the gauge is full)
+    const pick = (): DuelMove | null => {
+      if (!d.hpMode || d.fCool > 0) return null;
+      if (boss) {
+        const ult = boss.find((s) => s.ult);
+        if (ult && d.fG >= 100 && dist < ult.reach) return ult;
+        const r = Math.random() * 100 / DIFF.skill[mDiff];
+        for (const s of boss) if (!s.ult && d.fNg >= s.cost! && dist < s.reach && (s.kind === "bomb" ? dist > 40 && r < 2 : dist <= 24 && r < 40)) return s;
+        return null;
+      }
+      return d.fNg >= POWER.cost! && dist <= 24 && Math.random() < 0.5 * DIFF.skill[mDiff] ? POWER : null;
+    };
+    const s = pick();
+    if (s) {
+      d.fMv = s; d.fAtk = 0;
+      if (s.ult) { d.fG = 0; mHitStop = 10; mFlash = 3; } else d.fNg -= s.cost!;
+      callSkill(s);
+    }
+    else if (dist > 22) { f.x -= dirToFoe * 0.7; if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++; }
+    else if (d.fCool <= 0) { d.fMv = null; d.fAtk = 0; }
     else if (f.st !== ST_IDLE) setSt(f, ST_IDLE);
   }
   if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); f.x = Math.max(6, Math.min(map.w - 6, f.x)); }
   // --- the end: enough hits (the foe falls back), or the time is up (the scene decides what happens)
   if ((d.hpMode && f.hp <= 0) || (!d.hpMode && d.need && d.hits >= d.need) || (d.time && d.t >= d.time)) {
-    duel = null; quest = null; questText = "";
+    duel = null; quest = null; questText = ""; if (d.hpMode) mCarryG = d.pG;
     if (d.need || d.hpMode) { setSt(f, ST_IDLE); f.goal = f.x + dirToFoe * 28; f.spd = 1.2; }
     setSt(p, ST_IDLE); p.vx = 0;
     mStep++; run();
   }
 }
+export function debugGauge(foe = false): void { if (duel) { if (foe) duel.fG = 100; else duel.pG = 100; } }
