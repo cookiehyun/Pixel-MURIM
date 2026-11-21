@@ -181,7 +181,7 @@ function exec(s: Step): boolean {
       if (e) {
         setPose(e, String(s.pose));
         if (s.fall) {                                     // struck down: a flash, thrown back, lands in the pose
-          e.air = true; e.flash = 8; e.vy = -3.2; e.y -= 1; e.vx = -e.face * 1.6; e.goal = null;
+          e.air = true; e.flash = 3; e.vy = -3.2; e.y -= 1; e.vx = -e.face * 1.6; e.goal = null;
           FX.spawnHit(e.x - camX + e.face * 3, e.y - 14, true, "");
           mShake = 6;
         } else if (s.trip) {                              // tripped while running: pitches forward, face down, a little dust
@@ -559,7 +559,7 @@ export function render(): void {
     const id = sprite(e, mTick);
     if (id < 0) continue;
     const x = Math.round(e.x - camX), y = Math.round(e.y);
-    R.drawSprite(id, x, y, e.face < 0, e.flash > 0 && e.flash % 2 === 1 ? RGB(255, 255, 255) : -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0));
+    R.drawSprite(id, x, y, e.face < 0, e.flash > 0 ? RGB(255, 255, 255) : -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0));
   }
   for (const a of auras) {
     const q = a.t / a.life;
@@ -831,8 +831,8 @@ function land(d: Duel, atk: Ent, def: Ent, mv: DuelMove, dmg: number, dir: numbe
   else if (mv.kind === "bind") { for (let k = 0; k < 5; k++) aura(def.x + (k - 2) * 5, def.y - 6 - k * 5, 9, c!, 26, 0.3); mShake = 10; mFlash = 3; }
   else if (mv.kind === "bomb") { for (let k = 0; k < 4; k++) aura(def.x + (k - 1.5) * 7, def.y - 10 - (k % 2) * 6, 10, c!, 30, 0.5); puffs.push({ x: def.x, y: def.y - 14, t: 0 }); }
   else if (c !== undefined) { aura(atk.x + dir * 16, atk.y - 16, mv.kind === "spin" ? 12 : 10, c, 16, 0.8); if (mv.kind !== "power") mShake = Math.max(mShake, 6); }
-  if (blocked) { def.flash = 4; showPose(def, frame(def, ["guard", "lower"])); def.x += dir * 2; dmg = mv.cost || mv.ult ? Math.ceil(dmg * 0.2) : 0; }
-  else { def.flash = 8; def.x += dir * mv.push; showPose(def, frame(def, ["hit", "walk_1"])); }
+  if (blocked) { def.flash = 1; showPose(def, frame(def, ["guard", "lower"])); def.x += dir * 2; dmg = mv.cost || mv.ult ? Math.ceil(dmg * 0.2) : 0; }
+  else { def.flash = 2; def.x += dir * mv.push; showPose(def, frame(def, ["hit", "walk_1"])); }
   if (d.hpMode && dmg > 0) def.hp -= dmg;
   if (d.hpMode && fo) {
     if (playerHits) { if (!mv.ult) d.pG = Math.min(100, d.pG + (blocked ? 3 : 9)); fo.g = Math.min(100, fo.g + 6); }
@@ -887,14 +887,14 @@ function duelTick(): void {
         if (Math.abs(dx) >= mv.reach || (mv.kind !== "slam" && dx * dir < -4)) continue;
         const hd = dx >= 0 ? 1 : -1;
         any = true;
-        FX.spawnHit(o.e.x - camX - hd * 4, o.e.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
+        FX.spawnHit(o.e.x - camX - hd * 4, o.e.y - 14, mv.stop >= 5, p.look[0].replace("sd_", "").split(":")[0]);
         mHitStop = mv.stop;
         const blocked = d.guard || (!mv.breaks && !mv.ult && d.hpMode && o.atk < 0 && Math.random() < d.block * DIFF.block[mDiff]);
         land(d, p, o.e, mv, mv.dmg, hd, blocked, true, o);
         if (!blocked) { d.hits++; o.hit = 8 + mv.stop; o.atk = -1; o.mv = null; } else o.hit = 6;
         d.foe = o.e;
         if (d.hpMode && o.e.hp <= 0 && d.foes.length > 1) {   // one of several goes down where it stands
-          o.out = true; o.e.hp = 0; setPose(o.e, "lie"); o.e.air = true; o.e.vy = -2; o.e.vx = hd * 1.2; o.e.flash = 8;
+          o.out = true; o.e.hp = 0; setPose(o.e, "lie"); o.e.air = true; o.e.vy = -2; o.e.vx = hd * 1.2; o.e.flash = 3;
         }
       }
       if (any && mv.stop >= 5) mShake = Math.max(mShake, 5);
@@ -935,7 +935,7 @@ function duelTick(): void {
       if (mv?.dash && o.atk < w && dist > 18) f.x += toP * mv.dash / w;
       if (o.atk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0 && d.ko === 0) {
         FX.spawnHit(p.x - camX - toP * 4, p.y - 14, !!mv, mv && boss ? "heukrim" : "");
-        d.pHit = mv ? 14 : 10; p.flash = 6;
+        d.pHit = mv ? 14 : 10; p.flash = 2;
         const base = mv ? (mv.kind === "power" ? d.dmg * 1.8 : mv.dmg) : d.dmg;
         if (mv) { mHitStop = mv.stop; land(d, f, p, mv, 0, toP, false, false, o); }
         else { p.x += toP * 6; if (d.hpMode) { o.g = Math.min(100, o.g + 9); d.pG = Math.min(100, d.pG + 7); } }
