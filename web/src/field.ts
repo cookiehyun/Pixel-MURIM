@@ -184,6 +184,9 @@ function exec(s: Step): boolean {
           e.flash = 8; e.vy = -3.2; e.y -= 1; e.vx = -e.face * 1.6; e.goal = null;
           FX.spawnHit(e.x - camX + e.face * 3, e.y - 14, true, "");
           mShake = 6;
+        } else if (s.trip) {                              // tripped while running: pitches forward, face down, a little dust
+          e.vy = -1.4; e.y -= 1; e.vx = e.face * 1.8; e.goal = null;
+          mShake = 2;
         }
       }
       return true;

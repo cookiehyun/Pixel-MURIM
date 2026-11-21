@@ -68,7 +68,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "cam", x: 0 },
       { t: "move", id: "g1", x: 146, speed: 0.8 }, { t: "move", id: "g2", x: 126, speed: 0.75 },
       { t: "move", id: "m3", x: 96, run: true, wait: true },
-      { t: "pose", id: "m3", pose: "lie_down", fall: true },
+      { t: "pose", id: "m3", pose: "lie_down", trip: true },   // catches a foot on a stone mid-run
       { t: "wait", n: 20 },
       { t: "wait", n: 30 },
       { t: "ev", sec: "pre", a: 15 },
