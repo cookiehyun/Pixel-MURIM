@@ -201,7 +201,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       // 7. 천마전
       { t: "map", map: "cheonma_hall" },
       { t: "caption", text: "십만대산, 천마전" },
-      { t: "spawn", id: "cheonma", look: ["sd_cheonma", 0, "CHEONMA"], x: 152, y: 72, face: -1, pose: "sit" },
+      { t: "spawn", id: "cheonma", look: ["sd_cheonma", 0, "CHEONMA"], x: 152, y: 66, face: -1, pose: "sit" },
       { t: "spawn", id: "gg", look: ["sd_geumgang", 0, "GEUMGANGGWI"], x: 62, face: 1, pose: "gg_kneel" },
       { t: "spawn", id: "jg", look: ["sd_jeogun", 0, "JEOGUN"], x: 82, face: 1, pose: "jg_kneel" },
       { t: "spawn", id: "dang", look: ["sd_dang", 0, "DANG"], x: 99, face: 1, pose: "dang_kneel" },
