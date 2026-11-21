@@ -238,7 +238,7 @@ function exec(s: Step): boolean {
       const foes: Foe[] = list.map((e, i) => {
         // with several: alternate sides, the first in front (where it stands), the second behind the player
         const side = list.length > 1 && i % 2 === 1 ? -(e.x > p.x ? 1 : -1) : e.x > p.x ? 1 : -1;
-        return { e, atk: -1, cool: 30 + i * 25, hit: 0, mv: null, ng: 500, g: 0, x0: e.x, out: false, side };
+        return { e, bn: "atk", atk: -1, cool: 30 + i * 25, hit: 0, mv: null, ng: 500, g: 0, x0: e.x, out: false, side };
       });
       duel = { foes, foe: list[0], need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, pHit: 0, mv: MOVES[0],
         hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, pNg: 1000, pG: mCarryG, ngFlash: 0, hist: [] };
@@ -271,7 +271,7 @@ function setPose(e: Ent, p: string): void {
   if (p === "idle") { setSt(e, ST_IDLE); return; }
   const k = e.kit;
   const base = k.base ?? e.look[0];
-  const id = p === "down" ? k.down1 : p === "crouch" ? k.crouch : p === "hit" ? k.hit : hasSprite(base + "." + p) ? spriteId(base + "." + p) : -1;
+  const id = hasSprite(base + "." + p) ? spriteId(base + "." + p) : p === "down" ? k.down1 : p === "crouch" ? k.crouch : p === "hit" ? k.hit : -1;
   if (id < 0) return;
   e.pose = id; setSt(e, ST_POSE);
 }
@@ -754,7 +754,7 @@ function titleRender(): void {
 // ---------------------------------------------------------------- duels: a short SD fight right where the scene is
 
 // one opponent in a duel: its own wind-up, cool-down, stagger, move, 내공, 궁극 gauge, starting spot and side of the player
-interface Foe { e: Ent; atk: number; cool: number; hit: number; mv: DuelMove | null; ng: number; g: number; x0: number; out: boolean; side: number }
+interface Foe { e: Ent; bn: string; atk: number; cool: number; hit: number; mv: DuelMove | null; ng: number; g: number; x0: number; out: boolean; side: number }
 interface Duel {
   foes: Foe[]; foe: Ent;                                  // foe = the one shown in the top-right bars (the last one struck)
   need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; pHit: number; mv: DuelMove;
@@ -883,7 +883,8 @@ function duelTick(): void {
   else if (d.pAtk >= 0) {
     d.pAtk++;
     const mv = d.mv, dir = p.face;
-    showPose(p, frame(p, d.pAtk < mv.wind ? [mv.name + "_0", ...ATK0] : [mv.name + "_1", ...ATK1]));
+    const alt = mv.name === "hvy" ? "atk" : mv.name === "hkick" ? "kick" : mv.name;
+    showPose(p, frame(p, d.pAtk < mv.wind ? [mv.name + "_0", alt + "_0", ...ATK0] : [mv.name + "_1", alt + "_1", ...ATK1]));
     const ahead = near(p.x + dir * 30);
     if (mv.dash && d.pAtk < mv.wind && !(ahead && (ahead.e.x - p.x) * dir > 0 && Math.abs(ahead.e.x - p.x) < 18)) p.x += dir * mv.dash / mv.wind;
     if (d.pAtk === mv.wind) {
@@ -938,7 +939,7 @@ function duelTick(): void {
     if (o.atk >= 0) {
       o.atk++;
       const mv = o.mv, w = mv ? Math.round(mv.wind * DIFF.wind[mDiff] / 10) : d.hpMode ? DIFF.wind[mDiff] : 10;
-      showPose(f, frame(f, o.atk < w ? (mv ? [mv.name + "_0", ...ATK0] : ATK0) : (mv ? [mv.name + "_1", ...ATK1] : ATK1)));
+      showPose(f, frame(f, o.atk < w ? [(mv ? mv.name : o.bn) + "_0", ...ATK0] : [(mv ? mv.name : o.bn) + "_1", ...ATK1]));
       if (mv?.dash && o.atk < w && dist > 18) f.x += toP * mv.dash / w;
       if (o.atk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0 && d.ko === 0) {
         FX.spawnHit(p.x - camX - toP * 4, p.y - 14, !!mv, mv && boss ? "heukrim" : "");
@@ -980,7 +981,7 @@ function duelTick(): void {
       const step = Math.sign(goal - f.x) * (Math.abs(goal - f.x) > 30 ? 1.2 : 0.7);   // hurry round to its side, then edge in
       f.x += step; f.face = toP;
       if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++;
-    } else if (front && o.cool <= 0 && dist <= 26) { o.mv = null; o.atk = 0; }
+    } else if (front && o.cool <= 0 && dist <= 26) { o.mv = null; o.atk = 0; o.bn = hasSprite((f.kit.base ?? f.look[0]) + ".kick_0") && Math.random() < 0.4 ? "kick" : "atk"; }
     else if (f.st !== ST_IDLE) setSt(f, ST_IDLE);
   }
   if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); for (const o of d.foes) o.e.x = Math.max(6, Math.min(map.w - 6, o.e.x)); }

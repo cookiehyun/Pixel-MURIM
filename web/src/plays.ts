@@ -294,6 +294,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "move", id: "heuksa", x: "player", dx: 26, speed: 1, wait: true },
       { t: "duel", foe: "heuksa", hp: 110, dmg: 12, block: 0.22, text: "흑사를 쓰러뜨리시오" },
       { t: "face", id: "heuksa", to: "player" },
+      { t: "pose", id: "heuksa", pose: "down" },                 // beaten: down on one knee
       { t: "ev", sec: "post", a: 0, b: 3 },
       { t: "vanish", id: "heuksa" },
       { t: "narr", text: "흑사가 연막을 터뜨리고 사라진다." },

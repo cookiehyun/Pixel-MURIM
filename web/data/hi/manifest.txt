@@ -12,9 +12,6 @@ sd_cultist.idle_0 sd/cultist/idle_0.png 11 29
 sd_cultist.shout sd/cultist/shout.png 12 39
 sd_cultist.torch sd/cultist/torch.png 11 36
 sd_cultist.walk_0 sd/cultist/walk_0.png 11 29
-sd_cultist.lie sd/cultist/lie.png 15 22
-sd_cultist.atk_0 sd/cultist/shout.png 12 39
-sd_cultist.atk_1 sd/cultist/walk_0.png 11 29
 ANIM sd_danwoo.carry_run 3 carry_run_0 carry_run_1 carry_run_2 carry_run_3
 ANIM sd_danwoo.carry_idle 10 carry_turn carry_turn
 ANIM sd_cultist.idle 10 idle_0 idle_0
@@ -190,8 +187,6 @@ sd_heuksa.walk_2 sd/heuksa/walk_2.png 10 35
 sd_heuksa.walk_3 sd/heuksa/walk_3.png 10 35
 sd_heuksa.nod sd/heuksa/nod.png 13 35
 sd_heuksa.clap sd/heuksa/clap.png 14 36
-sd_heuksa.atk_0 sd/heuksa/nod.png 13 35
-sd_heuksa.atk_1 sd/heuksa/clap.png 14 36
 sd_chief.lie sd/chief/lie.png 17 15
 sd_chief.rise sd/chief/rise.png 15 20
 sd_arong.cower sd/arong/cower.png 6 19
@@ -213,3 +208,26 @@ ANIM sd_heuksa.idle 10 idle idle
 ANIM sd_heuksa.walk 5 walk_0 walk_1 walk_2 walk_3
 ANIM sd_chief.idle 10 lie lie
 ANIM sd_chief.walk 10 lie lie
+sd_heuksa.atk_0 sd/heuksa/atk_0.png 11 36
+sd_heuksa.atk_1 sd/heuksa/atk_1.png 16 35
+sd_heuksa.down sd/heuksa/down.png 15 28
+sd_heuksa.guard sd/heuksa/guard.png 12 36
+sd_heuksa.hit sd/heuksa/hit.png 16 33
+sd_heuksa.kick_0 sd/heuksa/kick_0.png 10 36
+sd_heuksa.kick_1 sd/heuksa/kick_1.png 14 36
+sd_heuksa.bind_0 sd/heuksa/bind_0.png 21 48
+sd_heuksa.bind_1 sd/heuksa/bind_1.png 19 48
+sd_heuksa.bomb_0 sd/heuksa/bomb_0.png 14 42
+sd_heuksa.bomb_1 sd/heuksa/bomb_1.png 19 37
+sd_heuksa.snake_0 sd/heuksa/snake_0.png 16 34
+sd_heuksa.snake_1 sd/heuksa/snake_1.png 20 33
+sd_cultist.atk_0 sd/cultist/atk_0.png 13 40
+sd_cultist.atk_1 sd/cultist/atk_1.png 15 29
+sd_cultist.hit sd/cultist/hit.png 19 28
+sd_cultist.lie sd/cultist/lie.png 19 15
+sd_danwoo.palm_0 sd/danwoo/palm_0.png 12 32
+sd_danwoo.palm_1 sd/danwoo/palm_1.png 20 30
+sd_danwoo.slam_0 sd/danwoo/slam_0.png 16 41
+sd_danwoo.slam_1 sd/danwoo/slam_1.png 19 26
+sd_danwoo.spin_0 sd/danwoo/spin_0.png 15 30
+sd_danwoo.spin_1 sd/danwoo/spin_1.png 11 45
