@@ -122,6 +122,7 @@ export function titleTick(): void {
   }
 }
 
+declare const __BUILD__: string;
 export function titleRender(): void {
   const cx = SCREEN_W / 2;
   R.beginFrame(true);
@@ -151,6 +152,7 @@ export function titleRender(): void {
     }
     Font.drawText(label(mMenuLevel, k), cx, y, c, 1, 1);
   }
+  if (mMenuLevel === 0) Font.drawText(typeof __BUILD__ === "string" ? __BUILD__ : "", SCREEN_W - 2, 2, RGB(90, 84, 110), 1, 2);
   if (mNotice > 0) Font.drawText("LOG IN OR CREATE AN ACCOUNT FIRST", cx, 92, RGB(255, 140, 90), 1, 1);
   else if (mInfoT > 0) Font.drawText(mInfo, cx, 92, RGB(150, 230, 160), 1, 1);
   else if (mMenuLevel === 0 && Account.loggedIn()) Font.drawText("PLAYER " + Account.name(), cx, 92, RGB(200, 180, 120), 1, 1);

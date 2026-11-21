@@ -176,7 +176,18 @@ function exec(s: Step): boolean {
       if (typeof s.y === "number") e.y = s.y;                 // standing on something (a throne, a roof)
       return true;
     }
-    case "pose": { const e = ent(String(s.id)); if (e) setPose(e, String(s.pose)); return true; }
+    case "pose": {
+      const e = ent(String(s.id));
+      if (e) {
+        setPose(e, String(s.pose));
+        if (s.fall) {                                     // struck down: a flash, thrown back, lands in the pose
+          e.flash = 8; e.vy = -3.2; e.y -= 1; e.vx = -e.face * 1.6; e.goal = null;
+          FX.spawnHit(e.x - camX + e.face * 3, e.y - 14, true, "");
+          mShake = 6;
+        }
+      }
+      return true;
+    }
     case "face": {
       const e = ent(String(s.id)); if (!e) return true;
       const o = ent(String(s.to));
@@ -456,6 +467,11 @@ function enemyAI(e: Ent): void {
 
 function physics(e: Ent): void {
   e.t++;
+  if (e.st === ST_POSE && (e.y < GROUND || e.vy < 0)) {     // a pose in the air (thrown down): fall to the ground
+    e.vy += GRAV; e.y += e.vy; e.x += e.vx;
+    if (e.y >= GROUND) { e.y = GROUND; e.vy = 0; e.vx = 0; }
+    return;
+  }
   if (e.st === ST_ATK) {
     const mv = e.mv, s = D.MvStartup[mv] + e.windup, end = s + D.MvActive[mv] + D.MvRecovery[mv];
     if (D.MvType[mv] === MT_RUSH && e.t >= s && e.t < s + D.MvActive[mv]) e.x += e.face * D.MvP1[mv];
