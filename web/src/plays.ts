@@ -290,9 +290,9 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "pose", id: "heuksa", pose: "idle" },
       { t: "say", who: "흑사", text: "이리 오시오, 소교주.\n내가 직접 모시지." },
       { t: "quest", text: "흑사에게 가시오", goal: "talk", id: "heuksa" },
-      // the elder himself, on the spot: more health, harder hands, and he blocks
-      { t: "move", id: "heuksa", x: "player", dx: 26, speed: 1, wait: true },
-      { t: "duel", foe: "heuksa", hp: 110, dmg: 12, block: 0.22, text: "흑사를 쓰러뜨리시오" },
+      // the elder himself, on the spot, in the fight engine (the arcade's moves, timing and effects; SD art, this village behind)
+      { t: "move", id: "heuksa", x: "player", dx: 40, speed: 1, wait: true },
+      { t: "fight", foe: "heuksa" },
       { t: "face", id: "heuksa", to: "player" },
       { t: "pose", id: "heuksa", pose: "down" },                 // beaten: down on one knee
       { t: "ev", sec: "post", a: 0, b: 3 },

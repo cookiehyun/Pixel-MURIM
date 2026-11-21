@@ -88,6 +88,9 @@ function setupCharacter(i: number, prefix: string, x: number): void {
       if (i === 1 && G.GameMode === MODE_ARCADE && Arcade.isBossFight()) setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1400, 32, 23);
       else setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1000, 32, 23);
       break;
+    // story mode: SD art on the same bodies (sd_danwoo is danwoo move for move); 흑사, a rebel elder
+    case "sd_danwoo": setup(i, prefix, x, 2, 3.2, -4.5, 1.8, 6, 1000, 30, 21); break;
+    case "sd_heuksa": setup(i, prefix, x, 1.9, 3.1, -4.4, 1.7, 6, 1000, 31, 22); break;
     default: setup(i, "danwoo", x, 2, 3.2, -4.5, 1.8, 6, 1000, 30, 21);
   }
   const f = F[i];
@@ -102,6 +105,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
     case "heukrim": f.superName = "CHEONMA GANGRIM"; f.seqFx = FX.FX_DARK; break;
     case "hongryeon": f.superName = "HONGRYEON EOPHWA"; break;
     case "cheonma": f.superName = "CHEONMA GUNRIM"; f.seqFx = FX.FX_DARK; break;
+    case "sd_heuksa": f.superName = "HEUKSA CHEONMANG"; f.seqFx = FX.FX_DARK; break;
     default: f.superName = "CHEONGPUNG JINCHEON";
   }
 }
@@ -864,7 +868,7 @@ export function draw(): void {
     if (isDrain(i)) drawDrainOrbs(i);
     const f = F[i];
     if (f.prefix === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
-    if (f.prefix === "danwoo" && f.state === ST_ATTACK) {
+    if ((f.prefix === "danwoo" || f.prefix === "sd_danwoo") && f.state === ST_ATTACK) {
       if (f.mv === f.moves[MV_SP1] && !D.SprHi[currentSprite(i)]) drawWindPalm(i);   // hi-res art draws its own palm
       if (f.mv === f.moves[MV_SP2] && !D.SprHi[currentSprite(i)]) drawSpinFist(i);
       if (f.mv === f.moves[MV_SUPER]) drawQuake(i);
@@ -886,7 +890,7 @@ export function clearGhosts(i: number): void { mGN[i] = 0; }
 
 function ghostColor(i: number): number {
   if (F[i].rage > 0) return RGB(150, 24, 18);
-  return F[i].prefix === "heukrim" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(96, 30, 40) : -1;
+  return F[i].prefix === "heukrim" || F[i].prefix === "sd_heuksa" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(96, 30, 40) : -1;
 }
 
 function updateGhosts(i: number): void {

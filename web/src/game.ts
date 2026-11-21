@@ -17,6 +17,7 @@ import * as Arcade from "./arcade";
 import * as Online from "./online";
 import * as Lockstep from "./lockstep";
 import * as Story from "./story";
+import * as FM from "./fieldmap";
 import { RGB } from "./util";
 
 export const GS_MENU = 0, GS_FIGHT = 1, GS_SELECT = 2, GS_LEVEL = 3, GS_STAGE = 4, GS_LADDER = 5, GS_CONTINUE = 6, GS_ENDING = 7, GS_ONLINE = 8, GS_STORY = 9;
@@ -35,6 +36,7 @@ export const G = {
   Multi: false,
   GameMode: MODE_VSCPU,
   StoryFight: false,                   // a story-mode fight: one round, the story takes over at the end
+  FieldStage: null as null | { map: string; cx: number },   // a story fight on the spot: the field picture (zoomed) as the stage, SD fighters
   Skins: [0, 0, 0, 0],                 // story stand-ins: palette per fighter (0, 1 on screen; 2, 3 tag partners)
   Labels: ["", "", "", ""],
   controlled: () => Fighter.controlled(),
@@ -145,9 +147,15 @@ export function gameRender(): void {
       if (G.GameState >= GS_LADDER && G.GameState <= GS_ENDING) Arcade.screenRender();
       else {
         R.beginFrame(C.SuperFreeze > 0 || C.ImpactDark > 0);
+        if (G.FieldStage) {
+          FM.drawFightStage(G.FieldStage.map, G.FieldStage.cx, 1.5);
+          if (C.SuperFreeze > 0 || C.ImpactDark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, 0, 0.55);
+          R.setHiScale(3);
+        }
         Fighter.draw();
         Projectile.draw();
         FX.draw();
+        R.setHiScale(R.HI);
         Hud.draw();
         Match.draw();
         if (C.WhiteFlash > 1) R.flashScreen(RGB(250, 246, 255));

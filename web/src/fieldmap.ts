@@ -331,3 +331,12 @@ export function drawFront(m: FieldMap, camX: number, t: number): void {
     R.artDot(SCREEN_W - x, y, k % 5 === 0 ? RGB(255, 150, 70) : RGB(170, 166, 170), k % 5 === 0 ? 0.9 : 0.5);
   }
 }
+
+/** The picture map behind a story fight: zoomed z times around world x cx, its ground on the fight's ground. */
+export function drawFightStage(name: string, cx: number, z: number): void {
+  const img = pictures.get(name);
+  if (!img) { R.physRect(0, 0, R.PHYS_W, R.PHYS_H, 0); return; }
+  const span = R.PHYS_W / z, x0 = Math.max(0, Math.min(img.w - span, cx * PX - span / 2));
+  R.blitPhysZoom(img.pix, img.w, img.h, x0, z, GROUND_PHYS);
+}
+const GROUND_PHYS = 88 * PX;

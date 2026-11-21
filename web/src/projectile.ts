@@ -122,15 +122,19 @@ export function draw(): void {
   }
 }
 
-const isBurst = (k: number) => mType[k] === MT_SUPER_FIRE && F[k].prefix === "cheonma";
+const isBurst = (k: number) => mType[k] === MT_SUPER_FIRE && (F[k].prefix === "cheonma" || F[k].prefix === "sd_heuksa");
+// burst colours: the demon's red, or 흑사's violet smoke snakes
+const BURST = { cheonma: [RGB(200, 40, 80), RGB(200, 30, 60), RGB(255, 110, 120), RGB(255, 235, 235), RGB(120, 30, 140), RGB(60, 10, 50), RGB(90, 25, 80)],
+  sd_heuksa: [RGB(120, 70, 150), RGB(70, 40, 90), RGB(150, 100, 180), RGB(220, 200, 235), RGB(40, 24, 50), RGB(20, 12, 26), RGB(60, 40, 76)] };
 
 function demonBursts(k: number): void {
   const ox = [-7, 8, -3, 6], oy = [-20, -30, -12, -24];
+  const P = F[k].prefix === "sd_heuksa" ? BURST.sd_heuksa : BURST.cheonma;
   const cx = vint(mX[k]), cy = GROUND_Y;
   if (mAge[k] < FIRE_DELAY) {
     for (let j = 0; j <= 5; j++) {
       const a = FIRE_DELAY - mAge[k];
-      R.putPixel(cx + (j - 3) * (2 + a), cy - 16 + ((j % 3) - 1) * (2 + a), RGB(200, 40, 80));
+      R.putPixel(cx + (j - 3) * (2 + a), cy - 16 + ((j % 3) - 1) * (2 + a), P[0]);
     }
     return;
   }
@@ -139,12 +143,12 @@ function demonBursts(k: number): void {
     if (a < 0 || a >= 6) continue;
     const x = cx + ox[j], y = cy + oy[j], r = 4 + a * 2;
     if (a < 4) {
-      disc(x, y, r - 1, RGB(200, 30, 60));
-      disc(x, y, Math.trunc(r / 2), RGB(255, 110, 120));
-      if (a < 2) disc(x, y, Math.trunc(r / 4), RGB(255, 235, 235));
-      ring(x, y, r, RGB(120, 30, 140));
-      ring(x, y, r + 1, RGB(60, 10, 50));
-    } else ring(x, y, r, RGB(90, 25, 80));
+      disc(x, y, r - 1, P[1]);
+      disc(x, y, Math.trunc(r / 2), P[2]);
+      if (a < 2) disc(x, y, Math.trunc(r / 4), P[3]);
+      ring(x, y, r, P[4]);
+      ring(x, y, r + 1, P[5]);
+    } else ring(x, y, r, P[6]);
   }
 }
 

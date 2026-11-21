@@ -231,3 +231,6 @@ sd_danwoo.slam_0 sd/danwoo/slam_0.png 16 41
 sd_danwoo.slam_1 sd/danwoo/slam_1.png 19 26
 sd_danwoo.spin_0 sd/danwoo/spin_0.png 15 30
 sd_danwoo.spin_1 sd/danwoo/spin_1.png 11 45
+fx.bomb_0 sd/fx/bomb_0.png 4 5
+fx.bomb_1 sd/fx/bomb_1.png 4 5
+ANIM fx.proj_sd_heuksa 3 bomb_0 bomb_1

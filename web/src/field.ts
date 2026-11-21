@@ -20,7 +20,9 @@ export interface Host {
   events(sec: string, a: number, b: number): string[][];   // dialogue / cuts of the chapter's script
   look(name: string): Look | null;
   clue(text: string): void;
-  fight(o?: { opp: string[]; stage?: string; variant?: string }): void;   // the chapter's boss fight, or an encounter (calls afterFight)
+  // the chapter's boss fight, or an encounter, or (looks + field) a fight on the spot: these two, in the fight engine,
+  // with this place's picture as the stage (calls afterFight)
+  fight(o?: { opp: string[]; stage?: string; variant?: string; looks?: Look[]; field?: { map: string; cx: number } }): void;
   done(): void;                                             // chapter finished
   cutscene(sec: string, a: number): void;                   // hand the rest of the chapter to the plain cut-scene player
 }
@@ -164,6 +166,7 @@ function exec(s: Step): boolean {
       if (mFadeDone !== s && map) { mFadeOut = 10; mFadeFor = s; return false; }   // go dark first (nothing to hide at the start)
       mFadeDone = null; mFadeIn = 12;
       const name = String(s.map);
+      mMapName = name;
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
       map = mapCache.get(name)!;
       ents = []; props = []; mMoon = -1; mSnap = true;   // a new place: nobody carried over, the camera jumps
@@ -260,7 +263,15 @@ function exec(s: Step): boolean {
       if (s.goal === "kill") mCheck = { ents: ents.map((e) => ({ ...e })), step: mStep };
       return false;
     }
-    case "fight": control = false; host!.fight(s.opp ? { opp: s.opp as string[], stage: s.stage as string | undefined, variant: s.variant as string | undefined } : undefined); return false;
+    case "fight": {
+      control = false;
+      const p = player(), f = s.foe ? ent(String(s.foe)) : null;
+      if (f && p) {                                         // on the spot: the real fight engine, SD art, this map behind
+        f.face = p.x > f.x ? 1 : -1; p.face = -f.face;
+        host!.fight({ opp: [], looks: [p.look, f.look], field: { map: mMapName, cx: (p.x + f.x) / 2 } });
+      } else host!.fight(s.opp ? { opp: s.opp as string[], stage: s.stage as string | undefined, variant: s.variant as string | undefined } : undefined);
+      return false;
+    }
     case "end": mActive = false; host!.done(); return false;
     case "cutscene": mActive = false; host!.cutscene(String(s.sec), Number(s.a)); return false;
   }
@@ -756,6 +767,7 @@ interface Duel {
   pNg: number; pG: number; ngFlash: number; hist: number[];               // 내공 (0..1000, refills), 궁극 gauge (0..100, hits), stick history
 }
 let duel: Duel | null = null;
+let mMapName = "";                                        // the current map (a fight on the spot uses its picture)
 let mCarryG = 0;                                          // the player's 궁극 gauge carries over from bout to bout in a scene
 // difficulty chosen at a route's first chapter: 0 easy, 1 normal, 2 hard (foe damage, foe pace, foe health, foe wind-up, foe blocking)
 let mDiff = 1;

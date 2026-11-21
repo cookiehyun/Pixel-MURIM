@@ -121,21 +121,26 @@ function pixels(id: number, alt: boolean | number): ArrayLike<number> {
   return a;
 }
 
+// hi-res art scale: SD story art is drawn at 2 in the field and at 3 (one art pixel per world pixel, the classic
+// fighters' size) when it fights in the fight engine
+let mHiS = HI;
+export function setHiScale(n: number): void { mHiS = n; }
+
 /** Draw sprite with its anchor (ground point under the hip) on world point (x, y). flip mirrors; tint >= 0 paints it one color. */
 export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt: boolean | number = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
   x = Math.trunc(x); y = Math.trunc(y);
-  if (D.SprHi[id]) {                                  // hi-res art: HI x HI screen pixels per art pixel
-    const X = x * PX + (PX - HI >> 1), Y = y * PX + PX - HI;   // anchor pixel sits on the world pixel
+  if (D.SprHi[id]) {                                  // hi-res art: S x S screen pixels per art pixel (S = HI, or 3 for SD fighters in a fight)
+    const S = mHiS, X = x * PX + (PX - S >> 1), Y = y * PX + PX - S;   // anchor pixel sits on the world pixel
     for (let sy = 0; sy < h; sy++) {
-      const py = Y + (sy - ay) * HI;
-      if (py <= -HI || py >= PH) continue;
+      const py = Y + (sy - ay) * S;
+      if (py <= -S || py >= PH) continue;
       for (let sx = 0; sx < w; sx++) {
         const c = pix[off + sy * w + sx];
         if (c < 0) continue;
-        const px = flip ? X + (ax - sx) * HI : X + (sx - ax) * HI;
-        if (px > -HI && px < PW) block(px, py, tint >= 0 ? tint : c, HI);
+        const px = flip ? X + (ax - sx) * S : X + (sx - ax) * S;
+        if (px > -S && px < PW) block(px, py, tint >= 0 ? tint : c, S);
       }
     }
     return;
@@ -394,5 +399,16 @@ export function blitPhys(pix: Int32Array, pw: number, ph: number, sx: number, sy
     if (ty < 0 || ty >= PH) continue;
     const so = y * pw + sx, to = ty * PW;
     for (let x = x0; x < x1; x++) { const c = pix[so + x]; if (c !== -1) back[to + x] = c; }
+  }
+}
+
+/** A picture (physical pixels) zoomed by z around a ground line: screen row gy stays on picture row gy, picture column
+ *  sx0 + x / z fills screen column x (the field map behind a story fight, seen closer). */
+export function blitPhysZoom(pix: Int32Array, pw: number, ph: number, sx0: number, z: number, gy: number): void {
+  const cols = new Int32Array(PW);
+  for (let x = 0; x < PW; x++) cols[x] = Math.max(0, Math.min(pw - 1, Math.floor(sx0 + x / z)));
+  for (let y = 0; y < PH; y++) {
+    const r = Math.max(0, Math.min(ph - 1, Math.floor(gy + (y - gy) / z))), so = r * pw, to = y * PW;
+    for (let x = 0; x < PW; x++) { const c = pix[so + cols[x]]; back[to + x] = c === -1 ? 0 : c; }
   }
 }

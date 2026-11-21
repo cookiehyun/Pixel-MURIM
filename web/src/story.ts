@@ -19,7 +19,7 @@ import { PLAYS } from "./plays";
 // ---------------------------------------------------------------- data
 
 type Ev = (string)[];
-interface Fight { raw: string; opp: string[]; seq: number; tag: boolean; team: string[]; pick: boolean; stage: string; variant: string }
+interface Fight { raw: string; opp: string[]; seq: number; tag: boolean; team: string[]; pick: boolean; stage: string; variant: string; looks?: Look[]; field?: { map: string; cx: number } }
 interface Chapter { title: string; place: string; fight: Fight | null; pre: Ev[]; post: Ev[]; lose: Ev[] }
 interface Route { id: string; title: string; owner: string | null; chapters: Chapter[] }
 let routes: Route[] = [];
@@ -460,7 +460,7 @@ const fieldHost: Field.Host = {
   events: (sec, a, b) => (chapter() as unknown as Record<string, Ev[]>)[sec].slice(a, b + 1),
   look: (n) => look(n),
   clue: (t) => { addClue(t); writeSave(); },
-  fight: (o) => { mFight = 0; mLevelSaved = G.CpuLevel; mFightOverride = o ? { raw: "", opp: o.opp, seq: 1, tag: false, team: [], pick: false, stage: o.stage ?? chapter().fight?.stage ?? "산문", variant: o.variant ?? chapter().fight?.variant ?? "" } : null; startFight(); },
+  fight: (o) => { mFight = 0; mLevelSaved = G.CpuLevel; mFightOverride = o ? { raw: "", opp: o.looks ? ["_"] : o.opp, seq: 1, tag: false, team: [], pick: false, stage: o.stage ?? chapter().fight?.stage ?? "산문", variant: o.variant ?? chapter().fight?.variant ?? "", looks: o.looks, field: o.field } : null; startFight(); },
   done: () => chapterDone(),
   cutscene: (sec, a) => {
     mField = false; mView = V_PLAY; mSec = sec as "pre" | "post" | "lose"; mEv = a; mTitleT = 40; mPage = [];
@@ -578,9 +578,11 @@ function startFight(): void {
   const opp = f.opp;
   const bg = stageOf(f.stage, f.variant);
   const team = mTeam.length ? mTeam : [route().owner ?? "단우"];
-  const me = team.map((n) => look(n) ?? LOOK.단우);
+  let me = team.map((n) => look(n) ?? LOOK.단우);
   let foe: Look[];
-  if (f.tag) foe = opp.length >= 2 ? [look(opp[0]) ?? LOOK.교도, look(opp[1]) ?? LOOK.교도] : [look(opp[0]) ?? LOOK.교도, look(opp[0]) ?? LOOK.교도];
+  G.FieldStage = f.field ?? null;
+  if (f.looks) { me = [f.looks[0]]; foe = [f.looks[1]]; }      // on the spot: the field's two SD fighters
+  else if (f.tag) foe = opp.length >= 2 ? [look(opp[0]) ?? LOOK.교도, look(opp[1]) ?? LOOK.교도] : [look(opp[0]) ?? LOOK.교도, look(opp[0]) ?? LOOK.교도];
   else {
     const order = f.seq > 1 ? Array(f.seq).fill(opp[0]) : opp;
     foe = [look(order[Math.min(mFight, order.length - 1)]) ?? LOOK.교도];
@@ -597,7 +599,7 @@ function startFight(): void {
     G.Skins[2] = m2[1]; G.Skins[3] = f2[1]; G.Labels[2] = m2[2]; G.Labels[3] = f2[2];
   } else G.GameMode = MODE_VSCPU;
   const lv = G.CpuLevel;
-  G.CpuLevel = mFightOverride ? Math.max(0, diffOf() - 1) : diffOf();   // the route's difficulty, underlings one step easier
+  G.CpuLevel = mFightOverride && !mFightOverride.looks ? Math.max(0, diffOf() - 1) : diffOf();   // the route's difficulty, underlings one step easier
   startMatch();
   G.CpuLevel = lv;
   R.tintStage(bg[1]);
@@ -607,7 +609,7 @@ const fightCount = () => { const f = curFight(); return f.tag || f.pick ? 1 : f.
 
 /** End of a story fight (Match calls this after the last round). */
 export function matchOver(won: boolean): void {
-  G.StoryFight = false;
+  G.StoryFight = false; G.FieldStage = null;
   G.GameState = GS_STORY;
   mView = V_PLAY;
   setBg(mBg);
@@ -624,7 +626,7 @@ export function matchOver(won: boolean): void {
 
 /** Pause menu during a story fight: back to the chapter list (true) or to the title (false). */
 export function leaveFight(toList: boolean): void {
-  G.StoryFight = false;
+  G.StoryFight = false; G.FieldStage = null;
   if (!toList) return;
   G.GameState = GS_STORY;
   mView = route().chapters.length > 1 ? V_CHAPTERS : V_ROUTES;

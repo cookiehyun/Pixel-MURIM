@@ -19,7 +19,8 @@ const life = (k: number) => (mType[k] === FX_SLAM ? SLAM_LIFE : FX_LIFE);
 /** Hit spark in the attacker's colors, plus a per-fighter extra for heavy hits. */
 export function spawnHit(x: number, y: number, heavy: boolean, prefix: string): void {
   let m: number, o: number, petal = false;
-  switch (prefix) {
+  switch (prefix.replace(/^sd_/, "")) {                    // SD story fighters spark like their arcade selves
+    case "heuksa": m = RGB(200, 170, 225); o = RGB(110, 60, 140); break;
     case "danwoo": m = RGB(190, 230, 255); o = RGB(90, 150, 255); break;
     case "cheolsan": m = RGB(255, 205, 120); o = RGB(205, 120, 60); break;
     case "muyeong": m = RGB(235, 240, 255); o = RGB(160, 180, 210); break;
@@ -34,7 +35,7 @@ export function spawnHit(x: number, y: number, heavy: boolean, prefix: string): 
   if (heavy) {
     if (prefix === "cheolsan") spawn(x, GROUND_Y - 3, FX_SLAM);
     else if (prefix === "muyeong") spawn(x, y, FX_SLASH);
-    else if (prefix === "heukrim" || prefix === "cheonma") spawn(x, y, FX_DARK);
+    else if (prefix === "heukrim" || prefix === "cheonma" || prefix === "sd_heuksa") spawn(x, y, FX_DARK);
   }
 }
 

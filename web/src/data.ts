@@ -59,6 +59,7 @@ export async function loadAll(): Promise<void> {
     loadStageFile("stage_" + STAGES[k * 2], k);
   }
   await loadHiSprites();
+  buildSdFighters();
   loadMoves();
   for (let k = 0; k < frameNames.length; k++) D.AnimFrames[k] = spriteId(frameNames[k]);
   for (let k = 0; k < D.MvCount; k++) {
@@ -206,14 +207,67 @@ function loadStageFile(fileName: string, idx: number): void {
   }
 }
 
+// ---------------------------------------------------------------- SD fighters (story mode)
+// The fight engine runs SD characters as ordinary fighters: every frame name the engine asks for
+// (taken from a classic character's sprite list) points at the nearest SD frame. sd_danwoo also takes
+// danwoo's move rows unchanged, so range, damage, stun and timing are the arcade's.
+export const SD_FIGHTERS: Record<string, string> = { sd_danwoo: "danwoo", sd_heuksa: "danwoo" };   // SD prefix -> frame-name template
+const SD_CLONES_MOVES: Record<string, string> = { sd_danwoo: "danwoo" };
+const SD_NEAR: Record<string, string[]> = {
+  idle: ["idle"], walk: ["walk"], crouch: ["crouch", "guard", "idle"], jump: ["jump", "kick_0", "idle"],
+  lp: ["atk"], hp: ["hvy", "atk"], hp_p: ["atk_0"], lk: ["kick"], hk: ["hkick", "kick"], hk_p: ["kick_0"],
+  clp: ["catk", "atk_1"], chp: ["chvy", "atk"], clk: ["ckick", "kick_1"], chk: ["chkick", "kick"], jp: ["jatk", "atk_1"], jk: ["jkick", "kick_1"],
+  guard: ["guard", "idle"], cguard: ["cguard", "guard", "idle"], hit: ["hit"], chit: ["hit"], down: ["down", "hit"], roll: ["down"],
+  throw: ["throw", "atk"], dash: ["walk_1", "idle"], bdash: ["walk_2", "idle"], dp: ["spin", "atk"], rush: ["palm", "atk"],
+  sp: ["palm", "atk"], sp_a: ["palm_1", "atk_1"], ovh: ["ovh", "atk"], intro: ["idle"], win: ["idle"],
+  palm: ["palm", "atk"], spin: ["spin", "atk"], spin_t: ["spin_0", "atk_0"], slam: ["slam", "atk"],
+};
+function sdFrame(sd: string, rest: string): number {
+  const m = /^(.*?)(?:_(\d+))?$/.exec(rest)!, base = m[1], idx = m[2] === undefined ? -1 : +m[2];
+  const cands = SD_NEAR[rest] ?? SD_NEAR[base] ?? [base];
+  for (const c of cands) {
+    if (/_\d+$/.test(c) && sprIdx.has(sd + "." + c)) return sprIdx.get(sd + "." + c)!;
+    if (c === "walk" && idx >= 0 && sprIdx.has(sd + ".walk_" + (idx % 4))) return sprIdx.get(sd + ".walk_" + (idx % 4))!;
+    if (idx >= 0 && sprIdx.has(sd + "." + c + "_" + Math.min(idx, 1))) return sprIdx.get(sd + "." + c + "_" + Math.min(idx, 1))!;
+    if (idx < 0 && sprIdx.has(sd + "." + c + "_1")) return sprIdx.get(sd + "." + c + "_1")!;
+    if (sprIdx.has(sd + "." + c)) return sprIdx.get(sd + "." + c)!;
+  }
+  return sprIdx.get(sd + ".idle")!;
+}
+function buildSdFighters(): void {
+  for (const [sd, tpl] of Object.entries(SD_FIGHTERS)) {
+    if (!sprIdx.has(sd + ".idle")) continue;                 // its art is not there
+    for (let id = 0; id < D.SprCount; id++) {
+      const nm = D.SprName[id];
+      if (!nm || !nm.startsWith(tpl + ".")) continue;
+      const rest = nm.slice(tpl.length + 1);
+      if (!sprIdx.has(sd + "." + rest)) sprIdx.set(sd + "." + rest, sdFrame(sd, rest));
+    }
+    // the template's animations (idle, walk, move wind-ups ...) with the same frame names
+    for (const [an, a] of [...animIdx.entries()]) {
+      if (!an.startsWith(tpl + ".")) continue;
+      const nm = sd + an.slice(tpl.length);
+      if (animIdx.has(nm)) continue;
+      if (!SD_CLONES_MOVES[sd] && /_(pre|seq|rec)$/.test(an)) continue;   // its own moves have their own frames
+      animIdx.set(nm, D.AnimCount++);
+      const b = animIdx.get(nm)!;
+      D.AnimTPF[b] = D.AnimTPF[a]; D.AnimStart[b] = frameNames.length; D.AnimLen[b] = D.AnimLen[a];
+      for (let k = 0; k < D.AnimLen[a]; k++) frameNames.push(sd + "." + frameNames[D.AnimStart[a] + k].slice(tpl.length + 1));
+    }
+  }
+}
+
 function loadMoves(): void {
   const lines = files.get("moves.txt")!;
   D.MvCount = 0;
   for (let i = 0; i < lines.length; i++) {
     const ln = lines[i].replace(/\t/g, " ").trim().replace(/ +/g, " ");
     if (!ln || ln[0] === "#") continue;
-    const p = ln.split(" ");
-    if (p.length < 21) throw new Error("moves.txt line " + (i + 1) + ": expected 21 columns");
+    const p0 = ln.split(" ");
+    if (p0.length < 21) throw new Error("moves.txt line " + (i + 1) + ": expected 21 columns");
+    const rows = [p0];
+    for (const [sd, src] of Object.entries(SD_CLONES_MOVES)) if (p0[0] === src && sprIdx.has(sd + ".idle")) rows.push([sd, ...p0.slice(1)]);
+    for (const p of rows) {
     const id = D.MvCount++;
     D.MvKind[id] = p[2] === "S" ? MK_STAND : p[2] === "C" ? MK_CROUCH : MK_AIR;
     D.MvStartup[id] = +p[3]; D.MvActive[id] = +p[4]; D.MvRecovery[id] = +p[5];
@@ -232,5 +286,6 @@ function loadMoves(): void {
     D.MvCost[id] = p.length >= 22 ? +p[21] : 0;
     moveIdx.set(p[0] + "." + p[1], id);
     mvKey[id] = p[0] + "." + p[1];
+    }
   }
 }
