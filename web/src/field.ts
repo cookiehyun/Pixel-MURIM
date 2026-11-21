@@ -58,7 +58,7 @@ function kit(prefix: string): Kit {
 interface Ent {
   id: string; look: Look; kit: Kit; x: number; y: number; vx: number; vy: number; face: number;
   st: number; t: number; mv: number; hitDone: boolean; hp: number; maxHp: number; stun: number;
-  hostile: boolean; goal: number | null; run: boolean; spd: number; flash: number; follow: string; gap: number; pose: number;
+  hostile: boolean; goal: number | null; run: boolean; spd: number; flash: number; air?: boolean; follow: string; gap: number; pose: number;
   cool: number; windup: number; inv: number; kills: boolean; small: boolean;
 }
 
@@ -181,11 +181,11 @@ function exec(s: Step): boolean {
       if (e) {
         setPose(e, String(s.pose));
         if (s.fall) {                                     // struck down: a flash, thrown back, lands in the pose
-          e.flash = 8; e.vy = -3.2; e.y -= 1; e.vx = -e.face * 1.6; e.goal = null;
+          e.air = true; e.flash = 8; e.vy = -3.2; e.y -= 1; e.vx = -e.face * 1.6; e.goal = null;
           FX.spawnHit(e.x - camX + e.face * 3, e.y - 14, true, "");
           mShake = 6;
         } else if (s.trip) {                              // tripped while running: pitches forward, face down, a little dust
-          e.vy = -1.4; e.y -= 1; e.vx = e.face * 1.8; e.goal = null;
+          e.air = true; e.vy = -1.4; e.y -= 1; e.vx = e.face * 1.8; e.goal = null;
           mShake = 2;
         }
       }
@@ -470,9 +470,9 @@ function enemyAI(e: Ent): void {
 
 function physics(e: Ent): void {
   e.t++;
-  if (e.st === ST_POSE && (e.y < GROUND || e.vy < 0)) {     // a pose in the air (thrown down): fall to the ground
+  if (e.st === ST_POSE && e.air) {                         // thrown down or tripped: fall to the ground (a pose set up high, like a throne, stays put)
     e.vy += GRAV; e.y += e.vy; e.x += e.vx;
-    if (e.y >= GROUND) { e.y = GROUND; e.vy = 0; e.vx = 0; }
+    if (e.y >= GROUND) { e.y = GROUND; e.vy = 0; e.vx = 0; e.air = false; }
     return;
   }
   if (e.st === ST_ATK) {
