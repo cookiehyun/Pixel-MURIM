@@ -231,18 +231,24 @@ function exec(s: Step): boolean {
     case "waitA": mWaitA = true; return false;
     case "narr": queue.push(["cut", "(" + String(s.text) + ")"]); nextLine(); return false;
     case "duel": {
-      const foe = ent(String(s.foe));
-      if (!foe || !player()) return true;
+      // one foe ("foe") or several at once ("foes": they take both sides of the player)
+      const list = ((s.foes as string[] | undefined) ?? [String(s.foe)]).map((id) => ent(id)).filter((e): e is Ent => !!e);
+      if (!list.length || !player()) return true;
       const p = player()!, hpMode = !!s.hp;
-      duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0, mv: MOVES[0],
-        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, fx0: foe.x,
-        fMv: null, pNg: 1000, fNg: 500, pG: mCarryG, fG: 0, ngFlash: 0, hist: [] };
+      const foes: Foe[] = list.map((e, i) => {
+        // with several: alternate sides, the first in front (where it stands), the second behind the player
+        const side = list.length > 1 && i % 2 === 1 ? -(e.x > p.x ? 1 : -1) : e.x > p.x ? 1 : -1;
+        return { e, atk: -1, cool: 30 + i * 25, hit: 0, mv: null, ng: 500, g: 0, x0: e.x, out: false, side };
+      });
+      duel = { foes, foe: list[0], need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, pHit: 0, mv: MOVES[0],
+        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, pNg: 1000, pG: mCarryG, ngFlash: 0, hist: [] };
       if (hpMode) {
         if (p.maxHp !== 100) p.maxHp = p.hp = 100;           // the player's health carries over from bout to bout in a scene
-        foe.maxHp = foe.hp = Math.round(Number(s.hp) * DIFF.hp[mDiff]);
+        for (const e of list) e.maxHp = e.hp = Math.round(Number(s.hp) * DIFF.hp[mDiff]);
       }
       quest = s; questText = String(s.text ?? ""); questCount = "";
-      foe.goal = null; player()!.goal = null;
+      for (const e of list) e.goal = null;
+      p.goal = null;
       return false;
     }
     case "ev": queue.push(...host!.events(String(s.sec), Number(s.a), Number(s.b ?? s.a))); nextLine(); return false;
@@ -504,7 +510,7 @@ function physics(e: Ent): void {
   } else {
     e.x += e.vx;
   }
-  if (map) e.x = Math.max(6, Math.min(map.w - 6, e.x));
+  if (map && (e.id === "player" || e.hostile)) e.x = Math.max(6, Math.min(map.w - 6, e.x));   // others may stand off the edge (walking in)
 }
 
 function combat(): void {
@@ -569,7 +575,7 @@ export function render(): void {
       R.shadeCircle((e.x - camX + e.face * 7) * PX, (e.y - 15) * PX, r * PX, mv.aura, 0.45);
     };
     if (p && d.pAtk >= 0) glow(p, d.mv, d.pAtk);
-    if (d.fAtk >= 0) glow(d.foe, d.fMv, d.fAtk);
+    for (const o of d.foes) if (!o.out && o.atk >= 0) glow(o.e, o.mv, o.atk);
   }
   for (const pf of puffs) for (let k = 0; k < 5; k++) R.shadeCircle((pf.x - camX + (k - 2) * 5) * PX, (pf.y - pf.t * 0.3 - (k % 2) * 4) * PX, (5 + pf.t * 0.4) * PX, RGB(70, 66, 76), 0.5 * (1 - pf.t / 30));
   FX.draw();
@@ -644,9 +650,14 @@ function hud(): void {
     KF.draw(t, R.PHYS_W - 22, 15, RGB(255, 236, 190), 2, 2);
   }
   if (duel && duel.hpMode && !talking()) {                 // the foe's bars, top right under the quest
-    const d = duel, f = d.foe, boss = !!SKILLS[f.kit.base ?? f.look[0]];
-    bars(R.PHYS_W - 166, f.hp / f.maxHp, d.fNg / 1000, boss ? d.fG / 100 : -1, false, true, false, 48);
+    const d = duel, o = d.foes.find((q) => q.e === d.foe) ?? d.foes[0], f = o.e, boss = !!SKILLS[f.kit.base ?? f.look[0]];
+    bars(R.PHYS_W - 166, f.hp / f.maxHp, o.ng / 1000, boss ? o.g / 100 : -1, false, true, false, 48);
     Font.drawText(f.look[2], SCREEN_W - 5, boss ? 28 : 26, RGB(230, 230, 240), 1, 2);
+    if (d.foes.length > 1) for (const q of d.foes) if (!q.out) {   // several foes: a small bar over each head
+      const x = Math.round(q.e.x - camX) - 8, y = Math.round(q.e.y) - 38;
+      R.fillRect(x - 1, y - 1, 18, 4, RGB(20, 14, 18));
+      R.fillRect(x, y, Math.max(0, Math.round(16 * q.e.hp / q.e.maxHp)), 2, q.e === d.foe ? RGB(255, 90, 70) : RGB(190, 50, 45));
+    }
   }
   const mine = duel?.hpMode ? SKILLS[p.kit.base ?? p.look[0]] : undefined;
   if (mine && !talking()) {                               // the player's skill commands
@@ -742,11 +753,13 @@ function titleRender(): void {
 
 // ---------------------------------------------------------------- duels: a short SD fight right where the scene is
 
+// one opponent in a duel: its own wind-up, cool-down, stagger, move, 내공, 궁극 gauge, starting spot and side of the player
+interface Foe { e: Ent; atk: number; cool: number; hit: number; mv: DuelMove | null; ng: number; g: number; x0: number; out: boolean; side: number }
 interface Duel {
-  foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number; mv: DuelMove;
-  hpMode: boolean; dmg: number; block: number; ko: number; px0: number; fx0: number;    // health duel: both sides take damage, the player can fall (then the bout starts over)
-  fMv: DuelMove | null;                                   // the foe's current move (null = its plain attack)
-  pNg: number; fNg: number; pG: number; fG: number; ngFlash: number; hist: number[];   // 내공 (0..1000, refills), 궁극 gauge (0..100, hits), stick history
+  foes: Foe[]; foe: Ent;                                  // foe = the one shown in the top-right bars (the last one struck)
+  need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; pHit: number; mv: DuelMove;
+  hpMode: boolean; dmg: number; block: number; ko: number; px0: number;   // health duel: both sides take damage, the player can fall (then the bout starts over)
+  pNg: number; pG: number; ngFlash: number; hist: number[];               // 내공 (0..1000, refills), 궁극 gauge (0..100, hits), stick history
 }
 let duel: Duel | null = null;
 let mCarryG = 0;                                          // the player's 궁극 gauge carries over from bout to bout in a scene
@@ -818,8 +831,8 @@ function entered(hist: number[], cmd: string, window: number): boolean {
   return false;
 }
 
-/** A blow lands (either side): damage, glow, shake, gauges. Returns true when the defender is knocked out. */
-function land(d: Duel, atk: Ent, def: Ent, mv: DuelMove, dmg: number, dir: number, blocked: boolean, playerHits: boolean): void {
+/** A blow lands (either side): damage, glow, shake, gauges. */
+function land(d: Duel, atk: Ent, def: Ent, mv: DuelMove, dmg: number, dir: number, blocked: boolean, playerHits: boolean, fo: Foe | null): void {
   const c = mv.aura;
   if (mv.kind === "slam") { for (const s of [-1, 1]) for (let k = 0; k < 3; k++) aura(atk.x + s * (10 + k * 16), GROUND - 4, 8 + k * 2, c!, 18 + k * 4, 0.9); mShake = 12; mFlash = 4; }
   else if (mv.kind === "bind") { for (let k = 0; k < 5; k++) aura(def.x + (k - 2) * 5, def.y - 6 - k * 5, 9, c!, 26, 0.3); mShake = 10; mFlash = 3; }
@@ -828,53 +841,73 @@ function land(d: Duel, atk: Ent, def: Ent, mv: DuelMove, dmg: number, dir: numbe
   if (blocked) { def.flash = 4; showPose(def, frame(def, ["guard", "lower"])); def.x += dir * 2; dmg = mv.cost || mv.ult ? Math.ceil(dmg * 0.2) : 0; }
   else { def.flash = 8; def.x += dir * mv.push; showPose(def, frame(def, ["hit", "walk_1"])); }
   if (d.hpMode && dmg > 0) def.hp -= dmg;
-  if (d.hpMode) {
-    if (playerHits) { if (!mv.ult) d.pG = Math.min(100, d.pG + (blocked ? 3 : 9)); d.fG = Math.min(100, d.fG + 6); }
-    else { if (!mv.ult) d.fG = Math.min(100, d.fG + (blocked ? 3 : 9)); d.pG = Math.min(100, d.pG + 7); }
+  if (d.hpMode && fo) {
+    if (playerHits) { if (!mv.ult) d.pG = Math.min(100, d.pG + (blocked ? 3 : 9)); fo.g = Math.min(100, fo.g + 6); }
+    else { if (!mv.ult) fo.g = Math.min(100, fo.g + (blocked ? 3 : 9)); d.pG = Math.min(100, d.pG + 7); }
   }
 }
 
+const alive = (d: Duel) => d.foes.filter((o) => !o.out);
+function resetBout(d: Duel, p: Ent): void {
+  d.ko = 0; d.t = 0; d.hits = 0; d.pAtk = -1; d.pHit = 0; d.pNg = 1000;
+  p.hp = p.maxHp; p.x = d.px0; setSt(p, ST_IDLE);
+  d.foes.forEach((o, i) => { o.out = false; o.atk = -1; o.hit = 0; o.mv = null; o.cool = 40 + i * 25; o.ng = 500; o.g = 0; o.e.hp = o.e.maxHp; o.e.x = o.x0; o.e.vy = 0; o.e.y = GROUND; o.e.air = false; setSt(o.e, ST_IDLE); });
+}
+
 function duelTick(): void {
-  const d = duel!, p = player()!, f = d.foe;
+  const d = duel!, p = player()!;
   d.t++;
-  const dist = Math.abs(f.x - p.x), dirToFoe = f.x > p.x ? 1 : -1;
   if (d.ko > 0) {                                         // the player is down: lie there, then the bout starts over
     d.ko++;
     showPose(p, frame(p, ["down", "hit"]));
-    if (f.st !== ST_IDLE && f.st !== ST_POSE) setSt(f, ST_IDLE);
+    for (const o of alive(d)) if (o.e.st !== ST_IDLE) setSt(o.e, ST_IDLE);
     if (d.ko === 40) { mNotice = "쓰러졌다… 다시 한 번"; mNoticeT = 60; }
-    if (d.ko >= 100) {
-      d.ko = 0; d.t = 0; d.hits = 0; d.pAtk = -1; d.fAtk = -1; d.pHit = 0; d.fHit = 0; d.fCool = 50; d.fMv = null;
-      p.hp = p.maxHp; f.hp = f.maxHp; p.x = d.px0; f.x = d.fx0; setSt(p, ST_IDLE); setSt(f, ST_IDLE);
-      d.pNg = 1000; d.fNg = 500; d.fG = 0;
-    }
+    if (d.ko >= 100) resetBout(d, p);
     return;
   }
-  p.face = dirToFoe; f.face = -dirToFoe;
-  const boss = SKILLS[f.kit.base ?? f.look[0]];
+  const live = alive(d);
+  const near = (from: number) => live.reduce<Foe | null>((b, o) => (!b || Math.abs(o.e.x - from) < Math.abs(b.e.x - from) ? o : b), null);
+  const L = K.isDown(K.BTN_LEFT), Rt = K.isDown(K.BTN_RIGHT);
+  // facing: toward the stick when it is held (several foes can stand on both sides), else toward the nearest foe
+  if (d.pAtk < 0 && d.pHit <= 0) {
+    if (live.length > 1 && (L || Rt)) p.face = Rt ? 1 : -1;
+    else { const n = near(p.x); if (n) p.face = n.e.x > p.x ? 1 : -1; }
+  }
   if (d.hpMode) {
-    d.pNg = Math.min(1000, d.pNg + 6); d.fNg = Math.min(1000, d.fNg + (boss ? 5 : 4));
-    d.hist.push(stickDir(dirToFoe)); if (d.hist.length > 40) d.hist.shift();
+    d.pNg = Math.min(1000, d.pNg + 6);
+    d.hist.push(stickDir(p.face)); if (d.hist.length > 40) d.hist.shift();
     if (d.ngFlash > 0) d.ngFlash--;
   }
   // --- the player
   if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
   else if (d.pAtk >= 0) {
     d.pAtk++;
-    const mv = d.mv;
+    const mv = d.mv, dir = p.face;
     showPose(p, frame(p, d.pAtk < mv.wind ? [mv.name + "_0", ...ATK0] : [mv.name + "_1", ...ATK1]));
-    if (mv.dash && d.pAtk < mv.wind && dist > 18) p.x += dirToFoe * mv.dash / mv.wind;
-    if (d.pAtk === mv.wind && Math.abs(f.x - p.x) < mv.reach) {
-      FX.spawnHit(f.x - camX - dirToFoe * 4, f.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
-      mHitStop = mv.stop;
-      const blocked = d.guard || (!mv.breaks && !mv.ult && d.hpMode && d.fAtk < 0 && Math.random() < d.block * DIFF.block[mDiff]);
-      land(d, p, f, mv, mv.dmg, dirToFoe, blocked, true);
-      if (!blocked) { d.hits++; d.fHit = 8 + mv.stop; d.fAtk = -1; d.fMv = null; } else d.fHit = 6;
-      if (mv.stop >= 5) mShake = Math.max(mShake, 5);
-    } else if (d.pAtk === mv.wind && mv.kind === "slam") land(d, p, f, mv, 0, dirToFoe, true, true);   // the shock waves show even on a miss
+    const ahead = near(p.x + dir * 30);
+    if (mv.dash && d.pAtk < mv.wind && !(ahead && (ahead.e.x - p.x) * dir > 0 && Math.abs(ahead.e.x - p.x) < 18)) p.x += dir * mv.dash / mv.wind;
+    if (d.pAtk === mv.wind) {
+      let any = false;
+      for (const o of live) {
+        const dx = o.e.x - p.x;
+        if (Math.abs(dx) >= mv.reach || (mv.kind !== "slam" && dx * dir < -4)) continue;
+        const hd = dx >= 0 ? 1 : -1;
+        any = true;
+        FX.spawnHit(o.e.x - camX - hd * 4, o.e.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
+        mHitStop = mv.stop;
+        const blocked = d.guard || (!mv.breaks && !mv.ult && d.hpMode && o.atk < 0 && Math.random() < d.block * DIFF.block[mDiff]);
+        land(d, p, o.e, mv, mv.dmg, hd, blocked, true, o);
+        if (!blocked) { d.hits++; o.hit = 8 + mv.stop; o.atk = -1; o.mv = null; } else o.hit = 6;
+        d.foe = o.e;
+        if (d.hpMode && o.e.hp <= 0 && d.foes.length > 1) {   // one of several goes down where it stands
+          o.out = true; o.e.hp = 0; setPose(o.e, "lie"); o.e.air = true; o.e.vy = -2; o.e.vx = hd * 1.2; o.e.flash = 8;
+        }
+      }
+      if (any && mv.stop >= 5) mShake = Math.max(mShake, 5);
+      if (!any && mv.kind === "slam") land(d, p, p, mv, 0, dir, true, true, null);   // the shock waves show even on a miss
+    }
     if (d.pAtk >= mv.len) d.pAtk = -1;
   } else {
-    const L = K.isDown(K.BTN_LEFT), Rt = K.isDown(K.BTN_RIGHT);
     const b = K.isPressed(K.BTN_LP) ? 0 : K.isPressed(K.BTN_HP) ? 1 : K.isPressed(K.BTN_LK) ? 2 : K.isPressed(K.BTN_HK) ? 3 : -1;
     if (b >= 0) {
       let mv = MOVES[b];
@@ -888,60 +921,80 @@ function duelTick(): void {
         break;
       }
       d.mv = mv; d.pAtk = 0;
-    }
-    else if ((L || Rt) && !(Rt && dirToFoe > 0 && dist < 20) && !(L && dirToFoe < 0 && dist < 20)) {
-      p.vx = (Rt ? 1 : -1) * 1.6; p.x += p.vx; if (p.st !== ST_WALK) setSt(p, ST_WALK); else p.t++;
+    } else if (L || Rt) {
+      const dir = Rt ? 1 : -1, blockedBy = live.some((o) => (o.e.x - p.x) * dir > 0 && Math.abs(o.e.x - p.x) < 20);
+      if (!blockedBy) { p.vx = dir * 1.6; p.x += p.vx; if (p.st !== ST_WALK) setSt(p, ST_WALK); else p.t++; }
+      else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
     } else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
   }
-  // --- the foe: closes in, winds up, strikes (bosses use their skills, underlings a powered-up blow)
-  if (d.fHit > 0) d.fHit--;
-  else if (d.fAtk >= 0) {
-    d.fAtk++;
-    const mv = d.fMv, w = mv ? Math.round(mv.wind * DIFF.wind[mDiff] / 10) : d.hpMode ? DIFF.wind[mDiff] : 10;
-    showPose(f, frame(f, d.fAtk < w ? (mv ? [mv.name + "_0", ...ATK0] : ATK0) : (mv ? [mv.name + "_1", ...ATK1] : ATK1)));
-    if (mv?.dash && d.fAtk < w && dist > 18) f.x -= dirToFoe * mv.dash / w;
-    if (d.fAtk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0) {
-      FX.spawnHit(p.x - camX + dirToFoe * 4, p.y - 14, !!mv, mv && boss ? "heukrim" : "");
-      d.pHit = mv ? 14 : 10; p.flash = 6;
-      const base = mv ? (mv.kind === "power" ? d.dmg * 1.8 : mv.dmg) : d.dmg;
-      if (mv) { mHitStop = mv.stop; land(d, f, p, mv, 0, -dirToFoe, false, false); } else { p.x -= dirToFoe * 6; if (d.hpMode) { d.fG = Math.min(100, d.fG + 9); d.pG = Math.min(100, d.pG + 7); } }
-      if (d.hpMode) {
-        p.hp -= Math.max(1, Math.round(base * DIFF.dmg[mDiff]));
-        if (p.hp <= 0) { p.hp = 0; d.ko = 1; mShake = 6; d.fAtk = -1; d.fMv = null; return; }
-      }
-    } else if (d.fAtk === w && mv && (mv.kind === "bomb" || mv.kind === "bind")) land(d, f, p, mv, 0, -dirToFoe, true, false);
-    if (d.fAtk >= (mv ? mv.len : w + 6)) { d.fAtk = -1; d.fMv = null; d.fCool = Math.round((34 + Math.floor(Math.random() * 30)) * (d.hpMode ? DIFF.cool[mDiff] : 1)); }
-  } else {
-    if (d.fCool > 0) d.fCool--;
-    // a skill from where it stands (bosses: the smoke bomb from afar, the ultimate when the gauge is full)
-    const pick = (): DuelMove | null => {
-      if (!d.hpMode || d.fCool > 0) return null;
-      if (boss) {
-        const ult = boss.find((s) => s.ult);
-        if (ult && d.fG >= 100 && dist < ult.reach) return ult;
-        const r = Math.random() * 100 / DIFF.skill[mDiff];
-        for (const s of boss) if (!s.ult && d.fNg >= s.cost! && dist < s.reach && (s.kind === "bomb" ? dist > 40 && r < 2 : dist <= 24 && r < 40)) return s;
-        return null;
-      }
-      return d.fNg >= POWER.cost! && dist <= 24 && Math.random() < 0.5 * DIFF.skill[mDiff] ? POWER : null;
-    };
-    const s = pick();
-    if (s) {
-      d.fMv = s; d.fAtk = 0;
-      if (s.ult) { d.fG = 0; mHitStop = 10; mFlash = 3; } else d.fNg -= s.cost!;
-      callSkill(s);
+  // --- the foes: each closes in on its side (the nearest one on a side fights, the others wait a step behind),
+  // winds up, strikes; bosses use their skills, underlings a powered-up blow
+  for (const o of alive(d)) {
+    const f = o.e, dist = Math.abs(f.x - p.x), toP = p.x > f.x ? 1 : -1;
+    const boss = SKILLS[f.kit.base ?? f.look[0]];
+    if (d.hpMode) o.ng = Math.min(1000, o.ng + (boss ? 5 : 4));
+    if (o.hit > 0) { o.hit--; continue; }
+    if (o.atk < 0) f.face = toP;
+    if (o.atk >= 0) {
+      o.atk++;
+      const mv = o.mv, w = mv ? Math.round(mv.wind * DIFF.wind[mDiff] / 10) : d.hpMode ? DIFF.wind[mDiff] : 10;
+      showPose(f, frame(f, o.atk < w ? (mv ? [mv.name + "_0", ...ATK0] : ATK0) : (mv ? [mv.name + "_1", ...ATK1] : ATK1)));
+      if (mv?.dash && o.atk < w && dist > 18) f.x += toP * mv.dash / w;
+      if (o.atk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0 && d.ko === 0) {
+        FX.spawnHit(p.x - camX - toP * 4, p.y - 14, !!mv, mv && boss ? "heukrim" : "");
+        d.pHit = mv ? 14 : 10; p.flash = 6;
+        const base = mv ? (mv.kind === "power" ? d.dmg * 1.8 : mv.dmg) : d.dmg;
+        if (mv) { mHitStop = mv.stop; land(d, f, p, mv, 0, toP, false, false, o); }
+        else { p.x += toP * 6; if (d.hpMode) { o.g = Math.min(100, o.g + 9); d.pG = Math.min(100, d.pG + 7); } }
+        if (d.hpMode) {
+          p.hp -= Math.max(1, Math.round(base * DIFF.dmg[mDiff]));
+          if (p.hp <= 0) { p.hp = 0; d.ko = 1; mShake = 6; o.atk = -1; o.mv = null; d.pAtk = -1; return; }
+        }
+      } else if (o.atk === w && mv && (mv.kind === "bomb" || mv.kind === "bind")) land(d, f, p, mv, 0, toP, true, false, o);
+      if (o.atk >= (mv ? mv.len : w + 6)) { o.atk = -1; o.mv = null; o.cool = Math.round((34 + Math.floor(Math.random() * 30)) * (d.hpMode ? DIFF.cool[mDiff] : 1)); }
+      continue;
     }
-    else if (dist > 22) { f.x -= dirToFoe * 0.7; if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++; }
-    else if (d.fCool <= 0) { d.fMv = null; d.fAtk = 0; }
+    if (o.cool > 0) o.cool--;
+    // its place: on its side of the player, behind any nearer foe on that side
+    const side = o.side, rank = alive(d).filter((q) => q !== o && q.side === side && Math.abs(q.e.x - p.x) < dist).length;
+    const want = 22 + rank * 18;
+    const goal = p.x + side * want;
+    const front = rank === 0;
+    // a skill from where it stands (bosses: the smoke bomb from afar, the ultimate when the gauge is full)
+    let s: DuelMove | null = null;
+    if (d.hpMode && o.cool <= 0 && front) {
+      if (boss) {
+        const ult = boss.find((q) => q.ult);
+        if (ult && o.g >= 100 && dist < ult.reach) s = ult;
+        else {
+          const r = Math.random() * 100 / DIFF.skill[mDiff];
+          for (const q of boss) if (!q.ult && o.ng >= q.cost! && dist < q.reach && (q.kind === "bomb" ? dist > 40 && r < 2 : dist <= 24 && r < 40)) { s = q; break; }
+        }
+      } else if (o.ng >= POWER.cost! && dist <= 24 && Math.random() < 0.5 * DIFF.skill[mDiff]) s = POWER;
+    }
+    if (s) {
+      o.mv = s; o.atk = 0;
+      if (s.ult) { o.g = 0; mHitStop = 10; mFlash = 3; } else o.ng -= s.cost!;
+      callSkill(s);
+    } else if (Math.abs(f.x - goal) > 3) {
+      const step = Math.sign(goal - f.x) * (Math.abs(goal - f.x) > 30 ? 1.2 : 0.7);   // hurry round to its side, then edge in
+      f.x += step; f.face = toP;
+      if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++;
+    } else if (front && o.cool <= 0 && dist <= 26) { o.mv = null; o.atk = 0; }
     else if (f.st !== ST_IDLE) setSt(f, ST_IDLE);
   }
-  if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); f.x = Math.max(6, Math.min(map.w - 6, f.x)); }
-  // --- the end: enough hits (the foe falls back), or the time is up (the scene decides what happens)
-  if ((d.hpMode && f.hp <= 0) || (!d.hpMode && d.need && d.hits >= d.need) || (d.time && d.t >= d.time)) {
+  if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); for (const o of d.foes) o.e.x = Math.max(6, Math.min(map.w - 6, o.e.x)); }
+  // --- the end: every foe down (health), enough hits (the foe falls back), or the time is up (the scene decides what happens)
+  const left = alive(d).filter((o) => o.e.hp > 0 || !d.hpMode);
+  if ((d.hpMode && left.length === 0) || (!d.hpMode && d.need && d.hits >= d.need) || (d.time && d.t >= d.time)) {
     duel = null; quest = null; questText = ""; if (d.hpMode) mCarryG = d.pG;
-    if (d.need || d.hpMode) { setSt(f, ST_IDLE); f.goal = f.x + dirToFoe * 28; f.spd = 1.2; }
+    if (d.foes.length === 1) {
+      const f = d.foes[0].e;
+      setSt(f, ST_IDLE); f.face = p.x > f.x ? 1 : -1;
+      if (!d.hpMode && d.need) { f.goal = f.x - f.face * 28; f.spd = 1.2; }   // a sparring foe steps back; a beaten one stays put
+    }
     setSt(p, ST_IDLE); p.vx = 0;
     mStep++; run();
   }
 }
-export function debugGauge(foe = false): void { if (duel) { if (foe) duel.fG = 100; else duel.pG = 100; } }
+export function debugGauge(foe = false): void { if (duel) { if (foe) for (const o of duel.foes) o.g = 100; else duel.pG = 100; } }
