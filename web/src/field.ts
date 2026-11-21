@@ -126,7 +126,8 @@ let mActive = false, mSnap = false, mFlash = 0, mShake = 0;
 // the opening moon and the closing title
 interface Prop { id: string; kind: string; x: number; y: number; t: number; text?: string }
 let props: Prop[] = [];
-let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0;
+let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0, mWaitA = false;
+let mFadeOut = 0, mFadeIn = 0, mFadeFor: Step | null = null, mFadeDone: Step | null = null;
 
 export const active = () => mActive;
 
@@ -159,6 +160,8 @@ function lookOf(v: unknown): Look {
 function exec(s: Step): boolean {
   switch (s.t) {
     case "map": {
+      if (mFadeDone !== s) { mFadeOut = 10; mFadeFor = s; return false; }   // go dark first
+      mFadeDone = null; mFadeIn = 12;
       const name = String(s.map);
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
       map = mapCache.get(name)!;
@@ -210,10 +213,12 @@ function exec(s: Step): boolean {
     case "prop": props = props.filter((q) => q.id !== s.id); props.push({ id: String(s.id), kind: String(s.kind), x: Number(s.x), y: Number(s.y ?? GROUND), t: 0, text: s.text as string | undefined }); return true;
     case "unprop": props = props.filter((q) => q.id !== s.id); return true;
     case "title": mTitle = true; mTitleT = 0; return false;
+    case "waitA": mWaitA = true; return false;
+    case "narr": queue.push(["cut", String(s.text)]); nextLine(); return false;
     case "duel": {
       const foe = ent(String(s.foe));
       if (!foe || !player()) return true;
-      duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0 };
+      duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0, mv: MOVES[0] };
       quest = s; questText = String(s.text ?? ""); questCount = "";
       foe.goal = null; player()!.goal = null;
       return false;
@@ -294,6 +299,10 @@ export function tick(): void {
   if (mShake > 0) mShake--;
   if (mMoon >= 0) mMoon++;
   for (const q of props) q.t++;
+  if (mFadeIn > 0) mFadeIn--;
+  if (mFlash > 0) mFlash--;
+  if (mFadeOut > 0) { mFadeOut--; if (mFadeOut === 0) { mFadeDone = mFadeFor; run(); } return; }
+  if (mWaitA) { if (K.isPressed(K.BTN_LP)) { mWaitA = false; mStep++; run(); } camera(); return; }
   if (mTitle) {
     mTitleT++;
     if (mTitleT > 60 && K.isPressed(K.BTN_LP)) { mTitle = false; mStep++; run(); }
@@ -545,9 +554,12 @@ export function render(): void {
     const left = Number(quest.dir ?? 1) < 0;
     KF.draw(left ? "◀" : "▶", left ? 10 : R.PHYS_W - 10, 150, RGB(255, 210, 90), 3, left ? 0 : 2);
   }
-  if (mFlash > 0) { R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(250, 248, 255), Math.min(1, mFlash / 6)); mFlash--; }
+  if (mFlash > 0) { R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(250, 248, 255), Math.min(1, mFlash / 6)); }
+  if (mWaitA && Math.trunc(mTick / 6) % 2 === 0) KF.draw("A ▼", R.PHYS_W - 20, R.PHYS_H - 34, RGB(240, 196, 96), 2, 2);
   hud();
   if (talking()) dialogueRender();
+  const dark = mFadeOut > 0 ? 1 - mFadeOut / 10 : mFadeIn / 12;
+  if (dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0), Math.min(1, dark));
   if (mNoticeT > 0) { R.shadeRect(0, 132, R.PHYS_W, 36, RGB(14, 11, 22), 0.9); KF.draw(mNotice, R.PHYS_W / 2, 140, RGB(240, 196, 96), 2, 1); }
 }
 
@@ -647,13 +659,13 @@ function titleRender(): void {
   R.shadeCircle(R.PHYS_W / 2, 120, r + 14, RGB(120, 10, 16), 0.3);
   R.shadeCircle(R.PHYS_W / 2, 120, r, RGB(200, 30, 36), 1);
   if (r > 30) for (const [dx, dy, rr] of [[-18, -12, 12], [16, 10, 15], [-6, 24, 8]]) R.shadeCircle(R.PHYS_W / 2 + dx * r / 70, 120 + dy * r / 70, rr * r / 70, RGB(150, 18, 26), 0.55);
-  if (r >= 70) { KF.draw("혈월", R.PHYS_W / 2, 206, RGB(255, 210, 120), 4, 1); KF.draw("血月", R.PHYS_W / 2, 262, RGB(170, 120, 90), 2, 1); }
+  if (r >= 70 && mTitleT > 50) KF.draw("서장 「혈월의 밤」 끝", R.PHYS_W / 2, 222, RGB(230, 210, 180), 2, 1);
   if (mTitleT > 60 && Math.trunc(mTitleT / 8) % 2 === 0) Font.drawText("A = NEXT", SCREEN_W - 4, 92, RGB(150, 140, 170), 1, 2);
 }
 
 // ---------------------------------------------------------------- duels: a short SD fight right where the scene is
 
-interface Duel { foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number }
+interface Duel { foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number; mv: DuelMove }
 let duel: Duel | null = null;
 
 /** The first of these frames the character has (SD art grows over time; older sets fall back to a near pose). */
@@ -663,6 +675,15 @@ function frame(e: Ent, names: string[]): number {
   return animFrame(e.kit.idle, mTick);
 }
 const ATK0 = ["atk_0", "block", "walk_2", "lower", "stand"], ATK1 = ["atk_1", "block", "walk_0", "slash", "walk_1"];
+// the four buttons: light hand, heavy hand, light kick, heavy kick (frames <name>_0 wind-up, <name>_1 strike;
+// a character without them uses its light attack)
+interface DuelMove { name: string; wind: number; len: number; reach: number; push: number; stop: number }
+const MOVES: DuelMove[] = [
+  { name: "atk", wind: 4, len: 10, reach: 32, push: 7, stop: 3 },
+  { name: "hvy", wind: 7, len: 15, reach: 34, push: 13, stop: 5 },
+  { name: "kick", wind: 4, len: 11, reach: 34, push: 8, stop: 3 },
+  { name: "hkick", wind: 7, len: 16, reach: 38, push: 14, stop: 5 },
+];
 function showPose(e: Ent, id: number): void { e.pose = id; e.st = ST_POSE; e.vx = 0; }
 
 function duelTick(): void {
@@ -674,17 +695,20 @@ function duelTick(): void {
   if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
   else if (d.pAtk >= 0) {
     d.pAtk++;
-    showPose(p, frame(p, d.pAtk < 4 ? ATK0 : ATK1));
-    if (d.pAtk === 4 && dist < 32) {
+    const mv = d.mv;
+    showPose(p, frame(p, d.pAtk < mv.wind ? [mv.name + "_0", ...ATK0] : [mv.name + "_1", ...ATK1]));
+    if (d.pAtk === mv.wind && dist < mv.reach) {
       FX.spawnHit(f.x - camX - dirToFoe * 4, f.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
-      mHitStop = 3;
-      if (d.guard) { f.flash = 4; showPose(f, frame(f, ["guard", "lower"])); d.fHit = 6; }
-      else { d.hits++; f.flash = 8; f.x += dirToFoe * 7; d.fHit = 10; d.fAtk = -1; showPose(f, frame(f, ["hit", "walk_1"])); }
+      mHitStop = mv.stop;
+      if (d.guard) { f.flash = 4; showPose(f, frame(f, ["guard", "lower"])); d.fHit = 6; f.x += dirToFoe * 2; }
+      else { d.hits++; f.flash = 8; f.x += dirToFoe * mv.push; d.fHit = 8 + mv.stop; d.fAtk = -1; showPose(f, frame(f, ["hit", "walk_1"])); }
+      if (mv.stop >= 5) mShake = 5;
     }
-    if (d.pAtk >= 10) d.pAtk = -1;
+    if (d.pAtk >= mv.len) d.pAtk = -1;
   } else {
     const L = K.isDown(K.BTN_LEFT), Rt = K.isDown(K.BTN_RIGHT);
-    if (K.isPressed(K.BTN_LP) || K.isPressed(K.BTN_HP) || K.isPressed(K.BTN_LK) || K.isPressed(K.BTN_HK)) d.pAtk = 0;
+    const b = K.isPressed(K.BTN_LP) ? 0 : K.isPressed(K.BTN_HP) ? 1 : K.isPressed(K.BTN_LK) ? 2 : K.isPressed(K.BTN_HK) ? 3 : -1;
+    if (b >= 0) { d.mv = MOVES[b]; d.pAtk = 0; }
     else if ((L || Rt) && !(Rt && dirToFoe > 0 && dist < 20) && !(L && dirToFoe < 0 && dist < 20)) {
       p.vx = (Rt ? 1 : -1) * 1.6; p.x += p.vx; if (p.st !== ST_WALK) setSt(p, ST_WALK); else p.t++;
     } else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
