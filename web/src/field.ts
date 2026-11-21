@@ -134,6 +134,7 @@ export const active = () => mActive;
 export function begin(h: Host, play: Step[]): void {
   host = h; steps = play; mStep = 0; mWait = 0; mTick = 0; ents = []; quest = null; control = false; queue = []; page = [];
   camTarget = "player"; camFixed = null; mFallen = 0; mCheck = null; mActive = true;
+  map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0;
   run();
 }
 export function stop(): void { mActive = false; }
@@ -160,7 +161,7 @@ function lookOf(v: unknown): Look {
 function exec(s: Step): boolean {
   switch (s.t) {
     case "map": {
-      if (mFadeDone !== s) { mFadeOut = 10; mFadeFor = s; return false; }   // go dark first
+      if (mFadeDone !== s && map) { mFadeOut = 10; mFadeFor = s; return false; }   // go dark first (nothing to hide at the start)
       mFadeDone = null; mFadeIn = 12;
       const name = String(s.map);
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
@@ -214,7 +215,7 @@ function exec(s: Step): boolean {
     case "unprop": props = props.filter((q) => q.id !== s.id); return true;
     case "title": mTitle = true; mTitleT = 0; return false;
     case "waitA": mWaitA = true; return false;
-    case "narr": queue.push(["cut", String(s.text)]); nextLine(); return false;
+    case "narr": queue.push(["cut", "(" + String(s.text) + ")"]); nextLine(); return false;
     case "duel": {
       const foe = ent(String(s.foe));
       if (!foe || !player()) return true;
@@ -514,7 +515,7 @@ function hitOne(a: Ent, b: Ent): void {
 
 export function render(): void {
   R.beginFrame(false);
-  if (!map) return;
+  if (!map) { R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); return; }
   if (mTitle) { titleRender(); return; }
   FM.drawBack(map, camX, mTick);
   for (const q of props) if (q.kind !== "beam") drawProp(q);
