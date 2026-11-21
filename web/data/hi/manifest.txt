@@ -190,6 +190,8 @@ sd_heuksa.walk_2 sd/heuksa/walk_2.png 10 35
 sd_heuksa.walk_3 sd/heuksa/walk_3.png 10 35
 sd_heuksa.nod sd/heuksa/nod.png 13 35
 sd_heuksa.clap sd/heuksa/clap.png 14 36
+sd_heuksa.atk_0 sd/heuksa/nod.png 13 35
+sd_heuksa.atk_1 sd/heuksa/clap.png 14 36
 sd_chief.lie sd/chief/lie.png 17 15
 sd_chief.rise sd/chief/rise.png 15 20
 sd_arong.cower sd/arong/cower.png 6 19

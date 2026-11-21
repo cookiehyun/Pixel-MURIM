@@ -100,8 +100,8 @@ function placeOf(text: string): Bg | null {
 
 // ---------------------------------------------------------------- progress (account or this browser)
 
-interface Save { done: Record<string, number>; clues: Record<string, string[]> }
-let S: Save = { done: {}, clues: {} };
+interface Save { done: Record<string, number>; clues: Record<string, string[]>; diff: Record<string, number> }
+let S: Save = { done: {}, clues: {}, diff: {} };
 const LS = "pixelmurim.story";
 const ALL = new URLSearchParams(location.search).has("storyall");     // testing: every route open
 
@@ -110,7 +110,7 @@ function loadSave(): void {
   if (Account.loggedIn()) raw = Account.saveData().story;
   else try { raw = JSON.parse(localStorage.getItem(LS) || "null"); } catch { raw = null; }
   const r = (raw ?? {}) as Partial<Save>;
-  S = { done: { ...(r.done ?? {}) }, clues: { ...(r.clues ?? {}) } };
+  S = { done: { ...(r.done ?? {}) }, clues: { ...(r.clues ?? {}) }, diff: { ...(r.diff ?? {}) } };
 }
 function writeSave(): void {
   if (Account.loggedIn()) { Account.store({ story: S }); return; }
@@ -146,6 +146,11 @@ const V_ROUTES = 0, V_CHAPTERS = 1, V_BOOK = 2, V_PLAY = 3, V_PICK = 4, V_LOST =
 let mField = false;
 let mView = V_ROUTES, mSel = 0, mChSel = 0, mT = 0, mMsg = "", mMsgT = 0, mBookSel = 0;
 let mRoute = 0, mChap = 0;
+// difficulty: picked when a route's first chapter starts, kept for the route (field bouts and story fights)
+let mDiffPick = false, mDiffSel = 1;
+const DIFF_NAMES = ["쉬움", "보통", "어려움"];
+const DIFF_NOTES = ["적이 약하고 느리다", "기본", "적이 세고 빠르며 잘 막는다"];
+const diffOf = () => S.diff[route().id] ?? 1;
 
 const cBox = RGB(14, 11, 22), cGold = RGB(240, 196, 96), cText = RGB(244, 236, 222), cDim = RGB(140, 128, 160),
   cNarr = RGB(186, 204, 226), cLock = RGB(84, 76, 100);
@@ -246,11 +251,19 @@ function routesRender(): void {
 
 function chaptersTick(): void {
   const rt = routes[mRoute], n = rt.chapters.length, open = ALL ? n - 1 : Math.min(doneOf(rt), n - 1);
+  if (mDiffPick) {
+    if (K.isPressed(K.BTN_UP)) mDiffSel = (mDiffSel + 2) % 3;
+    if (K.isPressed(K.BTN_DOWN)) mDiffSel = (mDiffSel + 1) % 3;
+    if (K.isPressed(K.BTN_HP) || K.isPressed(K.BTN_QUIT)) { mDiffPick = false; return; }
+    if (K.isPressed(K.BTN_LP)) { mDiffPick = false; S.diff[rt.id] = mDiffSel; writeSave(); beginChapter(0); }
+    return;
+  }
   if (K.isPressed(K.BTN_UP)) mChSel = (mChSel + n - 1) % n;
   if (K.isPressed(K.BTN_DOWN)) mChSel = (mChSel + 1) % n;
   if (K.isPressed(K.BTN_HP) || K.isPressed(K.BTN_QUIT)) { mView = V_ROUTES; return; }
   if (!K.isPressed(K.BTN_LP)) return;
   if (mChSel > open) { mMsg = "앞 장을 먼저 마치세요"; mMsgT = 40; return; }
+  if (mChSel === 0) { mDiffPick = true; mDiffSel = S.diff[rt.id] ?? 1; return; }
   beginChapter(mChSel);
 }
 
@@ -273,6 +286,18 @@ function chaptersRender(): void {
     if (ch.fight) KF.draw(ch.fight.tag ? "태그 대전" : "대전", 352, 48 + lines.length * 24 + 10, RGB(255, 140, 110), 2);
   }
   Font.drawText("UP DOWN = SELECT   A = PLAY   S = BACK", SCREEN_W / 2, 93, RGB(110, 100, 130), 1, 1);
+  if (mDiffPick) {
+    R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0), 0.6);
+    const x = R.PHYS_W / 2 - 220, y = 70;
+    R.physRect(x, y, 440, 160, RGB(22, 16, 30)); R.physRect(x, y, 440, 2, cGold); R.physRect(x, y + 158, 440, 2, cGold);
+    KF.draw("난이도", R.PHYS_W / 2, y + 10, cGold, 2, 1);
+    for (let k = 0; k < 3; k++) {
+      const yy = y + 44 + k * 34, on = k === mDiffSel;
+      if (on) { R.physRect(x + 12, yy - 4, 416, 28, RGB(46, 32, 22)); R.physRect(x + 12, yy - 4, 3, 28, cGold); }
+      KF.draw(DIFF_NAMES[k], x + 26, yy, on ? RGB(255, 238, 190) : RGB(196, 186, 210), 2);
+      KF.draw(DIFF_NOTES[k], x + 120, yy, cDim, 2);
+    }
+  }
 }
 
 function bookRender(): void {
@@ -314,6 +339,7 @@ function setBg(bg: Bg): void {
 
 function beginChapter(k: number): void {
   Field.stop();
+  Field.setDifficulty(diffOf());
   mField = !!PLAYS[routes[mRoute].id]?.[k];
   mChap = k; mView = V_PLAY; mSec = "pre"; mEv = 0; mTitleT = 0; mFight = 0;
   mCast = []; mOrder = 0; mPage = []; mBanner = ""; mBannerT = 0;
@@ -434,7 +460,7 @@ const fieldHost: Field.Host = {
   events: (sec, a, b) => (chapter() as unknown as Record<string, Ev[]>)[sec].slice(a, b + 1),
   look: (n) => look(n),
   clue: (t) => { addClue(t); writeSave(); },
-  fight: (o) => { mFight = 0; mLevelSaved = G.CpuLevel; if (o) G.CpuLevel = 0; mFightOverride = o ? { raw: "", opp: o.opp, seq: 1, tag: false, team: [], pick: false, stage: o.stage ?? chapter().fight?.stage ?? "산문", variant: o.variant ?? chapter().fight?.variant ?? "" } : null; startFight(); },
+  fight: (o) => { mFight = 0; mLevelSaved = G.CpuLevel; mFightOverride = o ? { raw: "", opp: o.opp, seq: 1, tag: false, team: [], pick: false, stage: o.stage ?? chapter().fight?.stage ?? "산문", variant: o.variant ?? chapter().fight?.variant ?? "" } : null; startFight(); },
   done: () => chapterDone(),
   cutscene: (sec, a) => {
     mField = false; mView = V_PLAY; mSec = sec as "pre" | "post" | "lose"; mEv = a; mTitleT = 40; mPage = [];
@@ -570,7 +596,10 @@ function startFight(): void {
     G.P1Char2 = m2[0]; G.P2Char2 = f2[0];
     G.Skins[2] = m2[1]; G.Skins[3] = f2[1]; G.Labels[2] = m2[2]; G.Labels[3] = f2[2];
   } else G.GameMode = MODE_VSCPU;
+  const lv = G.CpuLevel;
+  G.CpuLevel = mFightOverride ? Math.max(0, diffOf() - 1) : diffOf();   // the route's difficulty, underlings one step easier
   startMatch();
+  G.CpuLevel = lv;
   R.tintStage(bg[1]);
 }
 

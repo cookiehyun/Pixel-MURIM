@@ -233,7 +233,13 @@ function exec(s: Step): boolean {
     case "duel": {
       const foe = ent(String(s.foe));
       if (!foe || !player()) return true;
-      duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0, mv: MOVES[0] };
+      const p = player()!, hpMode = !!s.hp;
+      duel = { foe, need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, fAtk: -1, fCool: 30, pHit: 0, fHit: 0, mv: MOVES[0],
+        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, fx0: foe.x };
+      if (hpMode) {
+        if (p.maxHp !== 100) p.maxHp = p.hp = 100;           // the player's health carries over from bout to bout in a scene
+        foe.maxHp = foe.hp = Math.round(Number(s.hp) * DIFF.hp[mDiff]);
+      }
       quest = s; questText = String(s.text ?? ""); questCount = "";
       foe.goal = null; player()!.goal = null;
       return false;
@@ -586,7 +592,7 @@ export function render(): void {
 function hud(): void {
   const p = player();
   if (!p) return;
-  if ((control || quest) && p.kit.moves.length) {
+  if (((control || quest) && p.kit.moves.length) || (duel && duel.hpMode)) {
     R.physRect(12, 10, 154, 12, RGB(20, 14, 18)); R.physRect(14, 12, Math.round(150 * Math.max(0, p.hp) / p.maxHp), 8, RGB(240, 196, 96));
     Font.drawText(p.look[2], 5, 8, RGB(230, 230, 240));
   }
@@ -596,6 +602,13 @@ function hud(): void {
     R.shadeRect(R.PHYS_W - w - 10, 8, w, 34, RGB(14, 11, 22), 0.8);
     R.physRect(R.PHYS_W - w - 10, 8, 3, 34, RGB(240, 196, 96));
     KF.draw(t, R.PHYS_W - 22, 15, RGB(255, 236, 190), 2, 2);
+  }
+  if (duel && duel.hpMode && !talking()) {                 // the foe's health, top right under the quest
+    const f = duel.foe;
+    R.physRect(R.PHYS_W - 166, 48, 154, 12, RGB(20, 14, 18));
+    const w = Math.round(150 * Math.max(0, f.hp) / f.maxHp);
+    R.physRect(R.PHYS_W - 14 - w, 50, w, 8, RGB(220, 60, 50));
+    Font.drawText(f.look[2], SCREEN_W - 5, 21, RGB(230, 230, 240), 1, 2);
   }
   if (duel && !talking()) Font.drawText("LEFT RIGHT = MOVE   A S Z X = ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
   if (control && !talking()) Font.drawText(target() ? "A = TALK" : !p.kit.moves.length ? "LEFT RIGHT = RUN" : "ARROWS MOVE  UP JUMP  A S Z X ATTACK", SCREEN_W / 2, 94, RGB(150, 140, 170), 1, 1);
@@ -685,8 +698,15 @@ function titleRender(): void {
 
 // ---------------------------------------------------------------- duels: a short SD fight right where the scene is
 
-interface Duel { foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number; mv: DuelMove }
+interface Duel {
+  foe: Ent; need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; fAtk: number; fCool: number; pHit: number; fHit: number; mv: DuelMove;
+  hpMode: boolean; dmg: number; block: number; ko: number; px0: number; fx0: number;    // health duel: both sides take damage, the player can fall (then the bout starts over)
+}
 let duel: Duel | null = null;
+// difficulty chosen at a route's first chapter: 0 easy, 1 normal, 2 hard (foe damage, foe pace, foe health, foe wind-up, foe blocking)
+let mDiff = 1;
+export function setDifficulty(n: number): void { mDiff = Math.max(0, Math.min(2, n)); }
+const DIFF = { dmg: [0.55, 1, 1.5], cool: [1.6, 1, 0.6], hp: [0.75, 1, 1.25], wind: [15, 10, 7], block: [0.4, 1, 1.6] };
 
 /** The first of these frames the character has (SD art grows over time; older sets fall back to a near pose). */
 function frame(e: Ent, names: string[]): number {
@@ -697,12 +717,12 @@ function frame(e: Ent, names: string[]): number {
 const ATK0 = ["atk_0", "block", "walk_2", "lower", "stand"], ATK1 = ["atk_1", "block", "walk_0", "slash", "walk_1"];
 // the four buttons: light hand, heavy hand, light kick, heavy kick (frames <name>_0 wind-up, <name>_1 strike;
 // a character without them uses its light attack)
-interface DuelMove { name: string; wind: number; len: number; reach: number; push: number; stop: number }
+interface DuelMove { name: string; wind: number; len: number; reach: number; push: number; stop: number; dmg: number }
 const MOVES: DuelMove[] = [
-  { name: "atk", wind: 4, len: 10, reach: 32, push: 7, stop: 3 },
-  { name: "hvy", wind: 7, len: 15, reach: 34, push: 13, stop: 5 },
-  { name: "kick", wind: 4, len: 11, reach: 34, push: 8, stop: 3 },
-  { name: "hkick", wind: 7, len: 16, reach: 38, push: 14, stop: 5 },
+  { name: "atk", wind: 4, len: 10, reach: 32, push: 7, stop: 3, dmg: 8 },
+  { name: "hvy", wind: 7, len: 15, reach: 34, push: 13, stop: 5, dmg: 13 },
+  { name: "kick", wind: 4, len: 11, reach: 34, push: 8, stop: 3, dmg: 9 },
+  { name: "hkick", wind: 7, len: 16, reach: 38, push: 14, stop: 5, dmg: 15 },
 ];
 function showPose(e: Ent, id: number): void { e.pose = id; e.st = ST_POSE; e.vx = 0; }
 
@@ -710,6 +730,17 @@ function duelTick(): void {
   const d = duel!, p = player()!, f = d.foe;
   d.t++;
   const dist = Math.abs(f.x - p.x), dirToFoe = f.x > p.x ? 1 : -1;
+  if (d.ko > 0) {                                         // the player is down: lie there, then the bout starts over
+    d.ko++;
+    showPose(p, frame(p, ["down", "hit"]));
+    if (f.st !== ST_IDLE && f.st !== ST_POSE) setSt(f, ST_IDLE);
+    if (d.ko === 40) { mNotice = "쓰러졌다… 다시 한 번"; mNoticeT = 60; }
+    if (d.ko >= 100) {
+      d.ko = 0; d.t = 0; d.hits = 0; d.pAtk = -1; d.fAtk = -1; d.pHit = 0; d.fHit = 0; d.fCool = 50;
+      p.hp = p.maxHp; f.hp = f.maxHp; p.x = d.px0; f.x = d.fx0; setSt(p, ST_IDLE); setSt(f, ST_IDLE);
+    }
+    return;
+  }
   p.face = dirToFoe; f.face = -dirToFoe;
   // --- the player
   if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
@@ -720,8 +751,9 @@ function duelTick(): void {
     if (d.pAtk === mv.wind && dist < mv.reach) {
       FX.spawnHit(f.x - camX - dirToFoe * 4, f.y - 14, true, p.look[0].replace("sd_", "").split(":")[0]);
       mHitStop = mv.stop;
-      if (d.guard) { f.flash = 4; showPose(f, frame(f, ["guard", "lower"])); d.fHit = 6; f.x += dirToFoe * 2; }
-      else { d.hits++; f.flash = 8; f.x += dirToFoe * mv.push; d.fHit = 8 + mv.stop; d.fAtk = -1; showPose(f, frame(f, ["hit", "walk_1"])); }
+      const blocked = d.guard || (d.hpMode && d.fAtk < 0 && Math.random() < d.block * DIFF.block[mDiff]);
+      if (blocked) { f.flash = 4; showPose(f, frame(f, ["guard", "lower"])); d.fHit = 6; f.x += dirToFoe * 2; }
+      else { d.hits++; f.hp -= mv.dmg; f.flash = 8; f.x += dirToFoe * mv.push; d.fHit = 8 + mv.stop; d.fAtk = -1; showPose(f, frame(f, ["hit", "walk_1"])); }
       if (mv.stop >= 5) mShake = 5;
     }
     if (d.pAtk >= mv.len) d.pAtk = -1;
@@ -737,12 +769,17 @@ function duelTick(): void {
   if (d.fHit > 0) d.fHit--;
   else if (d.fAtk >= 0) {
     d.fAtk++;
-    showPose(f, frame(f, d.fAtk < 10 ? ATK0 : ATK1));
-    if (d.fAtk === 10 && dist < 30 && d.pAtk < 0) {
+    const w = d.hpMode ? DIFF.wind[mDiff] : 10;
+    showPose(f, frame(f, d.fAtk < w ? ATK0 : ATK1));
+    if (d.fAtk === w && dist < 30 && d.pAtk < 0) {
       FX.spawnHit(p.x - camX + dirToFoe * 4, p.y - 14, false, "");
       d.pHit = 10; p.flash = 6; p.x -= dirToFoe * 6;
+      if (d.hpMode) {
+        p.hp -= Math.max(1, Math.round(d.dmg * DIFF.dmg[mDiff]));
+        if (p.hp <= 0) { p.hp = 0; d.ko = 1; mShake = 6; d.fAtk = -1; return; }
+      }
     }
-    if (d.fAtk >= 16) { d.fAtk = -1; d.fCool = 34 + Math.floor(Math.random() * 30); }
+    if (d.fAtk >= w + 6) { d.fAtk = -1; d.fCool = Math.round((34 + Math.floor(Math.random() * 30)) * (d.hpMode ? DIFF.cool[mDiff] : 1)); }
   } else {
     if (d.fCool > 0) d.fCool--;
     if (dist > 22) { f.x -= dirToFoe * 0.7; if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++; }
@@ -751,9 +788,9 @@ function duelTick(): void {
   }
   if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); f.x = Math.max(6, Math.min(map.w - 6, f.x)); }
   // --- the end: enough hits (the foe falls back), or the time is up (the scene decides what happens)
-  if ((d.need && d.hits >= d.need) || (d.time && d.t >= d.time)) {
+  if ((d.hpMode && f.hp <= 0) || (!d.hpMode && d.need && d.hits >= d.need) || (d.time && d.t >= d.time)) {
     duel = null; quest = null; questText = "";
-    if (d.need) { setSt(f, ST_IDLE); f.goal = f.x + dirToFoe * 28; f.spd = 1.2; }
+    if (d.need || d.hpMode) { setSt(f, ST_IDLE); f.goal = f.x + dirToFoe * 28; f.spd = 1.2; }
     setSt(p, ST_IDLE); p.vx = 0;
     mStep++; run();
   }
