@@ -134,7 +134,7 @@ export const active = () => mActive;
 export function begin(h: Host, play: Step[]): void {
   host = h; steps = play; mStep = 0; mWait = 0; mTick = 0; ents = []; quest = null; control = false; queue = []; page = [];
   camTarget = "player"; camFixed = null; mFallen = 0; mCheck = null; mActive = true;
-  map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0; mCarryG = 0; mSkillT = 0; auras.length = 0;
+  map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0; mCarryG = 0; auras.length = 0;
   run();
 }
 export function stop(): void { mActive = false; }
@@ -345,7 +345,6 @@ export function tick(): void {
   for (const e of ents) if (e.flash > 0) e.flash--;
   for (let k = puffs.length - 1; k >= 0; k--) if (++puffs[k].t > 30) puffs.splice(k, 1);
   for (let k = auras.length - 1; k >= 0; k--) if (++auras[k].t > auras[k].life) auras.splice(k, 1);
-  if (mSkillT > 0) mSkillT--;
   if (duel && !talking()) { duelTick(); camera(); FX.update(); return; }
   if (control && !talking() && p) playerInput(p);
   for (const e of ents) think(e);
@@ -607,11 +606,6 @@ export function render(): void {
   if (mFlash > 0) { R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(250, 248, 255), Math.min(1, mFlash / 6)); }
   if (mWaitA && Math.trunc(mTick / 6) % 2 === 0) KF.draw("A ▼", R.PHYS_W - 20, R.PHYS_H - 34, RGB(240, 196, 96), 2, 2);
   hud();
-  if (mSkillT > 0 && !talking()) {
-    const a = Math.min(1, mSkillT / 8);
-    R.shadeRect(0, 96, R.PHYS_W, 40, RGB(8, 6, 12), 0.55 * a);
-    KF.draw(mSkill, R.PHYS_W / 2, 104, mSkillC, 3, 1);
-  }
   if (talking()) dialogueRender();
   const dark = mFadeOut > 0 ? 1 - mFadeOut / 10 : mFadeIn / 12;
   if (dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0), Math.min(1, dark));
@@ -809,9 +803,8 @@ function showPose(e: Ent, id: number): void { e.pose = id; e.st = ST_POSE; e.vx 
 
 // glows and shock rings (drawn as soft circles), and the name of a skill as it is used
 const auras: { x: number; y: number; t: number; life: number; r: number; c: number; grow: number }[] = [];
-let mSkill = "", mSkillT = 0, mSkillC = 0;
 function aura(x: number, y: number, r: number, c: number, life = 14, grow = 0.6): void { auras.push({ x, y, t: 0, life, r, c, grow }); }
-function callSkill(mv: DuelMove): void { if (mv.label) { mSkill = mv.label; mSkillT = 36; mSkillC = mv.aura ?? RGB(255, 236, 190); } }
+
 
 /** The stick as a numpad digit relative to the facing (6 = toward the foe). */
 function stickDir(face: number): number {
@@ -918,7 +911,6 @@ function duelTick(): void {
         if (s.ult ? d.pG < 100 : d.pNg < s.cost!) { if (!s.ult) d.ngFlash = 20; continue; }
         mv = s;
         if (s.ult) { d.pG = 0; mHitStop = 10; mFlash = 3; } else d.pNg -= s.cost!;
-        callSkill(s);
         break;
       }
       d.mv = mv; d.pAtk = 0;
@@ -976,7 +968,6 @@ function duelTick(): void {
     if (s) {
       o.mv = s; o.atk = 0;
       if (s.ult) { o.g = 0; mHitStop = 10; mFlash = 3; } else o.ng -= s.cost!;
-      callSkill(s);
     } else if (Math.abs(f.x - goal) > 3) {
       const step = Math.sign(goal - f.x) * (Math.abs(goal - f.x) > 30 ? 1.2 : 0.7);   // hurry round to its side, then edge in
       f.x += step; f.face = toP;
