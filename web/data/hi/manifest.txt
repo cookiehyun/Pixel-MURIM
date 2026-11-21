@@ -12,6 +12,9 @@ sd_cultist.idle_0 sd/cultist/idle_0.png 11 29
 sd_cultist.shout sd/cultist/shout.png 12 39
 sd_cultist.torch sd/cultist/torch.png 11 36
 sd_cultist.walk_0 sd/cultist/walk_0.png 11 29
+sd_cultist.lie sd/cultist/lie.png 15 22
+sd_cultist.atk_0 sd/cultist/shout.png 12 39
+sd_cultist.atk_1 sd/cultist/walk_0.png 11 29
 ANIM sd_danwoo.carry_run 3 carry_run_0 carry_run_1 carry_run_2 carry_run_3
 ANIM sd_danwoo.carry_idle 10 carry_turn carry_turn
 ANIM sd_cultist.idle 10 idle_0 idle_0
@@ -168,3 +171,43 @@ sd_cheolsan.hkick_0 sd/cheolsan/hkick_0.png 11 30
 sd_cheolsan.hkick_1 sd/cheolsan/hkick_1.png 11 31
 sd_cheolsan.sp_0 sd/cheolsan/sp_0.png 14 30
 sd_cheolsan.sp_1 sd/cheolsan/sp_1.png 13 37
+sd_danwoo.idle sd/danwoo/idle.png 10 31
+sd_danwoo.walk_0 sd/danwoo/walk_0.png 9 31
+sd_danwoo.walk_1 sd/danwoo/walk_1.png 9 30
+sd_danwoo.walk_2 sd/danwoo/walk_2.png 9 30
+sd_danwoo.walk_3 sd/danwoo/walk_3.png 10 31
+sd_danwoo.sit sd/danwoo/sit.png 14 28
+sd_danwoo.atk_0 sd/danwoo/atk_0.png 10 30
+sd_danwoo.atk_1 sd/danwoo/atk_1.png 13 30
+sd_danwoo.kick_0 sd/danwoo/kick_0.png 9 31
+sd_danwoo.kick_1 sd/danwoo/kick_1.png 11 32
+sd_danwoo.hit sd/danwoo/hit.png 15 27
+sd_danwoo.down sd/danwoo/down.png 18 17
+sd_heuksa.idle sd/heuksa/idle.png 11 37
+sd_heuksa.walk_0 sd/heuksa/walk_0.png 11 35
+sd_heuksa.walk_1 sd/heuksa/walk_1.png 10 36
+sd_heuksa.walk_2 sd/heuksa/walk_2.png 10 35
+sd_heuksa.walk_3 sd/heuksa/walk_3.png 10 35
+sd_heuksa.nod sd/heuksa/nod.png 13 35
+sd_heuksa.clap sd/heuksa/clap.png 14 36
+sd_chief.lie sd/chief/lie.png 17 15
+sd_chief.rise sd/chief/rise.png 15 20
+sd_arong.cower sd/arong/cower.png 6 19
+sd_arong.grab sd/arong/grab.png 10 23
+sd_arong.idle sd/arong/idle.png 5 23
+sd_arong.run_0 sd/arong/run_0.png 9 23
+sd_arong.run_1 sd/arong/run_1.png 9 21
+sd_arong.walk_0 sd/arong/walk_0.png 6 23
+sd_arong.walk_1 sd/arong/walk_1.png 5 24
+sd_arong.walk_2 sd/arong/walk_2.png 7 23
+sd_arong.walk_3 sd/arong/walk_3.png 5 23
+ANIM sd_danwoo.idle 10 idle idle
+ANIM sd_danwoo.walk 4 walk_0 walk_1 walk_2 walk_3
+ANIM sd_arong.idle 10 idle idle
+ANIM sd_arong.walk 4 walk_0 walk_1 walk_2 walk_3
+ANIM sd_arong.run_idle 10 idle idle
+ANIM sd_arong.run_run 3 run_0 run_1
+ANIM sd_heuksa.idle 10 idle idle
+ANIM sd_heuksa.walk 5 walk_0 walk_1 walk_2 walk_3
+ANIM sd_chief.idle 10 lie lie
+ANIM sd_chief.walk 10 lie lie
