@@ -10,7 +10,7 @@ import * as K from "./input";
 import * as FX from "./fx";
 import * as Fighter from "./fighter";
 import { MV_LP, MV_HP, MV_LK, MV_HK, MV_SP1, MV_JP, MV_JK } from "./fighter";
-import { D, animId, animFrame, spriteId, hasSprite, MT_RUSH } from "./data";
+import { D, animId, animFrame, animFrameHold, spriteId, hasSprite, moveId, MT_RUSH, MT_NORMAL, MT_SUPER_QUAKE, LV_UNBLOCK } from "./data";
 import * as FM from "./fieldmap";
 import { RGB } from "./util";
 
@@ -241,12 +241,14 @@ function exec(s: Step): boolean {
       const foes: Foe[] = list.map((e, i) => {
         // with several: alternate sides, the first in front (where it stands), the second behind the player
         const side = list.length > 1 && i % 2 === 1 ? -(e.x > p.x ? 1 : -1) : e.x > p.x ? 1 : -1;
-        return { e, bn: "atk", atk: -1, cool: 30 + i * 25, hit: 0, mv: null, ng: 500, g: 0, x0: e.x, out: false, side };
+        return { e, bn: "atk", vx: 0, combo: 0, down: 0, atk: -1, cool: 30 + i * 25, hit: 0, mv: null, ng: 500, g: 0, x0: e.x, out: false, side };
       });
       duel = { foes, foe: list[0], need: Number(s.hits ?? 0), time: Number(s.time ?? 0), guard: !!s.guard, t: 0, hits: 0, pAtk: -1, pHit: 0, mv: MOVES[0],
-        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, pNg: 1000, pG: mCarryG, ngFlash: 0, hist: [] };
+        hpMode, dmg: Number(s.dmg ?? 8), block: Number(s.block ?? 0), ko: 0, px0: p.x, pNg: 1000, pG: mCarryG, ngFlash: 0, hist: [],
+        eng: hpMode ? engMoves(p) : null, emv: -1, pHas: false, pVx: 0, pGuard: 0, dark: 0, slow: 0 };
       if (hpMode) {
-        if (p.maxHp !== 100) p.maxHp = p.hp = 100;           // the player's health carries over from bout to bout in a scene
+        const full = duel.eng ? 1000 : 100;                  // engine fighters: the arcade's health scale
+        if (p.maxHp !== full) p.maxHp = p.hp = full;          // the player's health carries over from bout to bout in a scene
         for (const e of list) e.maxHp = e.hp = Math.round(Number(s.hp) * DIFF.hp[mDiff]);
       }
       quest = s; questText = String(s.text ?? ""); questCount = "";
@@ -348,7 +350,7 @@ export function tick(): void {
     return;
   }
   if (mNoticeT > 0) mNoticeT--;
-  if (mHitStop > 0) { mHitStop--; FX.update(); return; }
+  if (mHitStop > 0) { mHitStop--; if (duel && duel.dark > 0) duel.dark--; FX.update(); return; }   // freeze: the darkness runs out with it
   if (talking()) dialogueTick();
   else if (mWait > 0) { mWait--; if (mWait === 0) { mStep++; run(); } }
 
@@ -562,6 +564,7 @@ export function render(): void {
   if (!map) { R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); return; }
   if (mTitle) { titleRender(); return; }
   FM.drawBack(map, camX, mTick);
+  if (duel && duel.dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, 0, 0.55);   // super freeze / heavy impact: the world goes dark
   for (const q of props) if (q.kind !== "beam") drawProp(q);
   const order = ents.slice().sort((a, b) => (a.small ? 1 : 0) - (b.small ? 1 : 0) || (a.id === "player" ? 1 : 0) - (b.id === "player" ? 1 : 0));
   for (const e of order) {
@@ -586,6 +589,7 @@ export function render(): void {
     };
     if (p && d.pAtk >= 0) glow(p, d.mv, d.pAtk);
     for (const o of d.foes) if (!o.out && o.atk >= 0) glow(o.e, o.mv, o.atk);
+    if (p && d.eng && d.pAtk >= 0 && D.MvType[d.emv] === MT_SUPER_QUAKE) drawQuakeField(p, d.emv, d.pAtk);
   }
   for (const pf of puffs) for (let k = 0; k < 5; k++) R.shadeCircle((pf.x - camX + (k - 2) * 5) * PX, (pf.y - pf.t * 0.3 - (k % 2) * 4) * PX, (5 + pf.t * 0.4) * PX, RGB(70, 66, 76), 0.5 * (1 - pf.t / 30));
   FX.draw();
@@ -698,7 +702,7 @@ function dialogueRender(): void {
   }
 }
 
-export const debug = () => JSON.stringify({ cam: Math.round(camX), step: mStep, t: steps[mStep]?.t, quest: questText, talk: talking(), page: page[0] ?? "", ents: ents.map((e) => e.id + ":" + Math.round(e.x) + ":" + e.st + ":" + e.hp) });
+export const debug = () => JSON.stringify({ dv: duel ? { emv: duel.emv, pAtk: duel.pAtk, pHit: duel.pHit, pG: Math.round(duel.pG), pNg: duel.pNg, dark: duel.dark, slow: duel.slow } : null, cam: Math.round(camX), step: mStep, t: steps[mStep]?.t, quest: questText, talk: talking(), page: page[0] ?? "", ents: ents.map((e) => e.id + ":" + Math.round(e.x) + ":" + e.st + ":" + e.hp) });
 export function debugKill(): void { for (const e of ents) if (e.hostile) { e.hp = 0; setSt(e, ST_DEAD); e.t = 99; } }
 export function debugWarp(x: number): void { const p = player(); if (p) p.x = x; }
 
@@ -759,12 +763,14 @@ function titleRender(): void {
 // ---------------------------------------------------------------- duels: a short SD fight right where the scene is
 
 // one opponent in a duel: its own wind-up, cool-down, stagger, move, 내공, 궁극 gauge, starting spot and side of the player
-interface Foe { e: Ent; bn: string; atk: number; cool: number; hit: number; mv: DuelMove | null; ng: number; g: number; x0: number; out: boolean; side: number }
+interface Foe { e: Ent; bn: string; vx: number; combo: number; down: number; atk: number; cool: number; hit: number; mv: DuelMove | null; ng: number; g: number; x0: number; out: boolean; side: number }
 interface Duel {
   foes: Foe[]; foe: Ent;                                  // foe = the one shown in the top-right bars (the last one struck)
   need: number; time: number; guard: boolean; t: number; hits: number; pAtk: number; pHit: number; mv: DuelMove;
   hpMode: boolean; dmg: number; block: number; ko: number; px0: number;   // health duel: both sides take damage, the player can fall (then the bout starts over)
   pNg: number; pG: number; ngFlash: number; hist: number[];               // 내공 (0..1000, refills), 궁극 gauge (0..100, hits), stick history
+  // a player who has fight-engine moves (sd_danwoo) fights with them: move id, hit landed, pushback, guard, darkening, slow motion
+  eng: Record<string, number> | null; emv: number; pHas: boolean; pVx: number; pGuard: number; dark: number; slow: number;
 }
 let duel: Duel | null = null;
 let mMapName = "";                                        // the current map (a fight on the spot uses its picture)
@@ -859,8 +865,145 @@ function resetBout(d: Duel, p: Ent): void {
   d.foes.forEach((o, i) => { o.out = false; o.atk = -1; o.hit = 0; o.mv = null; o.cool = 40 + i * 25; o.ng = 500; o.g = 0; o.e.hp = o.e.maxHp; o.e.x = o.x0; o.e.vy = 0; o.e.y = GROUND; o.e.air = false; setSt(o.e, ST_IDLE); });
 }
 
+// ---------------------------------------------------------------- field bouts with fight-engine moves
+// A player who is also a fight-engine character (sd_danwoo) fights underlings with that character's real moves:
+// startup / active / recovery, frames, hitboxes, damage, hitstun, knockdown, pushback, combo scaling, counter hits,
+// hit stop, 내공 costs and 궁극 gauge gains are the engine's (data/moves.txt, combat.ts). Distances are scaled by EK:
+// SD art stands 2 screen pixels per art pixel here and 3 in the engine.
+const EK = 2 / 3;
+const engCache = new Map<string, Record<string, number> | null>();
+function engMoves(p: Ent): Record<string, number> | null {
+  const pre = p.kit.base ?? p.look[0];
+  if (!engCache.has(pre)) {
+    try { engCache.set(pre, Object.fromEntries(["lp", "hp", "lk", "hk", "sp1", "sp2", "super"].map((n) => [n, moveId(pre + "." + n)]))); }
+    catch { engCache.set(pre, null); }
+  }
+  return engCache.get(pre)!;
+}
+/** The engine's frame for move mv at tick t (wind-up, strike, recovery sequences included). */
+function engSprite(mv: number, t: number): number {
+  const S = D.MvStartup[mv], A = D.MvActive[mv];
+  if (t < S && D.MvSeqPre[mv] >= 0) return animFrameHold(D.MvSeqPre[mv], t);
+  if (t >= S && t < S + A && D.MvSeqAct[mv] >= 0) return animFrameHold(D.MvSeqAct[mv], t - S);
+  if (t >= S + A && D.MvSeqRec[mv] >= 0) return animFrameHold(D.MvSeqRec[mv], t - S - A);
+  return t >= S && t < S + A ? D.MvSprA[mv] : D.MvSprS[mv];
+}
+const foeWind = (o: Foe) => (o.mv ? Math.round(o.mv.wind * DIFF.wind[mDiff] / 10) : DIFF.wind[mDiff]);
+
+function engPlayer(d: Duel, p: Ent, live: Foe[], L: boolean, Rt: boolean): void {
+  const em = d.eng!;
+  d.pNg = Math.min(1000, d.pNg + 7);                     // NAEGONG_REGEN
+  if (d.pHit > 0) {                                     // hit or blocking: stunned, sliding back
+    d.pHit--; p.x += d.pVx; d.pVx *= 0.7;
+    showPose(p, d.pGuard > 0 ? frame(p, ["guard"]) : frame(p, ["hit_0", "hit"]));
+    if (d.pGuard > 0) d.pGuard--;
+    return;
+  }
+  if (d.pAtk >= 0) {
+    const mv = d.emv, t = d.pAtk, S = D.MvStartup[mv], A = D.MvActive[mv], R = D.MvRecovery[mv], dir = p.face;
+    showPose(p, engSprite(mv, t));
+    const blockedAhead = live.some((o) => (o.e.x - p.x) * dir > 0 && Math.abs(o.e.x - p.x) < 8 && o.down === 0);   // bodies touch at 12 engine px
+    if (D.MvType[mv] === MT_RUSH && t >= S && t < S + A && !blockedAhead) p.x += dir * D.MvP1[mv] * EK;   // rushes travel while active
+    else if (D.MvType[mv] === MT_NORMAL && t < S && D.MvP1[mv] > 0 && !blockedAhead) p.x += dir * D.MvP1[mv] * 0.5 * EK;   // heavy normals step in
+    if (t >= S && t < S + A && !d.pHas) {
+      // the move's hitbox (scaled), against each foe's body
+      const a0 = D.MvHbX[mv] * EK, a1 = (D.MvHbX[mv] + D.MvHbW[mv]) * EK;
+      const x0 = dir > 0 ? p.x + a0 : p.x - a1, x1 = dir > 0 ? p.x + a1 : p.x - a0;
+      const cy = p.y + (D.MvHbY[mv] + D.MvHbH[mv] / 2) * EK;
+      for (const o of live) {
+        if (o.down > 0 || o.e.x + 4 < x0 || o.e.x - 4 > x1) continue;
+        d.pHas = true;
+        engHit(d, p, o, mv, (Math.max(x0, o.e.x - 4) + Math.min(x1, o.e.x + 4)) / 2, cy);
+      }
+    }
+    d.pAtk++;
+    if (d.pAtk >= S + A + R) d.pAtk = -1;
+    return;
+  }
+  const b = K.isPressed(K.BTN_LP) ? 0 : K.isPressed(K.BTN_HP) ? 1 : K.isPressed(K.BTN_LK) ? 2 : K.isPressed(K.BTN_HK) ? 3 : -1;
+  if (b >= 0) {
+    let mv = [em.lp, em.hp, em.lk, em.hk][b];
+    for (const k of ["super", "sp2", "sp1"]) {           // the engine reads the super first
+      const m = em[k], cmd = D.MvCmd[m];
+      if (!cmd || (cmd.endsWith("P") ? b > 1 : b < 2)) continue;
+      const sup = k === "super";
+      if (!entered(d.hist, cmd.slice(0, -1), sup ? 20 : 12)) continue;
+      if (sup ? d.pG < 100 : d.pNg < D.MvCost[m]) { if (!sup) d.ngFlash = 20; continue; }
+      mv = m;
+      if (sup) { d.pG = 0; mHitStop = 12; d.dark = 12; } else d.pNg -= D.MvCost[m];   // the super freeze
+      break;
+    }
+    d.emv = mv; d.pAtk = 0; d.pHas = false;
+    return;
+  }
+  if (L || Rt) {
+    const dir = Rt ? 1 : -1, n = live.reduce<Foe | null>((q, o) => (!q || Math.abs(o.e.x - p.x) < Math.abs(q.e.x - p.x) ? o : q), null);
+    const back = !!n && (n.e.x - p.x) * dir < 0;
+    const blockedBy = live.some((o) => (o.e.x - p.x) * dir > 0 && Math.abs(o.e.x - p.x) < 8 && o.down === 0);
+    if (!blockedBy) { p.vx = dir * 2 * EK * (back ? 0.75 : 1); p.x += p.vx; if (p.st !== ST_WALK) setSt(p, ST_WALK); else p.t++; }
+    else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
+  } else { p.vx = 0; if (p.st !== ST_IDLE) setSt(p, ST_IDLE); }
+}
+
+/** The engine's applyAttack, on a field foe. */
+function engHit(d: Duel, p: Ent, o: Foe, mv: number, cx: number, cy: number): void {
+  const f = o.e, dir = f.x >= p.x ? 1 : -1, special = D.MvType[mv] !== MT_NORMAL, heavy = D.MvDamage[mv] >= 80;
+  let push = heavy ? 2.2 : 0.8;
+  if (D.MvType[mv] === MT_SUPER_QUAKE) push = 3.5;
+  const unblock = D.MvLevel[mv] === LV_UNBLOCK;
+  const blocked = !unblock && o.atk < 0 && d.block > 0 && Math.random() < d.block * DIFF.block[mDiff];
+  if (blocked) {
+    o.hit = D.MvBlockstun[mv]; o.vx = dir * push * 0.8 * EK;
+    if (special) f.hp -= Math.trunc(D.MvDamage[mv] / 4);
+    d.pG = Math.min(100, d.pG + 1.5);
+    showPose(f, frame(f, ["guard", "lower"]));
+    FX.spawn(cx - camX, cy, FX.FX_BLOCK);
+    mHitStop = 2;
+    return;
+  }
+  const counter = o.atk >= 0 && o.atk < foeWind(o);
+  o.combo++;
+  let dmg = D.MvDamage[mv];
+  if (o.combo >= 3) dmg *= Math.max(0.3, 1 - 0.12 * (o.combo - 2));   // combo scaling
+  if (counter) dmg *= 1.25;
+  f.hp -= Math.floor(dmg + 0.5);
+  let stun = D.MvHitstun[mv];
+  if (o.combo >= 4) { stun = Math.max(2, stun - Math.floor((o.combo - 3) * 1.5)); push *= 1 + 0.2 * (o.combo - 3); }
+  if (counter) stun += 4;
+  const ko = f.hp <= 0, kd = D.MvKD[mv] || ko;
+  o.atk = -1; o.mv = null; o.vx = dir * push * EK; f.flash = 2;
+  if (kd) { o.down = 1; o.hit = 0; f.vy = -3.5 * EK; f.y -= 1; setPose(f, "lie"); }
+  else { o.hit = stun; showPose(f, frame(f, ["hit", "walk_1"])); }
+  d.pG = Math.min(100, d.pG + 5);                         // +50 of 1000
+  d.foe = f; d.hits++;
+  FX.spawnHit(cx - camX, cy, heavy || counter, p.look[0]);
+  mHitStop = heavy || counter ? 4 : 3;
+  if (unblock) { mHitStop = 8; d.dark = 8; d.slow = 24; }  // 벽력권: the impact darkens and slows the world
+  if (ko) mHitStop = 10;
+}
+
+/** The engine's 청풍진천 shock waves (drawQuake), at field scale. */
+function drawQuakeField(p: Ent, mv: number, t: number): void {
+  t -= D.MvStartup[mv];
+  if (t < 0 || t > D.MvActive[mv] + 8) return;
+  const gx = Math.round(p.x - camX), gy = Math.round(p.y);
+  for (let k = 0; k <= 2; k++) {
+    const rad = Math.round(((t - k * 2) * 6 + 6) * EK);
+    if (rad <= 4 || rad >= 47) continue;
+    const h = Math.max(2, Math.round((13 - Math.trunc(rad / EK / 7) - k * 2) * EK));
+    const ink = k === 0 ? RGB(236, 248, 255) : k === 1 ? RGB(120, 196, 255) : RGB(50, 110, 220);
+    for (let s = -1; s <= 1; s += 2) {
+      R.fillRect(gx + s * rad - 1, gy - h, 3, h, ink);
+      R.fillRect(gx + s * (rad - 3) - 1, gy - Math.trunc(h / 2) - 1, 2, Math.trunc(h / 2) + 1, RGB(50, 110, 220));
+      if (k === 0) R.fillRect(s < 0 ? gx - rad : gx, gy - 1, rad, 1, RGB(120, 196, 255));
+    }
+  }
+}
+
 function duelTick(): void {
   const d = duel!, p = player()!;
+  if (d.dark > 0) d.dark--;
+  if (d.slow > 0) { d.slow--; if (d.slow % 2 === 1) return; }   // slow motion: every other tick
   d.t++;
   if (d.ko > 0) {                                         // the player is down: lie there, then the bout starts over
     d.ko++;
@@ -879,12 +1022,13 @@ function duelTick(): void {
     else { const n = near(p.x); if (n) p.face = n.e.x > p.x ? 1 : -1; }
   }
   if (d.hpMode) {
-    d.pNg = Math.min(1000, d.pNg + 6);
+    if (!d.eng) d.pNg = Math.min(1000, d.pNg + 6);
     d.hist.push(stickDir(p.face)); if (d.hist.length > 40) d.hist.shift();
     if (d.ngFlash > 0) d.ngFlash--;
   }
   // --- the player
-  if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
+  if (d.eng) engPlayer(d, p, live, L, Rt);
+  else if (d.pHit > 0) { d.pHit--; showPose(p, frame(p, ["hit", "stand", "block"])); }
   else if (d.pAtk >= 0) {
     d.pAtk++;
     const mv = d.mv, dir = p.face;
@@ -938,14 +1082,41 @@ function duelTick(): void {
     const f = o.e, dist = Math.abs(f.x - p.x), toP = p.x > f.x ? 1 : -1;
     const boss = SKILLS[f.kit.base ?? f.look[0]];
     if (d.hpMode) o.ng = Math.min(1000, o.ng + (boss ? 5 : 4));
-    if (o.hit > 0) { o.hit--; continue; }
+    if (o.down > 0) {                                     // knocked down: thrown back, lies, gets up (or stays down, beaten)
+      o.down++;
+      if (f.y < GROUND || f.vy < 0) { f.vy += GRAV * EK; f.y += f.vy; f.x += o.vx; if (f.y >= GROUND) { f.y = GROUND; f.vy = 0; o.vx = 0; o.down = 2; } }
+      else if (f.hp <= 0) { o.out = true; f.hp = 0; }
+      else if (o.down > 2 + 16 + 4) { o.down = 0; o.combo = 0; o.cool = 20; setSt(f, ST_IDLE); }   // DOWN_LIE_TICKS + GETUP_TICKS
+      continue;
+    }
+    if (o.hit > 0) { o.hit--; f.x += o.vx; o.vx *= 0.7; continue; }
+    o.combo = 0;
     if (o.atk < 0) f.face = toP;
     if (o.atk >= 0) {
       o.atk++;
       const mv = o.mv, w = mv ? Math.round(mv.wind * DIFF.wind[mDiff] / 10) : d.hpMode ? DIFF.wind[mDiff] : 10;
       showPose(f, frame(f, o.atk < w ? [(mv ? mv.name : o.bn) + "_0", ...ATK0] : [(mv ? mv.name : o.bn) + "_1", ...ATK1]));
       if (mv?.dash && o.atk < w && dist > 18) f.x += toP * mv.dash / w;
-      if (o.atk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0 && d.ko === 0) {
+      if (d.eng && o.atk === w && Math.abs(f.x - p.x) < (mv ? 22 : 18) && d.ko === 0) {   // a sword cut: about the reach of muyeong's slash, scaled
+        // against an engine fighter: the blow stuns, pushes and can be guarded (holding away from this foe)
+        const heavy = !!mv, away = (p.x - f.x) * (K.isDown(K.BTN_RIGHT) ? 1 : K.isDown(K.BTN_LEFT) ? -1 : 0) > 0;
+        const guard = away && d.pAtk < 0 && d.pHit <= 0;
+        const base = mv ? d.dmg * 1.8 : d.dmg, push = (heavy ? 2.2 : 1.2) * EK;
+        if (guard) {
+          d.pHit = d.pGuard = heavy ? 10 : 8; d.pVx = toP * push * 0.8;
+          if (heavy) p.hp -= Math.trunc(base * DIFF.dmg[mDiff] / 4);
+          FX.spawn(p.x - camX - toP * 4, p.y - 14, FX.FX_BLOCK); mHitStop = 2;
+          d.pG = Math.min(100, d.pG + 1); o.g = Math.min(100, o.g + 1.5);
+        } else {
+          d.pAtk = -1; d.pHit = heavy ? 16 : 12; d.pGuard = 0; d.pVx = toP * push; p.flash = 2;
+          p.hp -= Math.max(1, Math.round(base * DIFF.dmg[mDiff]));
+          FX.spawnHit(p.x - camX - toP * 4, p.y - 14, heavy, "");
+          if (mv) land(d, f, p, mv, 0, toP, false, false, o);
+          mHitStop = heavy ? 4 : 3;
+          d.pG = Math.min(100, d.pG + 2.5); o.g = Math.min(100, o.g + 5);
+          if (p.hp <= 0) { p.hp = 0; d.ko = 1; mShake = 6; o.atk = -1; o.mv = null; mHitStop = 10; return; }
+        }
+      } else if (!d.eng && o.atk === w && Math.abs(f.x - p.x) < (mv ? mv.reach : 30) && d.pAtk < 0 && d.ko === 0) {
         FX.spawnHit(p.x - camX - toP * 4, p.y - 14, !!mv, mv && boss ? "heukrim" : "");
         d.pHit = mv ? 14 : 10; p.flash = 2;
         const base = mv ? (mv.kind === "power" ? d.dmg * 1.8 : mv.dmg) : d.dmg;
@@ -961,8 +1132,8 @@ function duelTick(): void {
     }
     if (o.cool > 0) o.cool--;
     // its place: on its side of the player, behind any nearer foe on that side
-    const side = o.side, rank = alive(d).filter((q) => q !== o && q.side === side && Math.abs(q.e.x - p.x) < dist).length;
-    const want = 22 + rank * 18;
+    const side = o.side, rank = alive(d).filter((q) => q !== o && q.down === 0 && q.side === side && Math.abs(q.e.x - p.x) < dist).length;
+    const want = d.eng ? 12 + rank * 16 : 22 + rank * 18;   // engine scale: bodies 12 apart (halfW 6 + 6), at reach
     const goal = p.x + side * want;
     const front = rank === 0;
     // a skill from where it stands (bosses: the smoke bomb from afar, the ultimate when the gauge is full)
@@ -975,16 +1146,16 @@ function duelTick(): void {
           const r = Math.random() * 100 / DIFF.skill[mDiff];
           for (const q of boss) if (!q.ult && o.ng >= q.cost! && dist < q.reach && (q.kind === "bomb" ? dist > 40 && r < 2 : dist <= 24 && r < 40)) { s = q; break; }
         }
-      } else if (o.ng >= POWER.cost! && dist <= 24 && Math.random() < 0.5 * DIFF.skill[mDiff]) s = POWER;
+      } else if (o.ng >= POWER.cost! && dist <= (d.eng ? 16 : 24) && Math.random() < 0.5 * DIFF.skill[mDiff]) s = POWER;
     }
     if (s) {
       o.mv = s; o.atk = 0;
       if (s.ult) { o.g = 0; mHitStop = 10; mFlash = 3; } else o.ng -= s.cost!;
-    } else if (Math.abs(f.x - goal) > 3) {
+    } else if (Math.abs(f.x - goal) > (d.eng ? 1.5 : 3)) {
       const step = Math.sign(goal - f.x) * (Math.abs(goal - f.x) > 30 ? 1.2 : 0.7);   // hurry round to its side, then edge in
       f.x += step; f.face = toP;
       if (f.st !== ST_WALK) setSt(f, ST_WALK); else f.t++;
-    } else if (front && o.cool <= 0 && dist <= 26) { o.mv = null; o.atk = 0; o.bn = hasSprite((f.kit.base ?? f.look[0]) + ".kick_0") && Math.random() < 0.4 ? "kick" : "atk"; }
+    } else if (front && o.cool <= 0 && dist <= (d.eng ? 16 : 26)) { o.mv = null; o.atk = 0; o.bn = hasSprite((f.kit.base ?? f.look[0]) + ".kick_0") && Math.random() < 0.4 ? "kick" : "atk"; }
     else if (f.st !== ST_IDLE) setSt(f, ST_IDLE);
   }
   if (map) { p.x = Math.max(6, Math.min(map.w - 6, p.x)); for (const o of d.foes) o.e.x = Math.max(6, Math.min(map.w - 6, o.e.x)); }

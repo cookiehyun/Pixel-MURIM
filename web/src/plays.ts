@@ -282,7 +282,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "move", id: "heuksa", x: 288 },
       { t: "move", id: "player", x: 120, wait: true },
       // the three cultists come at him together (one in front, one round the back)
-      { t: "duel", foes: ["c1", "c2", "c3"], hp: 30, dmg: 7, text: "교도 셋을 쓰러뜨리시오" },
+      { t: "duel", foes: ["c1", "c2", "c3"], hp: 240, dmg: 50, text: "교도 셋을 쓰러뜨리시오" },   // arcade scale: Danwoo has 1000
       { t: "wait", n: 30 },
       { t: "face", id: "heuksa", to: "player" },
       { t: "pose", id: "heuksa", pose: "clap" },
