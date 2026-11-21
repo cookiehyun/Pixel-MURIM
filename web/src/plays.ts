@@ -194,7 +194,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "move", id: "v2", x: 256, run: true }, { t: "move", id: "v1", x: 238, run: true, wait: true },
       { t: "pose", id: "v1", pose: "startle" }, { t: "pose", id: "v2", pose: "stand" },
       { t: "pose", id: "mabu", pose: "reach" },
-      { t: "narr", text: "마부는 수레 밑에 숨은 아이부터 끌어낸다." },
+      { t: "narr", text: "마부는 수레 밑에 숨겨 두었던 제 아이부터 끌어낸다." },
       { t: "pose", id: "kid", pose: "kid_stand" },
       { t: "wait", n: 30 },
       // 7. 천마전
