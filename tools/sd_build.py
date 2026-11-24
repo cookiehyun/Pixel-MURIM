@@ -95,7 +95,11 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
         print(pic, "fit: scale", scale)
     jobs += [f"{tmp}/fig_{k}.png:{scale}={n}" for k, n in enumerate(names) if n != "-"]
 # one call for every sheet: one shared palette, so skin, cloth and hair are the same colours in every frame
-r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), out, *jobs, "--colors", "40", "--bg-tol", "60"], check=True, capture_output=True, text=True)
+ncol = "40"                                                 # "@colors <char> <n>": more colours (a steel blade needs its own greys)
+for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
+    q = ln.split()
+    if len(q) == 3 and q[0] == "@colors" and q[1] == char: ncol = q[2]
+r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), out, *jobs, "--colors", ncol, "--bg-tol", "60"], check=True, capture_output=True, text=True)
 for l in r.stdout.splitlines():
     q = l.split()
     if len(q) >= 3: anchors.append((q[0], int(q[1]), int(q[2])))
