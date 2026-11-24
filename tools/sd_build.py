@@ -76,6 +76,35 @@ for n, _, _ in anchors:
     pink = (a[:, :, 3] > 0) & (r_ > 110) & (b_ > 90) & (g_ < np.minimum(r_, b_) * 0.72)
     a[pink, 3] = 0
     Image.fromarray(a).save(f)
+# one skin colour: the AI sheets shade skin with several near-identical tones and borrow the shoe brown for cheek and
+# hand shadows; all skin tones become the most common one, and a brown pixel touching skin (above the feet) becomes one
+# skin-shadow tone. On for characters listed with "@skin <char>" in sd_sheets.txt.
+def unify_skin(names):
+    from collections import Counter
+    frames = {n: np.asarray(Image.open(os.path.join(out, n + ".png")).convert("RGBA")).copy() for n in names}
+    cnt = Counter()
+    for a in frames.values():
+        for c in a[a[:, :, 3] > 0][:, :3]: cnt[tuple(int(v) for v in c)] += 1
+    tones = [c for c in cnt if c[0] > 200 and c[0] - c[2] > 60 and 150 <= c[1] <= 215]
+    if not tones: return
+    base = np.array(max(tones, key=lambda c: cnt[c]), np.uint8)
+    shade = (base.astype(float) * np.array([0.86, 0.75, 0.76])).astype(np.uint8)
+    for n, a in frames.items():
+        rgb = a[:, :, :3].astype(int); op = a[:, :, 3] > 0
+        sk = op & np.isin(rgb[:, :, 0] * 65536 + rgb[:, :, 1] * 256 + rgb[:, :, 2], [t[0] * 65536 + t[1] * 256 + t[2] for t in tones])
+        a[sk, :3] = base
+        ys = np.where(op.any(1))[0]; feet = ys.min() + int((ys.max() - ys.min()) * 0.78)
+        brown = op & (rgb[:, :, 0] > 120) & (rgb[:, :, 0] - rgb[:, :, 2] > 60) & (rgb[:, :, 0] < 200) & (rgb[:, :, 1] < 120)
+        near = np.zeros_like(sk)
+        near[1:, :] |= sk[:-1, :]; near[:-1, :] |= sk[1:, :]; near[:, 1:] |= sk[:, :-1]; near[:, :-1] |= sk[:, 1:]
+        sh = brown & near; sh[feet:] = False
+        a[sh, :3] = shade
+        Image.fromarray(a).save(os.path.join(out, n + ".png"))
+for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
+    q = ln.split()
+    if len(q) == 2 and q[0] == "@skin" and q[1] == char:
+        unify_skin([n for n, _, _ in anchors])
+
 # one outline for every sheet: AI sheets come with thicker or thinner black outlines, and the thin ones mostly vanish
 # when shrunk (that frame then looks lighter and smaller). Any light pixel on the silhouette edge gets a dark pixel
 # outside it, so all frames share the same bold edge.

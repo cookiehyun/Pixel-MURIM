@@ -67,12 +67,16 @@ for f in sorted(os.listdir(a.dir)):
     rows = face[ftop: ftop + 3]
     front = max(np.where(r)[0].max() for r in rows if r.any())
     ex, ey = front - a.inset, ftop + 1
-    # the drawn eyes and specks under the brow line, in front of the ear, become skin
-    for y in range(ftop + 1, ftop + 4):
+    # the drawn eyes and specks in front of the ear become skin; a light pixel touching the eye (an eye white)
+    # becomes part of the eye
+    for y in range(ftop, ftop + 4):
         for x in range(front - 4, front):
-            dark_or_white = px[y, x, :3].sum() < 330 or px[y, x, :3].min() > 215   # drawn eyes, eye whites, specks
-            if 0 <= x < px.shape[1] and px[y, x, 3] and not face[y, x] and dark_or_white and (face[y, x - 1] or face[y, x + 1] or face[y - 1, x] or face[y + 1, x]):
-                px[y, x] = skin_main
+            if not (0 <= x < px.shape[1] and 0 <= y < px.shape[0]) or not px[y, x, 3] or face[y, x]: continue
+            white = px[y, x, :3].min() > 200
+            dark = px[y, x, :3].sum() < 330
+            if not (white or dark) or not (face[y, x - 1] or face[y, x + 1] or face[y - 1, x] or face[y + 1, x]): continue
+            touches_eye = abs(x - ex) <= 1 and ey - 1 <= y <= ey + a.eye
+            px[y, x] = EYE if white and touches_eye else skin_main
     for k in range(a.eye):
         if 0 <= ey + k < px.shape[0] and 0 <= ex < px.shape[1]: px[ey + k, ex] = EYE
     Image.fromarray(px).save(os.path.join(a.dir, f))
