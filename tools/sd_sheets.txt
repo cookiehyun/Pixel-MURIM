@@ -1,0 +1,4 @@
+# SD fighter sheets (GPT pictures in docs/art/sd/src) -> frame names of the arcade character.
+# <char> <picture> <source px per art px> <frame names, left to right ("-" = skip)>
+# scale = standing figure height in the picture / target height (heights: docs/art/sd/HEIGHTS)
+danwoo 117.webp 8.79 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
