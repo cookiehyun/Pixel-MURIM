@@ -60,6 +60,8 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
         _, top, bot, _, _ = hair_size(f"{tmp}/fig_0.png")
         ref_head = head_len(f"{tmp}/fig_0.png") / ((bot - top + 1) / float(q[3]))
         if "idle_0" in CLASSIC: kh = float(q[3]) / CLASSIC["idle_0"]
+    if len(q) == 3 and q[0] == "@height" and q[1] == char and "idle_0" in CLASSIC:
+        kh = float(q[2]) / CLASSIC["idle_0"]                  # SD height of the standing frame (no model-sheet head)
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     p = ln.split()
     if not p or p[0].startswith("#") or p[0] != char or len(p) < 4:
@@ -69,9 +71,9 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_split.py"), os.path.join(ROOT, "docs", "art", "sd", "src", pic), tmp, str(len(names))], check=True, capture_output=True)
     if ref_head is None:                                   # the first sheet sets the head size (art pixels)
         ref_head = float(np.median([head_len(f"{tmp}/fig_{k}.png") or 0 for k in range(len(names))])) / float(scale)
-    if len(p) > 4 and p[4] == "fit":
+    if len(p) > 4 and p[4] in ("fit", "legs"):
         hl = [head_len(f"{tmp}/fig_{k}.png") for k, nm in enumerate(names) if nm not in FACE_SKIP.get(char, ())]
-        scale = f"{float(np.median([h for h in hl if h])) / ref_head:.2f}"
+        if p[4] == "fit": scale = f"{float(np.median([h for h in hl if h])) / ref_head:.2f}"   # "legs": keep the given scale
         for k, nm in enumerate(names):
             if nm == "-" or nm not in CLASSIC: continue
             # legs are only re-lengthened on standing poses (folded legs in a crouch, a jump or on the floor stay)
@@ -81,6 +83,7 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
             want = int(round(CLASSIC[nm] * kh * float(scale)))      # picture rows for the arcade frame's height
             have = bot - top + 1
             if have == want: continue
+            if p[4] == "legs" and abs(have - want) > 0.2 * have: continue   # a pose too far from the arcade one (lunge vs stand): leave it
             # the belt: the darkest row band between 40% and 65% of the figure; legs start below it
             band = range(top + int(have * 0.40), top + int(have * 0.65))
             dark = [(int((fg[y] & (a[y].sum(1) < 150)).sum()), y) for y in band]
