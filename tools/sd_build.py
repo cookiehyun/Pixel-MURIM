@@ -87,7 +87,9 @@ def unify_skin(names):
         for c in a[a[:, :, 3] > 0][:, :3]: cnt[tuple(int(v) for v in c)] += 1
     tones = [c for c in cnt if c[0] > 200 and c[0] - c[2] > 60 and 150 <= c[1] <= 215]
     if not tones: return
-    base = np.array(max(tones, key=lambda c: cnt[c]), np.uint8)
+    main = max(tones, key=lambda c: cnt[c])
+    tones = [c for c in tones if sum(abs(int(a) - int(b)) for a, b in zip(c, main)) <= 30]   # near-identical tones only (muscle shading stays)
+    base = np.array(main, np.uint8)
     shade = (base.astype(float) * np.array([0.86, 0.75, 0.76])).astype(np.uint8)
     for n, a in frames.items():
         rgb = a[:, :, :3].astype(int); op = a[:, :, 3] > 0
@@ -140,8 +142,8 @@ if "idle_0" in ref:
 # the same pixel eye on every upright frame
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     q = ln.split()
-    if len(q) == 3 and q[0] == "@face" and q[1] == char:
-        subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_face.py"), out, q[2]], check=True)
+    if len(q) >= 3 and q[0] == "@face" and q[1] == char:
+        subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_face.py"), out, q[2], *q[3:]], check=True)
 with open(os.path.join(out, "anchors.txt"), "w") as fh:
     for n, x, y in anchors: fh.write(f"{n} {x} {y}\n")
 print(len(anchors), "frames")

@@ -17,6 +17,9 @@ ap = argparse.ArgumentParser()
 ap.add_argument("dir"); ap.add_argument("skip")
 ap.add_argument("--inset", type=int, default=2); ap.add_argument("--eye", type=int, default=2)
 ap.add_argument("--ref", default="idle_0")
+# bald or hooded heads: no clear "top of the face". Copy the reference frame's brow and eye instead: the box
+# rows y0..y1 below the head's top row, columns x0..-1 from the front of the face (rightmost skin in those rows)
+ap.add_argument("--copy", default="")
 a = ap.parse_args()
 skip = set(a.skip.split(","))
 EYE = np.array([28, 20, 30, 255], np.uint8)
@@ -36,6 +39,46 @@ warm = cand[(cand[:, 0] > 170) & (cand[:, 0] > cand[:, 2] + 40) & (cand[:, 1] > 
 tones = np.unique(warm, axis=0)
 if len(tones) == 0: raise SystemExit("no skin found in " + a.ref)
 skin_main = tuple(int(v) for v in np.median(warm, axis=0)) + (255,)
+
+def head_box(px, y0, y1):
+    ys = np.where(px[..., 3].any(1) if px.ndim == 3 else None)[0] if False else np.where((px[..., 3] > 0).any(1))[0]
+    top = ys.min()
+    sk = is_skin(px, tones)
+    rows = [y for y in range(top + y0, top + y1 + 1) if sk[y].any()]
+    if not rows: return None
+    front = int(np.median([np.where(sk[y])[0].max() for y in rows]))
+    return top, front, sk
+
+if a.copy:
+    y0, y1, x0 = (int(v) for v in a.copy.split(":"))
+    hb = head_box(ref, y0, y1)
+    rt, rf, _ = hb
+    patch = ref[rt + y0: rt + y1 + 1, rf + x0: rf].copy()            # the reference brow and eye (skin included)
+    done = []
+    for f in sorted(os.listdir(a.dir)):
+        if not f.endswith(".png"): continue
+        n = f[:-4]
+        if n in skip or n == a.ref: continue
+        px = load(n)
+        hb = head_box(px, y0, y1)
+        if not hb: continue
+        top, front, sk = hb
+        ty, tx = top + y0, front + x0
+        if tx < 0 or ty < 0 or ty + patch.shape[0] > px.shape[0] or front > px.shape[1]: continue
+        # first the frame's own brow / eye marks around the box become skin (no double brows)
+        for y in range(ty - 1, ty + patch.shape[0] + 2):
+            for x in range(tx - 1, front):
+                if not (0 < x < px.shape[1] - 1 and 0 <= y < px.shape[0]) or not px[y, x, 3] or sk[y, x]: continue
+                if px[y, x, :3].astype(int).sum() < 330 and (sk[y, x - 1] or sk[y, x + 1]):
+                    px[y, x] = skin_main
+        region = px[ty: ty + patch.shape[0], tx: front]
+        # only over the face: the target pixel is opaque, the patch pixel is opaque
+        m = (region[..., 3] > 0) & (patch[..., 3] > 0)
+        region[m] = patch[m]
+        Image.fromarray(px).save(os.path.join(a.dir, f))
+        done.append(n)
+    print(len(done), "faces (copied):", " ".join(done))
+    raise SystemExit
 
 done = []
 for f in sorted(os.listdir(a.dir)):
@@ -75,8 +118,14 @@ for f in sorted(os.listdir(a.dir)):
             white = px[y, x, :3].min() > 200
             dark = px[y, x, :3].sum() < 330
             if not (white or dark) or not (face[y, x - 1] or face[y, x + 1] or face[y - 1, x] or face[y + 1, x]): continue
-            touches_eye = abs(x - ex) <= 1 and ey - 1 <= y <= ey + a.eye
-            px[y, x] = EYE if white and touches_eye else skin_main
+            px[y, x] = skin_main
+    # around the eye nothing else dark or light: exactly the same 1x<eye> eye as standing
+    for y in range(ey - 1, ey + a.eye + 1):
+        for x in range(ex - 2, ex + 2):
+            if not (0 <= y < px.shape[0] and 0 <= x < px.shape[1]) or not px[y, x, 3] or face[y, x]: continue
+            v = px[y, x, :3].astype(int)
+            if (v.sum() < 330 or v.min() > 200) and ((x > 0 and face[y, x - 1]) or (x + 1 < px.shape[1] and face[y, x + 1])):
+                px[y, x] = skin_main
     for k in range(a.eye):
         if 0 <= ey + k < px.shape[0] and 0 <= ex < px.shape[1]: px[ey + k, ex] = EYE
     Image.fromarray(px).save(os.path.join(a.dir, f))
