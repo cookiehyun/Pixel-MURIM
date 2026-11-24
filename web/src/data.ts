@@ -6,6 +6,8 @@ export const D = {
   SprW: [] as number[], SprH: [] as number[], SprAX: [] as number[], SprAY: [] as number[], SprOff: [] as number[],
   SprName: [] as string[],
   SprHi: [] as boolean[],               // hi-res art (PNG): drawn at the doubled screen resolution
+  SprHiS: [] as number[],               // screen pixels per art pixel for hi-res art (0 = HI; 3 = SD fighter art at the classic size)
+  SprFx: [] as number[],                // effect pixels lifted from the classic frame an SD fighter frame replaced (-1 = none)
   SprPix: [] as number[],
   AnimCount: 0,
   AnimTPF: [] as number[], AnimStart: [] as number[], AnimLen: [] as number[], AnimFrames: [] as number[],
@@ -69,6 +71,25 @@ export async function loadAll(): Promise<void> {
   }
 }
 
+// colours that classic fighter art uses only for effects
+const FX_COLORS: Record<string, number[]> = {
+  danwoo: [RGB(0xd8, 0xec, 0xff), RGB(0x8f, 0xc0, 0xee), RGB(0xb8, 0xa4, 0x86), RGB(0xd8, 0xcc, 0xb4)],
+};
+function liftEffects(id: number, ch: string): number {
+  const cols = FX_COLORS[ch];
+  if (!cols || D.SprW[id] === undefined) return -1;
+  const w = D.SprW[id], h = D.SprH[id], off = D.SprOff[id];
+  const px: number[] = [];
+  let any = false;
+  for (let k = 0; k < w * h; k++) { const c = D.SprPix[off + k]; const fx = cols.includes(c); px.push(fx ? c : -1); any ||= fx; }
+  if (!any) return -1;
+  const nid = D.SprCount++;
+  D.SprName[nid] = D.SprName[id] + "__fx"; D.SprW[nid] = w; D.SprH[nid] = h; D.SprAX[nid] = D.SprAX[id]; D.SprAY[nid] = D.SprAY[id];
+  D.SprHi[nid] = false; D.SprFx[nid] = -1; D.SprOff[nid] = D.SprPix.length;
+  for (const c of px) D.SprPix.push(c);
+  return nid;
+}
+
 /** data/hi/manifest.txt: PNG art that replaces classic sprites (missing manifest = none). */
 async function loadHiSprites(): Promise<void> {
   let lines: string[];
@@ -106,6 +127,12 @@ async function loadHiSprites(): Promise<void> {
       sprIdx.set(p[0], nid); D.SprName[nid] = p[0];
     }
     const id = sprIdx.get(p[0])!, w = data.width, h = data.height, breathe = p[4] === "breathe";
+    if (p[4] === "fight") {
+      // SD art replacing a classic fighter frame: drawn at the classic size; the classic frame's painted effects
+      // (kick crescents, palm glow, dust) are kept as an overlay so the arcade looks the same
+      D.SprHiS[id] = 3;
+      D.SprFx[id] = D.SprHi[id] ? -1 : liftEffects(id, p[0].split(".")[0]);
+    }
     D.SprW[id] = w; D.SprH[id] = h; D.SprAX[id] = +p[2]; D.SprAY[id] = +p[3]; D.SprHi[id] = true;
     D.SprOff[id] = D.SprPix.length;
     const cut = Math.trunc(h * 0.45);

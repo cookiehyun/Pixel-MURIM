@@ -869,8 +869,9 @@ export function draw(): void {
     const f = F[i];
     if (f.prefix === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
     if ((f.prefix === "danwoo" || f.prefix === "sd_danwoo") && f.state === ST_ATTACK) {
-      if (f.mv === f.moves[MV_SP1] && !D.SprHi[currentSprite(i)]) drawWindPalm(i);   // hi-res art draws its own palm
-      if (f.mv === f.moves[MV_SP2] && !D.SprHi[currentSprite(i)]) drawSpinFist(i);
+      const own = D.SprHi[currentSprite(i)] && D.SprHiS[currentSprite(i)] !== 3;   // hi-res art that draws its own effects
+      if (f.mv === f.moves[MV_SP1] && !own) drawWindPalm(i);
+      if (f.mv === f.moves[MV_SP2] && !own) drawSpinFist(i);
       if (f.mv === f.moves[MV_SUPER]) drawQuake(i);
     }
   }
@@ -1026,7 +1027,9 @@ function drawOne(i: number): void {
     }
     if (demonAwake(i) && !mAwakeShown[i]) { mAwakeShown[i] = true; Combat.showText("CHEONMA SIMGONG", 40, i); }
   }
-  R.drawSprite(currentSprite(i), x, y, flip, tint, f.skin || (i === 1 && F[0].prefix === F[1].prefix && !F[0].skin));
+  const cur = currentSprite(i);
+  R.drawSprite(cur, x, y, flip, tint, f.skin || (i === 1 && F[0].prefix === F[1].prefix && !F[0].skin));
+  if (D.SprFx[cur] >= 0 && tint < 0) R.drawSprite(D.SprFx[cur], x, y, flip);   // SD art: the classic frame's effects on top
 }
 
 export function isDrain(i: number): boolean {
@@ -1168,7 +1171,7 @@ function drawQuake(i: number): void {
       if (k === 0) R.fillRect(s < 0 ? gx - rad : gx, gy - 1, rad, 1, RGB(120, 196, 255));
     }
   }
-  if (t <= D.MvActive[f.mv] + 4 && !D.SprHi[currentSprite(i)]) {     // hi-res art draws its own palm
+  if (t <= D.MvActive[f.mv] + 4 && (!D.SprHi[currentSprite(i)] || D.SprHiS[currentSprite(i)] === 3)) {     // hi-res art draws its own palm (SD fighter art does not)
     const n = BIG_PALM[0].length, flat: string[] = [];
     for (let c = 0; c < Math.trunc(n / 2); c++) {
       let row = "";

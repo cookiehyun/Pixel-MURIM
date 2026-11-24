@@ -123,7 +123,7 @@ function pixels(id: number, alt: boolean | number): ArrayLike<number> {
 
 // hi-res art scale: SD story art is drawn at 2 in the field and at 3 (one art pixel per world pixel, the classic
 // fighters' size) when it fights in the fight engine
-let mHiS = HI;
+let mHiS = 0;                                          // 0: each sprite's own scale
 export function setHiScale(n: number): void { mHiS = n; }
 
 /** Draw sprite with its anchor (ground point under the hip) on world point (x, y). flip mirrors; tint >= 0 paints it one color. */
@@ -132,7 +132,7 @@ export function drawSprite(id: number, x: number, y: number, flip: boolean, tint
   const pix = pixels(id, alt);
   x = Math.trunc(x); y = Math.trunc(y);
   if (D.SprHi[id]) {                                  // hi-res art: S x S screen pixels per art pixel (S = HI, or 3 for SD fighters in a fight)
-    const S = mHiS, X = x * PX + (PX - S >> 1), Y = y * PX + PX - S;   // anchor pixel sits on the world pixel
+    const S = mHiS || D.SprHiS[id] || HI, X = x * PX + (PX - S >> 1), Y = y * PX + PX - S;   // anchor pixel sits on the world pixel
     for (let sy = 0; sy < h; sy++) {
       const py = Y + (sy - ay) * S;
       if (py <= -S || py >= PH) continue;

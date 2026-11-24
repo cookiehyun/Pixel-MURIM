@@ -155,7 +155,7 @@ export function gameRender(): void {
         Fighter.draw();
         Projectile.draw();
         FX.draw();
-        R.setHiScale(R.HI);
+        R.setHiScale(0);
         Hud.draw();
         Match.draw();
         if (C.WhiteFlash > 1) R.flashScreen(RGB(250, 246, 255));
