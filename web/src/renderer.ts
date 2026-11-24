@@ -292,17 +292,19 @@ export function artDot(wx: number, wy: number, color: number, a = 1): void {
 
 /** Screen-pixel origin of art pixel (sx, sy) of hi-res sprite id drawn at world (x, y). */
 export function hiArtOrigin(id: number, x: number, y: number, flip: boolean, sx: number, sy: number): [number, number] {
-  const X = Math.trunc(x) * PX + (PX - HI >> 1), Y = Math.trunc(y) * PX + PX - HI;
-  return [flip ? X + (D.SprAX[id] - sx) * HI : X + (sx - D.SprAX[id]) * HI, Y + (sy - D.SprAY[id]) * HI];
+  const S = hiScale(id), X = Math.trunc(x) * PX + (PX - S >> 1), Y = Math.trunc(y) * PX + PX - S;
+  return [flip ? X + (D.SprAX[id] - sx) * S : X + (sx - D.SprAX[id]) * S, Y + (sy - D.SprAY[id]) * S];
 }
+/** Screen pixels per art pixel of hi-res sprite id (SD fighter art: 3). */
+export const hiScale = (id: number) => mHiS || D.SprHiS[id] || HI;
 
 /** Rage look for hi-res art: flickering red / orange rim, flame tongues off the top edge, embers, red wash. */
 export function drawRageHi(id: number, x: number, y: number, flip: boolean, f: number): void {
   const w = D.SprW[id], h = D.SprH[id], off = D.SprOff[id];
   const on = (sx: number, sy: number) => sx >= 0 && sy >= 0 && sx < w && sy < h && D.SprPix[off + sy * w + sx] >= 0;
   const put = (sx: number, sy: number, c: number, a = 1) => {
-    const [px, py] = hiArtOrigin(id, x, y, flip, sx, sy);
-    for (let j = 0; j < HI; j++) for (let i = 0; i < HI; i++) {
+    const [px, py] = hiArtOrigin(id, x, y, flip, sx, sy), S = hiScale(id);
+    for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
       const X = px + i, Y = py + j;
       if (X >= 0 && X < PW && Y >= 0 && Y < PH) { if (a >= 1) back[X + Y * PW] = c; else blendAt(X + Y * PW, c, a); }
     }
@@ -330,8 +332,8 @@ export function tintHi(id: number, x: number, y: number, flip: boolean, color: n
   for (let sy = 0; sy < h; sy++)
     for (let sx = 0; sx < w; sx++) {
       if (D.SprPix[off + sy * w + sx] < 0) continue;
-      const [px, py] = hiArtOrigin(id, x, y, flip, sx, sy);
-      for (let j = 0; j < HI; j++) for (let i = 0; i < HI; i++) {
+      const [px, py] = hiArtOrigin(id, x, y, flip, sx, sy), S = hiScale(id);
+      for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
         const X = px + i, Y = py + j;
         if (X >= 0 && X < PW && Y >= 0 && Y < PH) blendAt(X + Y * PW, color, a);
       }
