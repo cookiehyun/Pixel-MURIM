@@ -29,6 +29,9 @@ danwoo 142.webp 10 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3 fit
 danwoo 143.webp 30 jp fit
 danwoo 141.webp 9 palm_0,palm_1,sp_0,spin_0,spin_t,spin_1,slam_0,slam_1 fit
 # 137.webp (kicks, first try) came out off the arcade poses: replaced by 142
+# Muyeong (model sheet 144, height 40); scale = standing figure height / 40 (sword tip may stick out)
+muyeong 145.webp 5.78 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
+muyeong 146.webp 7.2 lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
