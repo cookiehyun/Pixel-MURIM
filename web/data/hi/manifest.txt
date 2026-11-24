@@ -250,12 +250,12 @@ danwoo.hp_0 sd/danwoo_f/hp_0.png 12 36 fight
 danwoo.hp_1 sd/danwoo_f/hp_1.png 14 34 fight
 danwoo.hp_2 sd/danwoo_f/hp_2.png 14 36 fight
 danwoo.hp_3 sd/danwoo_f/hp_3.png 13 38 fight
-danwoo.lk_0 sd/danwoo_f/lk_0.png 11 38 fight
-danwoo.lk_1 sd/danwoo_f/lk_1.png 10 38 fight
-danwoo.hk_p sd/danwoo_f/hk_p.png 10 38 fight
+danwoo.lk_0 sd/danwoo_f/lk_0.png 11 39 fight
+danwoo.lk_1 sd/danwoo_f/lk_1.png 11 38 fight
+danwoo.hk_p sd/danwoo_f/hk_p.png 11 38 fight
 danwoo.hk_0 sd/danwoo_f/hk_0.png 11 38 fight
-danwoo.hk_1 sd/danwoo_f/hk_1.png 11 38 fight
-danwoo.hk_2 sd/danwoo_f/hk_2.png 11 38 fight
+danwoo.hk_1 sd/danwoo_f/hk_1.png 11 37 fight
+danwoo.hk_2 sd/danwoo_f/hk_2.png 12 38 fight
 danwoo.hk_3 sd/danwoo_f/hk_3.png 11 38 fight
 danwoo.crouch sd/danwoo_f/crouch.png 12 33 fight
 danwoo.clp sd/danwoo_f/clp.png 12 32 fight

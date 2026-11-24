@@ -13,6 +13,25 @@ char, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 anchors = []
 jobs = []
+
+# "fit" sheets: AI kick sheets come with smaller heads and longer legs than the rest. Such a sheet is scaled by head
+# size (so head and body match the first sheet) and then its legs (below the belt) are shortened in the picture so
+# each frame stands as tall as the arcade frame of the same name.
+def hair_size(f):
+    a = np.asarray(Image.open(f).convert("RGB")).astype(int)
+    fg = np.abs(a - a[2, 2]).sum(2) >= 60
+    ys = np.where(fg.any(1))[0]; top, bot = ys[0], ys[-1]
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    hair = fg & (r < 90) & (g < 90) & (b < 100) & (np.abs(r - b) < 30)
+    hair[int(top + (bot - top + 1) * 0.45):] = False
+    return float(np.sqrt(hair.sum())), top, bot, fg, a
+CLASSIC = {}
+tf = os.path.join(ROOT, "web", "data", char + ".txt")
+if os.path.exists(tf):
+    for l in open(tf):
+        q = l.split()
+        if q and q[0] == "SPRITE": CLASSIC[q[1]] = int(q[3])
+ref_head = None
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     p = ln.split()
     if not p or p[0].startswith("#") or p[0] != char or len(p) < 4:
@@ -20,6 +39,29 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     pic, scale, names = p[1], p[2], p[3].split(",")
     tmp = os.path.join(out, "_split", pic)
     subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_split.py"), os.path.join(ROOT, "docs", "art", "sd", "src", pic), tmp, str(len(names))], check=True, capture_output=True)
+    if ref_head is None:                                   # the first sheet sets the head size (art pixels)
+        ref_head = float(np.median([hair_size(f"{tmp}/fig_{k}.png")[0] for k in range(len(names))])) / float(scale)
+    if len(p) > 4 and p[4] == "fit":
+        scale = f"{float(np.median([hair_size(f'{tmp}/fig_{k}.png')[0] for k in range(len(names))])) / ref_head:.2f}"
+        for k, nm in enumerate(names):
+            if nm == "-" or nm not in CLASSIC: continue
+            f = f"{tmp}/fig_{k}.png"
+            _, top, bot, fg, a = hair_size(f)
+            want = int(round(CLASSIC[nm] * float(scale)))           # picture rows for the arcade frame's height
+            have = bot - top + 1
+            if have <= want: continue
+            # the belt: the darkest row band between 40% and 65% of the figure; legs start below it
+            band = range(top + int(have * 0.40), top + int(have * 0.65))
+            dark = [(int((fg[y] & (a[y].sum(1) < 150)).sum()), y) for y in band]
+            belt = max(dark)[1] + 4
+            im = Image.open(f).convert("RGB")
+            upper = im.crop((0, 0, im.width, belt))
+            legs = im.crop((0, belt, im.width, bot + 1))
+            legs = legs.resize((im.width, max(1, legs.height - (have - want))), Image.LANCZOS)
+            outp = Image.new("RGB", (im.width, belt + legs.height + 24), tuple(int(v) for v in a[2, 2]))
+            outp.paste(upper, (0, 0)); outp.paste(legs, (0, belt))
+            outp.save(f)
+        print(pic, "fit: scale", scale)
     jobs += [f"{tmp}/fig_{k}.png:{scale}={n}" for k, n in enumerate(names) if n != "-"]
 # one call for every sheet: one shared palette, so skin, cloth and hair are the same colours in every frame
 r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), out, *jobs, "--colors", "40", "--bg-tol", "60"], check=True, capture_output=True, text=True)
