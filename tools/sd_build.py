@@ -33,6 +33,7 @@ def head_len(f):
     need = max(3, int(fg.shape[1] * 0.02))
     rows = [y for y in range(top, top + int((bot - top + 1) * 0.6)) if sk[y].sum() >= need]
     if not rows: return None
+    if rows[0] <= top + (bot - top + 1) * 0.04: return None   # a hand raised above the head, not a face
     run = [rows[0]]
     for y in rows[1:]:
         if y - run[-1] <= 4: run.append(y)
@@ -73,6 +74,8 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
         scale = f"{float(np.median([h for h in hl if h])) / ref_head:.2f}"
         for k, nm in enumerate(names):
             if nm == "-" or nm not in CLASSIC: continue
+            # legs are only re-lengthened on standing poses (folded legs in a crouch, a jump or on the floor stay)
+            if CLASSIC[nm] < 0.85 * CLASSIC.get("idle_0", CLASSIC[nm]) or nm.startswith(("down", "roll", "jump", "j", "c")): continue
             f = f"{tmp}/fig_{k}.png"
             _, top, bot, fg, a = hair_size(f)
             want = int(round(CLASSIC[nm] * kh * float(scale)))      # picture rows for the arcade frame's height

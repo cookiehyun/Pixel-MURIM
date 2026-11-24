@@ -21,6 +21,11 @@ cheolsan 131.webp 7.59 rush_0,rush_1,rush_2,rush_3,sp_0,sp_1
 # Danwoo, 2.9-head redraw (model sheet 134, height 40): every sheet "fit" to the model's head
 @ref danwoo 134.webp 40
 danwoo 135.webp 8.05 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash fit
+danwoo 136.webp 10 lp_0,lp_1,hp_p,hp_0,hp_1,hp_2,hp_3 fit
+danwoo 138.webp 8 crouch,clp,chp_0,chp_1,clk,chk,jump,-,jk fit
+danwoo 139.webp 8 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win fit
+danwoo 140.webp 7.95 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1
+# 137.webp (kicks) came out off the arcade poses: redraw pending
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
