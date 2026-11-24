@@ -4,13 +4,13 @@
 # sheets without a standing pose use the arcade pose's height (crouch 32 of 38 for Danwoo).
 # "fit" after the names: scale by head size and shorten the legs (sheets drawn with small heads / long legs).
 # Build: python3 tools/sd_build.py <char> <out dir> [--install]
-danwoo 117.webp 8.79 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
-danwoo 118.webp 10.4 lp_0,lp_1,hp_p,hp_0,hp_1,hp_2,hp_3
-danwoo 124.webp 10.55 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3 fit
-danwoo 120.webp 7.45 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
-danwoo 121.webp 8.05 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
-danwoo 122.webp 8.1 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1
-danwoo 123.webp 9.24 palm_0,palm_1,sp_0,spin_0,spin_t,spin_1,slam_0,slam_1
+#old danwoo 117.webp 8.79 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
+#old danwoo 118.webp 10.4 lp_0,lp_1,hp_p,hp_0,hp_1,hp_2,hp_3
+#old danwoo 124.webp 10.55 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3 fit
+#old danwoo 120.webp 7.45 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
+#old danwoo 121.webp 8.05 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
+#old danwoo 122.webp 8.1 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1
+#old danwoo 123.webp 9.24 palm_0,palm_1,sp_0,spin_0,spin_t,spin_1,slam_0,slam_1
 cheolsan 127.webp 7.86 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
 cheolsan 126.webp 7.88 lp_0,lp_1,hp_p,hp_0,hp_1,hp_2,hp_3
 cheolsan 128.webp 7.55 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3
@@ -18,6 +18,9 @@ cheolsan 132.webp 6.94 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
 cheolsan 129.webp 6.3 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
 cheolsan 130.webp 6.9 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1
 cheolsan 131.webp 7.59 rush_0,rush_1,rush_2,rush_3,sp_0,sp_1
+# Danwoo, 2.9-head redraw (model sheet 134, height 40): every sheet "fit" to the model's head
+@ref danwoo 134.webp 40
+danwoo 135.webp 8.05 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash fit
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
