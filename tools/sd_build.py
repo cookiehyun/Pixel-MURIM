@@ -32,6 +32,38 @@ for n, _, _ in anchors:
     pink = (a[:, :, 3] > 0) & (r_ > 110) & (b_ > 90) & (g_ < np.minimum(r_, b_) * 0.72)
     a[pink, 3] = 0
     Image.fromarray(a).save(f)
+# one outline for every sheet: AI sheets come with thicker or thinner black outlines, and the thin ones mostly vanish
+# when shrunk (that frame then looks lighter and smaller). Any light pixel on the silhouette edge gets a dark pixel
+# outside it, so all frames share the same bold edge.
+OUT = np.array([27, 22, 38, 255], np.uint8)
+def outline(n):
+    f = os.path.join(out, n + ".png")
+    a = np.asarray(Image.open(f).convert("RGBA")).copy()
+    a = np.pad(a, ((1, 1), (1, 1), (0, 0)))
+    op = a[:, :, 3] > 0
+    light = op & (a[:, :, :3].astype(int).sum(axis=2) > 180)
+    near = np.zeros_like(op)
+    near[1:, :] |= light[:-1, :]; near[:-1, :] |= light[1:, :]; near[:, 1:] |= light[:, :-1]; near[:, :-1] |= light[:, 1:]
+    a[near & ~op] = OUT
+    Image.fromarray(a).save(f)
+for n, _, _ in anchors: outline(n)
+anchors = [(n, x + 1, y + 1) for n, x, y in anchors]   # one pixel of padding on every side
+
+# anchor x on the body, not the feet: on one leg (kicks) or in a lunge the middle of the feet slides, so the body
+# would jump sideways. The back edge of the torso (chest to belt rows) stays put while hands and feet reach forward;
+# the anchor keeps idle_0's distance from it. Lying / rolling frames keep the feet anchor.
+FEET = {"down_0", "down_1", "roll_0", "roll_1", "roll_2", "roll_3"}
+def back_edge(n):
+    a = np.asarray(Image.open(os.path.join(out, n + ".png")).convert("RGBA"))
+    op = a[:, :, 3] > 0
+    ys = np.where(op.any(1))[0]; top, bot = ys.min(), ys.max(); h = bot - top + 1
+    rows = [y for y in range(top + int(h * 0.42), top + int(h * 0.62) + 1) if op[y].any()]
+    return float(np.median([np.where(op[y])[0].min() for y in rows]))
+ref = {n: (x, y) for n, x, y in anchors}
+if "idle_0" in ref:
+    off = ref["idle_0"][0] - back_edge("idle_0")
+    anchors = [(n, x if n in FEET else int(round(back_edge(n) + off)), y) for n, x, y in anchors]
+
 # the same pixel eye on every upright frame
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     q = ln.split()
