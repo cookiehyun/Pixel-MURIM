@@ -12,6 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 char, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 anchors = []
+jobs = []
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     p = ln.split()
     if not p or p[0].startswith("#") or p[0] != char or len(p) < 4:
@@ -19,11 +20,12 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     pic, scale, names = p[1], p[2], p[3].split(",")
     tmp = os.path.join(out, "_split", pic)
     subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_split.py"), os.path.join(ROOT, "docs", "art", "sd", "src", pic), tmp, str(len(names))], check=True, capture_output=True)
-    jobs = [f"{tmp}/fig_{k}.png:{scale}={n}" for k, n in enumerate(names) if n != "-"]
-    r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), out, *jobs, "--colors", "32", "--bg-tol", "60"], check=True, capture_output=True, text=True)
-    for l in r.stdout.splitlines():
-        q = l.split()
-        if len(q) >= 3: anchors.append((q[0], int(q[1]), int(q[2])))
+    jobs += [f"{tmp}/fig_{k}.png:{scale}={n}" for k, n in enumerate(names) if n != "-"]
+# one call for every sheet: one shared palette, so skin, cloth and hair are the same colours in every frame
+r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), out, *jobs, "--colors", "40", "--bg-tol", "60"], check=True, capture_output=True, text=True)
+for l in r.stdout.splitlines():
+    q = l.split()
+    if len(q) >= 3: anchors.append((q[0], int(q[1]), int(q[2])))
 # magenta fringe off (edge pixels go)
 for n, _, _ in anchors:
     f = os.path.join(out, n + ".png")

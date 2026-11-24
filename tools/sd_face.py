@@ -70,7 +70,8 @@ for f in sorted(os.listdir(a.dir)):
     # the drawn eyes and specks under the brow line, in front of the ear, become skin
     for y in range(ftop + 1, ftop + 4):
         for x in range(front - 4, front):
-            if 0 <= x < px.shape[1] and px[y, x, 3] and not face[y, x] and px[y, x, :3].sum() < 330 and (face[y, x - 1] or face[y, x + 1] or face[y - 1, x] or face[y + 1, x]):
+            dark_or_white = px[y, x, :3].sum() < 330 or px[y, x, :3].min() > 215   # drawn eyes, eye whites, specks
+            if 0 <= x < px.shape[1] and px[y, x, 3] and not face[y, x] and dark_or_white and (face[y, x - 1] or face[y, x + 1] or face[y - 1, x] or face[y + 1, x]):
                 px[y, x] = skin_main
     for k in range(a.eye):
         if 0 <= ey + k < px.shape[0] and 0 <= ex < px.shape[1]: px[ey + k, ex] = EYE
