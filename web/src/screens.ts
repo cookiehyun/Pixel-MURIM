@@ -39,7 +39,7 @@ export function drawPortraitAt(k: number, x: number, y: number, w = 20, alt = fa
 
 export function drawBigView(prefix: string, x: number, flip: boolean, clipL: number, clipR: number, alt: boolean | number = false): void {
   const ref = spriteId(prefix + ".idle_0");
-  const sc = D.SprHi[ref] ? R.HI / R.PX : 1;          // hi-res art pixels are smaller than world pixels
+  const sc = D.SprHi[ref] && D.SprHiS[ref] !== 3 ? R.HI / R.PX : 1;   // hi-res art pixels are smaller than world pixels (not SD fighter art)
   x = Math.round(flip ? x - (D.SprAX[ref] * 2 - D.SprW[ref]) * sc : x - (D.SprW[ref] - D.SprAX[ref] * 2) * sc);
   R.drawSpriteScaled(animFrame(animId(prefix + ".idle"), mMenuTick), x, 96, flip, 2, clipL, 10, clipR, 99, -1, alt);
 }

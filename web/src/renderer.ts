@@ -162,16 +162,17 @@ export function drawSpriteScaled(id: number, x: number, y: number, flip: boolean
   cx0: number, cy0: number, cx1: number, cy1: number, tint = -1, alt: boolean | number = false): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
-  const B = D.SprHi[id] ? k * HI : k * PX;            // screen pixels per sprite pixel
+  const small = D.SprHi[id] && D.SprHiS[id] !== 3;     // hi-res art with pixels smaller than world pixels (SD fighter art is world size)
+  const B = small ? k * HI : k * PX;                  // screen pixels per sprite pixel
   const X0 = Math.max(0, cx0 * PX), Y0 = Math.max(0, cy0 * PX);
   const X1 = Math.min(PW - 1, cx1 * PX + PX - 1), Y1 = Math.min(PH - 1, cy1 * PX + PX - 1);
-  const bx = x * PX, by = y * PX + (D.SprHi[id] ? (PX - HI) * k : 0);
+  const bx = x * PX, by = y * PX + (small ? (PX - HI) * k : 0);
   for (let sy = 0; sy < h; sy++) {
     for (let sx = 0; sx < w; sx++) {
       let c = pix[off + sy * w + sx];
       if (c < 0) continue;
       if (tint >= 0) c = tint;
-      const px = flip ? bx + (ax - sx) * B - (D.SprHi[id] ? 0 : B - PX) : bx + (sx - ax) * B;
+      const px = flip ? bx + (ax - sx) * B - (small ? 0 : B - PX) : bx + (sx - ax) * B;
       const py = by + (sy - ay) * B;
       for (let j = py; j < py + B; j++) {
         if (j < Y0 || j > Y1) continue;
@@ -186,7 +187,7 @@ export function altColor(c: number): number {
   let r = (c & 255) / 255, g = ((c >> 8) & 255) / 255, b = ((c >> 16) & 255) / 255;
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, v = mx;
   const s = mx > 0 ? d / mx : 0;
-  if (s < 0.2 || v < 0.16) return c;
+  if (s < 0.3 || v < 0.32) return c;                    // greys, dark hair, outlines and shadows keep their colour
   let h: number;
   if (mx === r) h = 60 * ((g - b) / d);
   else if (mx === g) h = 60 * ((b - r) / d) + 120;
