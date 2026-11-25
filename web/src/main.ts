@@ -1,4 +1,4 @@
-import { loadAll } from "./data";
+import { loadAll, D, moveId } from "./data";
 import * as Account from "./account";
 import * as K from "./input";
 import * as R from "./renderer";
@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   R.init(canvas);
   gameInit();
   setupTouch();
-  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy, story: Story };
+  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy, story: Story, D, moveId };
   document.getElementById("loading")?.remove();
   let acc = 0, last = performance.now();
   const frame = (now: number) => {

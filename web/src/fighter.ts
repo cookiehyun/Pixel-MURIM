@@ -2,7 +2,7 @@
 import {
   D, animId, spriteId, moveId, hasSprite, hasAnim, animFrame, animFrameHold,
   MT_NORMAL, MT_THROW, MT_PROJ, MT_RISE, MT_RUSH, MT_GRAB, MT_SUPER_PROJ, MT_SUPER_GRAB, MT_SUPER_RUSH,
-  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT,
+  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT, MT_SUPER_CRASH,
 } from "./data";
 import * as R from "./renderer";
 import { GROUND_Y, SCREEN_W } from "./renderer";
@@ -104,7 +104,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
       break;
     case "heukrim": f.superName = "CHEONMA GANGRIM"; f.seqFx = FX.FX_DARK; break;
     case "hongryeon": f.superName = "HONGRYEON EOPHWA"; break;
-    case "cheonma": f.superName = "CHEONMA GUNRIM"; f.seqFx = FX.FX_DARK; break;
+    case "cheonma": f.superName = "CHEONMA GEOMBEOP"; f.seqFx = FX.FX_DARK; break;
     case "sd_heuksa": f.superName = "HEUKSA CHEONMANG"; f.seqFx = FX.FX_DARK; break;
     default: f.superName = "CHEONGPUNG JINCHEON";
   }
@@ -492,6 +492,9 @@ function updateAttack(i: number, d: boolean): void {
     case MT_SUPER_RIFT:
       if (t === D.MvStartup[f.mv]) riftDash(i);
       break;
+    case MT_SUPER_CRASH:
+      if (t >= D.MvStartup[f.mv]) crashStep(i, t - D.MvStartup[f.mv]);
+      break;
     case MT_SUPER_QUAKE:
       if (t === D.MvStartup[f.mv]) {
         Combat.showText(f.superName, 40, i);
@@ -834,7 +837,7 @@ export function hitRect(i: number): Box | null {
   const f = F[i], mv = f.mv, mt = D.MvType[mv];
   if (mt === MT_PROJ || mt === MT_SUPER_PROJ || mt === MT_GRAB || mt === MT_SUPER_GRAB || mt === MT_THROW) return null;
   if (mt === MT_PROJ_BOOM || mt === MT_SUPER_FIRE || mt === MT_TELEPORT || mt === MT_STANCE) return null;
-  if (mt === MT_RAGE || mt === MT_SUPER_RIFT) return null;
+  if (mt === MT_RAGE || mt === MT_SUPER_RIFT || mt === MT_SUPER_CRASH) return null;
   const w = D.MvHbW[mv], h = D.MvHbH[mv];
   const x = f.facing > 0 ? vint(f.x + 0.5) + D.MvHbX[mv] : vint(f.x + 0.5) - D.MvHbX[mv] - w + 1;
   return { x, y: vint(f.footY + 0.5) + D.MvHbY[mv], w, h };
@@ -863,11 +866,13 @@ export function draw(): void {
     if (F[i].state === ST_THROW && F[i].prefix === "seolhwa" && F[i].mv === F[i].moves[MV_SUPER]) drawFlurry(i);
     if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_SUPER_RIFT) drawRiftStreak(i, F[i].stTick - D.MvStartup[F[i].mv]);
     if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE) drawRoar(i);
+    if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_SUPER_CRASH) drawCrash(i, F[i].stTick - D.MvStartup[F[i].mv]);
   }
   for (let i = 0; i <= 1; i++) {
     if (isDrain(i)) drawDrainOrbs(i);
     const f = F[i];
-    if (f.prefix === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
+    if (f.kit === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
+    if (f.kit === "cheonmasw" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonCut(i);
     if ((f.prefix === "danwoo" || f.prefix === "sd_danwoo") && f.state === ST_ATTACK) {
       const own = D.SprHi[currentSprite(i)] && D.SprHiS[currentSprite(i)] !== 3;   // hi-res art that draws its own effects
       if (f.mv === f.moves[MV_SP1] && !own) drawWindPalm(i);
@@ -1431,4 +1436,230 @@ export function debugStart(i: number, slot: number): boolean {
   if (slot === MV_SUPER) F[i].meter = METER_MAX;
   F[i].naegong = NAEGONG_MAX;
   return startAttack(i, slot, false, false);
+}
+
+// ---- Cheonma: 천마검법 (Cheonma sword art). Three strikes that meet in one crash; the sword stays drawn after.
+// Form (moves.txt p1): 1 = three sword waves converge on the foe, 2 = dash in and carve three cuts that burst,
+// 3 = three blades fall from the sky. Everything lives on the fighter (cineCX/cineCY/cineX0/hitCount) for rollback.
+
+const CRASH_WAVE_T = 10, CRASH_CUTS = [3, 7, 11], CRASH_CUT_BURST = 18, CRASH_BLADES = [4, 10, 16];
+const SW = (n: string) => spriteId("cheonmasw." + n);
+
+/** One strike of the art: hits when the foe's body overlaps the box; blocked strikes chip. */
+function crashHit(i: number, x: number, y: number, w: number, h: number, dmg: number, final: boolean): boolean {
+  const o = 1 - i, hr = hurtRect(o);
+  if (!hr || hr.x > x + w || hr.x + hr.w < x || hr.y > y + h || hr.y + hr.h < y) return false;
+  const cx = vint(F[o].x + 0.5), cy = vint(F[o].footY) - 18;
+  if (Combat.blocks(o, D.MvLevel[F[i].mv])) {
+    applyBlock(o, 10, final ? 2 : 0.4);
+    Combat.dealDamage(o, Math.trunc(dmg / 4));
+    FX.spawn(cx, cy, FX.FX_BLOCK);
+    Combat.C.HitStop = 2;
+    return true;
+  }
+  Combat.dealDamage(o, dmg); Combat.addComboHit(i); Combat.addMeter(i, 0);
+  if (final) { applyHit(o, 0, 3, true); Combat.C.WhiteFlash = 2; Combat.C.HitStop = 6; }
+  else { applyHit(o, 16, 0.3, false); Combat.C.HitStop = 2; }
+  F[o].flash = 2;
+  FX.spawn(cx, cy, FX.FX_HEAVY);
+  return true;
+}
+
+function crashStep(i: number, t: number): void {
+  const f = F[i], o = 1 - i, fo = F[o], form = D.MvP1[f.mv] || 1, total = D.MvDamage[f.mv];
+  if (t === 0) {
+    if (!f.armed) toggleArms(i);                      // the art is drawn with the blade, and it stays out
+    Combat.showText(f.superName, 40, i);
+    f.hitCount = 0;
+    f.cineX0 = f.x;
+    f.cineCX = Math.max(8, Math.min(SCREEN_W - 8, vint(fo.x + 0.5)));
+    f.cineCY = vint(fo.footY) - 18;
+    Combat.C.ImpactDark = 3;
+  }
+  if (form === 1) {
+    f.cineSpr = t < 7 ? SW("palm_1") : SW("hp_3");
+    const ox = f.x + f.facing * 12;
+    if (t >= 1 && t <= CRASH_WAVE_T) {
+      for (let k = 0; k < 3; k++) {
+        if (f.hitCount & (1 << k)) continue;
+        const [wx, wy] = waveAt(i, k, t, ox);
+        if (crashHit(i, wx - 4, wy - 5, 8, 10, 40, false)) f.hitCount |= 1 << k;
+      }
+    }
+    if (t === CRASH_WAVE_T) {
+      Combat.C.ImpactDark = 4;
+      const n = ((f.hitCount & 1) + ((f.hitCount >> 1) & 1) + ((f.hitCount >> 2) & 1));
+      crashHit(i, f.cineCX - 18, f.cineCY - 24, 36, 44, total - n * 40, true);
+    }
+  } else if (form === 2) {
+    if (t === 0) {
+      const dist = (fo.x - f.x) * f.facing, hr = hurtRect(o);
+      if (dist > 0 && dist <= 84 && hr) {
+        f.x = fo.x - f.facing * (f.halfW + fo.halfW + 2);
+        clampX(i);
+        if (Combat.blocks(o, D.MvLevel[f.mv])) { crashHit(i, hr.x, hr.y, hr.w, hr.h, 60, true); f.hitCount = 0; }
+        else { f.hitCount = 1; applyHit(o, 30, 0, false); }
+      } else { f.x += f.facing * 50; clampX(i); }
+      f.cineCX = vint(fo.x + 0.5); f.cineCY = vint(fo.footY) - 20;
+    }
+    const cut = CRASH_CUTS.indexOf(t);
+    f.cineSpr = t < 3 ? SW("rush_1") : t < CRASH_CUT_BURST ? SW(["hp_1", "chp_1", "rush_2"][Math.min(2, Math.trunc((t - 3) / 4))]) : SW("rush_3");
+    if (f.hitCount && cut >= 0) {
+      Combat.dealDamage(o, 40); Combat.addComboHit(i);
+      fo.stun = Math.max(fo.stun, 14); fo.flash = 1; Combat.C.HitStop = 2;
+    }
+    if (f.hitCount && t === CRASH_CUT_BURST) {
+      Combat.dealDamage(o, total - 3 * 40); Combat.addComboHit(i);
+      applyHit(o, 0, 3, true); fo.flash = 2;
+      Combat.C.WhiteFlash = 2; Combat.C.HitStop = 6; Combat.C.ImpactDark = 4;
+    }
+  } else {
+    f.cineSpr = t < CRASH_BLADES[2] + 2 ? SW("sp_a") : SW("ovh_1");
+    const k = CRASH_BLADES.indexOf(t);
+    if (k >= 0) {
+      const bx = bladeX(i, k), half = k === 2 ? 11 : 7;
+      crashHit(i, bx - half, 0, half * 2, GROUND_Y, k === 2 ? total - 120 : 60, k === 2);
+      if (k === 2) Combat.C.ImpactDark = 4;
+    }
+  }
+  if (t === D.MvActive[f.mv] - 1) f.cineSpr = -1;
+}
+
+function waveAt(i: number, k: number, t: number, ox: number): [number, number] {
+  const f = F[i], s = Math.min(1, t / CRASH_WAVE_T), y0 = vint(f.footY) - [44, 26, 6][k];
+  const ease = s * s * (3 - 2 * s);
+  return [ox + (f.cineCX - ox) * ease, y0 + (f.cineCY - y0) * ease];
+}
+
+function bladeX(i: number, k: number): number {
+  return F[i].cineCX + [F[i].facing * 13, -F[i].facing * 13, 0][k];
+}
+
+const C_DARK = () => RGB(70, 6, 18), C_RED = () => RGB(200, 24, 44), C_HOT = () => RGB(255, 96, 104), C_CORE = () => RGB(255, 236, 236);
+
+function burst(cx: number, cy: number, s: number, big: number): void {
+  if (s < 0 || s > 12) return;
+  if (s < 3) {                                          // the flash: a filled disc, white hot in the middle
+    const r = 4 + s * big * 1.4;
+    for (let y = -r; y <= r; y++)
+      for (let x = -r; x <= r; x++) {
+        const d = Math.hypot(x, y * 1.3) / r;
+        if (d <= 1) R.putPixel(clng(cx + x), clng(cy + y), d < 0.45 ? C_CORE() : d < 0.75 ? C_HOT() : d < 0.92 ? C_RED() : C_DARK());
+      }
+  }
+  const r = 5 + s * big;
+  for (let a = 0; a < 360; a += 3) {
+    const c = Math.cos(a * 0.0174533), sn = Math.sin(a * 0.0174533);
+    for (let w = 0; w < (s < 7 ? 3 : 1); w++)
+      R.putPixel(clng(cx + (r - w) * c), clng(cy + (r - w) * 0.7 * sn), s < 5 ? (w === 1 ? C_CORE() : C_HOT()) : w === 0 ? C_RED() : C_DARK());
+  }
+  if (s < 7) {
+    for (let k = 0; k < 12; k++) {
+      const a = k * 0.5236 + 0.26, L = 8 + s * big * 1.8, d0 = s * big * 0.9;
+      for (let d = d0; d < L; d++) R.putPixel(clng(cx + Math.cos(a) * d), clng(cy + Math.sin(a) * d * 0.8), d > L - 3 ? C_RED() : k % 2 ? C_HOT() : C_CORE());
+    }
+  }
+}
+
+function thickLine(x0: number, y0: number, x1: number, y1: number, w: number, core: number, edge: number): void {
+  const L = Math.max(1, Math.hypot(x1 - x0, y1 - y0)), nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
+  for (let s = 0; s <= L; s++) {
+    const x = x0 + (x1 - x0) * s / L, y = y0 + (y1 - y0) * s / L, taper = 1 - Math.abs(s / L - 0.5) * 2;
+    const ww = Math.max(0, w * (0.35 + 0.65 * taper));
+    for (let d = -Math.ceil(ww) - 1; d <= Math.ceil(ww) + 1; d++)
+      R.putPixel(clng(x + nx * d), clng(y + ny * d), Math.abs(d) <= ww * 0.5 ? core : Math.abs(d) <= ww ? edge : C_DARK());
+  }
+}
+
+function drawCrash(i: number, t: number): void {
+  const f = F[i], form = D.MvP1[f.mv] || 1, gy = vint(f.footY);
+  if (t < 0) {                                          // gathering: dark red sparks drawn into the blade
+    const s = t + D.MvStartup[f.mv];
+    for (let k = 0; k < 10; k++) {
+      const a = k * 0.628 + s * 0.3, d = 26 - s * 3;
+      if (d > 2) R.putPixel(clng(f.x + Math.cos(a) * d), clng(gy - 30 + Math.sin(a) * d * 0.7), k % 2 ? C_HOT() : C_RED());
+    }
+    return;
+  }
+  if (form === 1) {
+    const ox = f.x + f.facing * 12;
+    if (t >= 1 && t <= CRASH_WAVE_T) {
+      for (let k = 0; k < 3; k++) {
+        for (let tr = 3; tr >= 0; tr--) {                // a short fading streak behind each wave
+          if (t - tr < 1) continue;
+          const [x, y] = waveAt(i, k, t - tr, ox);
+          for (let a = -75; a <= 75; a += 4) {          // crescent of sword energy facing the way it flies
+            const ca = Math.cos(a * 0.0174533), sa = Math.sin(a * 0.0174533), r = 12 - tr * 1.5;
+            const th = (1 - Math.abs(a) / 90) * (tr === 0 ? 3 : 2);
+            for (let w = 0; w <= th; w++) {
+              const col = tr > 1 ? (tr === 2 ? C_RED() : C_DARK()) : w < th * 0.4 ? C_CORE() : w < th * 0.8 ? C_HOT() : C_RED();
+              R.putPixel(clng(x + f.facing * (ca * (r - w) * 0.55 - 4)), clng(y + sa * (r - w)), col);
+            }
+          }
+        }
+      }
+    }
+    burst(f.cineCX, f.cineCY, t - CRASH_WAVE_T, 3.6);
+  } else if (form === 2) {
+    if (!f.hitCount) return;
+    const cx = f.cineCX, cy = f.cineCY, ANG = [-40, 40, 0];
+    if (t < CRASH_CUT_BURST) {
+      for (let k = 0; k < 3; k++) {
+        if (t < CRASH_CUTS[k]) continue;
+        const a = ANG[k] * 0.0174533, L = 30, age = t - CRASH_CUTS[k];
+        const ux = Math.cos(a) * f.facing, uy = Math.sin(a), w = age < 2 ? 2.5 : 1.2 + Math.min(2, (t - 13) * 0.4 > 0 ? (t - 13) * 0.4 : 0);
+        thickLine(cx - ux * L, cy - uy * L, cx + ux * L, cy + uy * L, w, age < 2 ? C_CORE() : C_HOT(), C_RED());
+      }
+    } else {
+      const s = t - CRASH_CUT_BURST;
+      burst(cx, cy, s, 3.6);
+      for (let k = 0; k < 24; k++) {                      // the three cuts shatter outward
+        const a = k * 0.2618 + (k % 3) * 0.1, d = 6 + s * (2 + (k % 4));
+        R.putPixel(clng(cx + Math.cos(a) * d), clng(cy + Math.sin(a) * d * 0.8), k % 2 ? C_HOT() : C_DARK());
+      }
+    }
+  } else {
+    for (let k = 0; k < 3; k++) {
+      const t0 = CRASH_BLADES[k], bx = bladeX(i, k), half = k === 2 ? 5 : 3, s = t - t0;
+      if (s >= -3 && s < 0) R.fillRect(bx, 0, 1, gy, s === -1 ? C_HOT() : C_RED());   // a thin red line marks the spot
+      if (s >= 0 && s < 8) drawSkyBlade(bx, s === 0 ? gy * 0.55 : gy, k === 2 ? 1.4 : 1, s);
+      if (s >= 1) burst(bx, gy - 6, s - 1, k === 2 ? 3.4 : 1.8);
+    }
+  }
+}
+
+/** A giant crimson sword of light standing point-down in the ground (tip at y = tip), fading after it lands. */
+function drawSkyBlade(bx: number, tip: number, k: number, s: number): void {
+  const half = Math.round(4 * k), L = Math.round(70 * k), fade = s >= 4;
+  const top = vint(tip) - L;
+  for (let y = Math.max(0, top); y <= tip; y++) {
+    const fromTip = tip - y, w = fromTip < half * 2 ? Math.trunc(fromTip / 2) : half;   // pointed tip
+    for (let x = -w - 1; x <= w + 1; x++) {
+      const e = Math.abs(x) > w;
+      if (fade && (x + y + s) % 2) continue;
+      R.putPixel(bx + x, y, e ? C_DARK() : Math.abs(x) <= w * 0.35 ? (s < 3 ? C_CORE() : C_HOT()) : C_RED());
+    }
+  }
+  if (top - 1 >= -12) {                               // the guard and grip above the blade
+    const gw = half + Math.round(5 * k);
+    R.fillRect(bx - gw, top - 3, gw * 2 + 1, 3, fade ? C_RED() : RGB(232, 184, 72));
+    R.fillRect(bx - 1, top - 3 - Math.round(12 * k), 3, Math.round(12 * k), C_DARK());
+  }
+}
+
+// ---- Cheonma with the sword: 천마참 (one unblockable cut, a crimson crescent as tall as a man)
+function drawDemonCut(i: number): void {
+  const f = F[i], t = f.stTick - D.MvStartup[f.mv];
+  if (t < 0 || t > D.MvActive[f.mv] + 2) return;
+  const lit = t <= D.MvActive[f.mv], cx = f.x + f.facing * 6, cy = f.footY - 22;
+  for (let a = -110; a <= 80; a += 3) {
+    const c = Math.cos(a * 0.0174533), s = Math.sin(a * 0.0174533), prog = (a + 110) / 190;
+    if (prog > (t + 1) / (D.MvActive[f.mv] + 1) + 0.15) continue;
+    for (let r = 14; r <= 26; r++) {
+      const edge = r === 14 || r === 26, inner = r > 22;
+      const col = edge ? C_DARK() : inner ? (lit ? C_CORE() : C_HOT()) : r > 18 ? (lit ? C_HOT() : C_RED()) : C_RED();
+      if (!lit && r < 18) continue;
+      R.putPixel(clng(cx + f.facing * c * r), clng(cy + s * r), col);
+    }
+  }
 }

@@ -457,7 +457,13 @@ CHEONMA = dict(                          # final boss (arcade): the Heavenly Dem
               torso="b", torso_dark="B", skirt="b", skirt_dark="B",
               belt="d", trim="w", cuff="w"),
     head="cheonma",
+    scabbard=dict(length=14),
 )
+CHEONMA["palette"].update({"W": "DCE4EC", "Q": "FFFFFF", "y": "E8B848", "m": "3A1418", "r": "C23434", "c": "1A1014"})
+
+# Cheonma with the long sword drawn (sp2 draws / sheathes, the super leaves it drawn): Muyeong's sword work
+CHEONMA_SW = dict(CHEONMA, name="cheonmasw", weapon=dict(kind="sword", length=14),
+                  scabbard=dict(length=14, empty=True))
 
 HONGRYEON = dict(
     name="hongryeon",
@@ -713,7 +719,17 @@ MOVE_ANIMS = {
     ],
     "cheonma": [
         ("sp1_pre", 2, ["palm_0"]),
+        ("sp2_pre", 2, ["draw_0"]),
         ("super_pre", 2, ["sp_a", "sp_a", "palm_0"]),
+    ],
+    "cheonmasw": [
+        ("lp_rec", 2, ["lp_1", "lp_0"]),
+        ("hp_pre", 2, ["hp_0", "hp_a", "hp_a"]),
+        ("hp_seq", 2, ["hp_1"]),
+        ("hp_rec", 3, ["hp_2", "hp_2", "hp_3"]),
+        ("sp1_pre", 2, ["palm_0", "palm_0"]),
+        ("sp2_pre", 2, ["draw_0"]),
+        ("super_pre", 2, ["sp_a"]),
     ],
     "hongryeon": [
         ("hp_pre", 2, ["hp_0", "hp_a"]),
@@ -1290,6 +1306,17 @@ CHEONMA_OVERRIDES.update({
     "palm_1": P(lean=30, lf=(58, 5), lb=(-55, -45), af=(92, 90), ab=(86, 92), open_hand=True, trail=("palm", 6)),
 })
 
+CHEONMA_SW_OVERRIDES = dict(CHEONMA_OVERRIDES)
+CHEONMA_SW_OVERRIDES.update(MUYEONG_OVERRIDES)
+CHEONMA_SW_OVERRIDES.update({
+    "draw_0": P(lean=10, lf=(24, 4), lb=(-20, -30), af=(-30, 20), ab=(55, 130), wa=-150),      # blade back to the hip
+    # demon cut (sp1 with the sword): blade high behind the head, then one huge two-handed cut through
+    "palm_0": P(lean=-18, lf=(26, 4), lb=(-34, -22), af=(176, 160), ab=(172, 158), wa=230),
+    "palm_1": P(lean=34, lf=(62, 6), lb=(-58, -46), af=(100, 70), ab=(95, 75), wa=40, trail=(230, 40)),
+    # Cheonma sword art (super): the blade raised straight to the sky
+    "sp_a": P(lean=-4, lf=(20, 2), lb=(-22, -6), af=(178, 178), ab=(170, 172), wa=180),
+})
+
 SCALE_KEYS = ("thigh", "shin", "torso", "upper", "fore", "head_r", "w_thigh", "w_shin", "w_upper",
               "w_fore", "w_hand", "chest", "waist", "skirt")
 SPRITE_SCALE = float(os.environ.get("SPRITE_SCALE", "1"))   # experiment: uniform rig scale
@@ -1375,7 +1402,7 @@ if __name__ == "__main__":
     for spec, ov in ((DANWOO, DANWOO_OVERRIDES), (CHEOLSAN, CHEOLSAN_OVERRIDES), (MUYEONG, MUYEONG_OVERRIDES),
                      (SEOLHWA, SEOLHWA_OVERRIDES), (HEUKRIM, HEUKRIM_OVERRIDES), (HEUKRIM_SW, HEUKRIM_SW_OVERRIDES),
                      (CHEOLSAN_RAGE, CHEOLSAN_OVERRIDES),
-                     (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES)):
+                     (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES), (CHEONMA_SW, CHEONMA_SW_OVERRIDES)):
         if only and spec["name"] != only:
             continue
         names = generate(spec, ov)
