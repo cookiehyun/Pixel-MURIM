@@ -20,6 +20,7 @@ ap.add_argument("--ref", default="idle_0")
 # bald or hooded heads: no clear "top of the face". Copy the reference frame's brow and eye instead: the box
 # rows y0..y1 below the head's top row, columns x0..-1 from the front of the face (rightmost skin in those rows)
 ap.add_argument("--copy", default="")
+ap.add_argument("--redraw", type=int, default=0)   # rows below the face top holding the eye (hair over the brow)
 a = ap.parse_args()
 skip = set(a.skip.split(","))
 EYE = np.array([28, 20, 30, 255], np.uint8)
@@ -48,6 +49,82 @@ def head_box(px, y0, y1):
     if not rows: return None
     front = int(np.median([np.where(sk[y])[0].max() for y in rows]))
     return top, front, sk
+
+def face_blob(px):
+    """the face: the biggest skin patch in the upper 45% of the figure -> (mask, top row, front column)"""
+    op = px[..., 3] > 0
+    ys = np.where(op.any(1))[0]; top, bot = ys.min(), ys.max()
+    sk = is_skin(px, tones); sk[top + int((bot - top + 1) * 0.45):] = False
+    lab = np.zeros(sk.shape, int); best = []; k = 0
+    for y0, x0 in zip(*np.where(sk)):
+        if lab[y0, x0]: continue
+        k += 1; st = [(y0, x0)]; lab[y0, x0] = k; pts = []
+        while st:
+            y, x = st.pop(); pts.append((y, x))
+            for yy, xx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                if 0 <= yy < sk.shape[0] and 0 <= xx < sk.shape[1] and sk[yy, xx] and not lab[yy, xx]: lab[yy, xx] = k; st.append((yy, xx))
+        if len(pts) > len(best): best = pts
+    if len(best) < 6: return None
+    m = np.zeros(sk.shape, bool)
+    for y, x in best: m[y, x] = True
+    ftop = min(y for y, _ in best)
+    front = max(x for y, x in best if y <= ftop + 3)
+    return m, ftop, front
+
+def holes(px, m, ftop, front, rows):
+    """non-skin pixels inside the face (skin on both sides in the row) in the given rows: the drawn eye and brow"""
+    out = []
+    for y in range(ftop, ftop + rows):
+        xs = np.where(m[y])[0] if 0 <= y < m.shape[0] else []
+        if len(xs) < 2: continue
+        for x in range(xs.min(), xs.max() + 1):
+            if not m[y, x] and px[y, x, 3] > 0: out.append((y, x))
+    return out
+
+if a.redraw:
+    # eyes drawn by the model come in every size (a dot or a wide dark band). Each frame's eye is the near-black
+    # patch in the head that touches the most skin; it becomes skin and the reference frame's eye is drawn in its
+    # place (aligned on the patch's top row and front column)
+    def eye_patch(px):
+        op = px[..., 3] > 0
+        ys = np.where(op.any(1))[0]; top, bot = ys.min(), ys.max()
+        sk = is_skin(px, tones)
+        blk = op & (px[..., :3].astype(int).sum(axis=2) < 110)
+        blk[top + int((bot - top + 1) * 0.4):] = False
+        lab = np.zeros(blk.shape, int); best = None; k = 0
+        for y0, x0 in zip(*np.where(blk)):
+            if lab[y0, x0]: continue
+            k += 1; st = [(y0, x0)]; lab[y0, x0] = k; pts = []
+            while st:
+                y, x = st.pop(); pts.append((y, x))
+                for yy, xx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                    if 0 <= yy < blk.shape[0] and 0 <= xx < blk.shape[1] and blk[yy, xx] and not lab[yy, xx]: lab[yy, xx] = k; st.append((yy, xx))
+            if len(pts) > 12: continue                     # outline runs, not an eye
+            touch = sum(1 for y, x in pts for yy, xx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1))
+                        if 0 <= yy < sk.shape[0] and 0 <= xx < sk.shape[1] and sk[yy, xx])
+            sides = sum(1 for y, x in pts if x > 0 and x + 1 < sk.shape[1] and sk[y, x - 1] and sk[y, x + 1])
+            score = touch + 3 * sides
+            if touch >= 3 and (best is None or score > best[0]): best = (score, pts)
+        return best[1] if best else None
+    rp = eye_patch(ref)
+    ry, rx = min(y for y, _ in rp), max(x for _, x in rp)
+    eye = [(y - ry, x - rx, tuple(ref[y, x])) for y, x in rp if int(ref[y, x, :3].astype(int).sum()) < 60]   # the black of the eye only
+    done = []
+    for f in sorted(os.listdir(a.dir)):
+        if not f.endswith(".png"): continue
+        n = f[:-4]
+        if n in skip or n == a.ref: continue
+        px = load(n)
+        ep = eye_patch(px)
+        if not ep: continue
+        ey, ex = min(y for y, _ in ep), max(x for _, x in ep)
+        for y, x in ep: px[y, x] = skin_main
+        for dy, dx, c in eye:
+            y, x = ey + dy, ex + dx
+            if 0 <= y < px.shape[0] and 0 <= x < px.shape[1] and px[y, x, 3]: px[y, x] = c
+        Image.fromarray(px).save(os.path.join(a.dir, f)); done.append(n)
+    print(len(done), "faces (eye redrawn):", " ".join(done), "| ref eye", len(eye), "px")
+    raise SystemExit
 
 if a.copy:
     y0, y1, x0 = (int(v) for v in a.copy.split(":"))
