@@ -745,8 +745,9 @@ MOVE_ANIMS = {
         ("hp_pre", 2, ["hp_0", "hp_a", "hp_a"]),
         ("hp_seq", 2, ["hp_1"]),
         ("hp_rec", 3, ["hp_2", "hp_2", "hp_3"]),
-        ("sp2_seq", 2, ["rush_1", "rush_2"]),
-        ("sp2_rec", 3, ["rush_3", "rush_3", "rush_0"]),
+        ("sp1_rec", 3, ["thrust_1", "thrust_0", "thrust_0"]),
+        ("sp2c_rec", 3, ["counter", "finish", "finish", "idle_0"]),
+        ("super_pre", 2, ["sky"]),
     ],
     "cheonmasw": [
         ("lp_rec", 2, ["lp_1", "lp_0"]),

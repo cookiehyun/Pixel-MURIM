@@ -125,6 +125,8 @@ baekmujin 234.webp 7.36 lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3
 baekmujin 235.webp 8.06 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3
 baekmujin 236.webp 7.07 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
 baekmujin 237.webp 7.6 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
+baekmujin 238.webp 6.4 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1
+baekmujin 239.webp 8.85 thrust_0,thrust_1,parry,counter,sky,finish
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
@@ -157,4 +159,4 @@ baekmujin 237.webp 7.6 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
 @face cheonma win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
 @face cheonmasw win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
 @face hyeolma fall,kneel,win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
-@face baekmujin idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash,lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3,lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3,crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk,guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
+@face baekmujin idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash,lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3,lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3,crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk,guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win,roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1,thrust_0,thrust_1,parry,counter,sky,finish

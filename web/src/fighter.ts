@@ -1,8 +1,8 @@
 // Port of Fighter.bas: the fighter state machine, input decoding, boxes and drawing.
 import {
-  D, animId, spriteId, moveId, hasSprite, hasAnim, animFrame, animFrameHold,
+  D, animId, spriteId, moveId, mvKeyOf, hasSprite, hasAnim, animFrame, animFrameHold,
   MT_NORMAL, MT_THROW, MT_PROJ, MT_RISE, MT_RUSH, MT_GRAB, MT_SUPER_PROJ, MT_SUPER_GRAB, MT_SUPER_RUSH,
-  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT, MT_SUPER_CRASH,
+  MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT, MT_SUPER_CRASH, MT_COUNTER,
 } from "./data";
 import * as R from "./renderer";
 import { GROUND_Y, SCREEN_W } from "./renderer";
@@ -1473,7 +1473,10 @@ export function debugStart(i: number, slot: number): boolean {
 
 const CRASH_WAVE_T = 10, CRASH_CUTS = [3, 7, 11], CRASH_CUT_BURST = 18, CRASH_BLADES = [4, 10, 16], CRASH_GHOST_END = 34;
 const GHOST = 8;   // form 3: all three blades struck clean - they stay standing as afterimages, then break together
-const SW = (n: string) => spriteId("cheonmasw." + n);
+const SW_BMJ: Record<string, string> = { palm_1: "finish", hp_3: "idle_0", sp_a: "sky", ovh_1: "sky", sp_1: "finish",
+  rush_1: "thrust_1", rush_2: "counter", rush_3: "finish" };
+let mCrashKit = "cheonma";                              // whose art is being drawn: picks the frames and the colours
+const SW = (n: string) => mCrashKit === "baekmujin" ? spriteId("baekmujin." + (SW_BMJ[n] ?? n)) : spriteId("cheonmasw." + n);
 
 /** One strike of the art: hits when the foe's body overlaps the box; blocked strikes chip. 0 miss, 1 blocked, 2 hit. */
 function crashHit(i: number, x: number, y: number, w: number, h: number, dmg: number, final: boolean): number {
@@ -1497,8 +1500,9 @@ function crashHit(i: number, x: number, y: number, w: number, h: number, dmg: nu
 
 function crashStep(i: number, t: number): void {
   const f = F[i], o = 1 - i, fo = F[o], form = D.MvP1[f.mv] || 1, total = D.MvDamage[f.mv];
+  mCrashKit = f.kit === "baekmujin" ? "baekmujin" : "cheonma";
   if (t === 0) {
-    if (!f.armed) toggleArms(i);                      // the art is drawn with the blade, and it stays out
+    if (!f.armed && f.kit === "cheonma") toggleArms(i);                      // the art is drawn with the blade, and it stays out
     Combat.showText(f.superName, 40, i);
     f.hitCount = 0;
     f.cineX0 = f.x;
@@ -1575,8 +1579,10 @@ function waveAt(i: number, k: number, t: number, ox: number): [number, number] {
 }
 
 
-// Cheonma's colour is violet and steel (red belongs to the Blood Demon)
-const C_DARK = () => RGB(34, 14, 56), C_RED = () => RGB(104, 52, 168), C_HOT = () => RGB(176, 140, 236), C_CORE = () => RGB(240, 236, 255);
+// Cheonma's colour is violet and steel (red belongs to the Blood Demon); Baek Mujin's 백일천검 is white and gold
+const gold = () => mCrashKit === "baekmujin";
+const C_DARK = () => gold() ? RGB(92, 72, 32) : RGB(34, 14, 56), C_RED = () => gold() ? RGB(200, 160, 72) : RGB(104, 52, 168),
+  C_HOT = () => gold() ? RGB(244, 222, 140) : RGB(176, 140, 236), C_CORE = () => gold() ? RGB(255, 252, 236) : RGB(240, 236, 255);
 
 function burst(cx: number, cy: number, s: number, big: number): void {
   if (s < 0 || s > 12) return;
@@ -1614,6 +1620,7 @@ function thickLine(x0: number, y0: number, x1: number, y1: number, w: number, co
 
 function drawCrash(i: number, t: number): void {
   const f = F[i], form = D.MvP1[f.mv] || 1, gy = vint(f.footY);
+  mCrashKit = f.kit === "baekmujin" ? "baekmujin" : "cheonma";
   if (t < 0) {                                          // gathering: dark red sparks drawn into the blade
     const s = t + D.MvStartup[f.mv];
     for (let k = 0; k < 10; k++) {
@@ -1769,6 +1776,28 @@ function drawDemonCut(i: number): void {
       R.putPixel(clng(cx + f.facing * c * r), clng(cy + s * r), col);
     }
   }
+}
+
+// ---- Baek Mujin: 금강벽. A parry stance; a hit landing in its active window is turned aside and answered at once.
+
+/** Is fighter d holding the parry right now? */
+export function parrying(d: number): boolean {
+  const f = F[d];
+  return f.state === ST_ATTACK && D.MvType[f.mv] === MT_COUNTER && f.stTick >= D.MvStartup[f.mv]
+    && f.stTick < D.MvStartup[f.mv] + D.MvActive[f.mv];
+}
+
+/** d parried a hit from a: the blow is cancelled, a gold flash, and the counter cut (<move>c) starts. */
+export function counterStrike(d: number, a: number, cx: number, cy: number): void {
+  const f = F[d], mv = moveId(mvKeyOf(f.mv) + "c");
+  FX.spawn(cx, cy, FX.FX_BLOCK);
+  FX.spawn(vint(f.x + f.facing * 8 + 0.5), vint(f.footY) - 26, FX.FX_SLASH);
+  Combat.showText("COUNTER", 20, d);
+  Combat.C.HitStop = 8; Combat.C.WhiteFlash = 1;
+  F[a].hasHit = true;
+  if (mv < 0) return;
+  f.mv = mv; f.hasHit = false; f.hitCount = 0;
+  setState(d, ST_ATTACK);
 }
 
 // ---- Hyeolma: the blood frenzy and its blood wave (the demon arm and the frenzy coming on are drawn in his SD frames)

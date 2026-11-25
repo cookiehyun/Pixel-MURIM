@@ -859,7 +859,7 @@ baekmujin.hp_3 sd/baekmujin_f/hp_3.png 12 45 fight
 baekmujin.lk_0 sd/baekmujin_f/lk_0.png 7 44 fight
 baekmujin.lk_1 sd/baekmujin_f/lk_1.png 8 44 fight
 baekmujin.hk_p sd/baekmujin_f/hk_p.png 8 44 fight
-baekmujin.hk_0 sd/baekmujin_f/hk_0.png 8 44 fight
+baekmujin.hk_0 sd/baekmujin_f/hk_0.png 7 44 fight
 baekmujin.hk_1 sd/baekmujin_f/hk_1.png 10 44 fight
 baekmujin.hk_2 sd/baekmujin_f/hk_2.png 7 44 fight
 baekmujin.hk_3 sd/baekmujin_f/hk_3.png 8 44 fight
@@ -873,7 +873,7 @@ baekmujin.jump sd/baekmujin_f/jump.png 9 40 fight
 baekmujin.jp sd/baekmujin_f/jp.png 9 40 fight
 baekmujin.jk sd/baekmujin_f/jk.png 9 40 fight
 baekmujin.guard sd/baekmujin_f/guard.png 9 42 fight
-baekmujin.cguard sd/baekmujin_f/cguard.png 9 33 fight
+baekmujin.cguard sd/baekmujin_f/cguard.png 10 33 fight
 baekmujin.hit_0 sd/baekmujin_f/hit_0.png 13 39 fight
 baekmujin.hit_1 sd/baekmujin_f/hit_1.png 10 37 fight
 baekmujin.chit sd/baekmujin_f/chit.png 9 33 fight
@@ -881,3 +881,17 @@ baekmujin.down_0 sd/baekmujin_f/down_0.png 30 42 fight
 baekmujin.down_1 sd/baekmujin_f/down_1.png 29 18 fight
 baekmujin.intro sd/baekmujin_f/intro.png 9 41 fight
 baekmujin.win sd/baekmujin_f/win.png 8 42 fight
+baekmujin.roll_0 sd/baekmujin_f/roll_0.png 9 37 fight
+baekmujin.roll_1 sd/baekmujin_f/roll_1.png 20 32 fight
+baekmujin.roll_2 sd/baekmujin_f/roll_2.png 5 30 fight
+baekmujin.roll_3 sd/baekmujin_f/roll_3.png 34 33 fight
+baekmujin.throw_0 sd/baekmujin_f/throw_0.png 8 43 fight
+baekmujin.throw_1 sd/baekmujin_f/throw_1.png 10 51 fight
+baekmujin.ovh_0 sd/baekmujin_f/ovh_0.png 12 51 fight
+baekmujin.ovh_1 sd/baekmujin_f/ovh_1.png 17 41 fight
+baekmujin.thrust_0 sd/baekmujin_f/thrust_0.png 14 42 fight
+baekmujin.thrust_1 sd/baekmujin_f/thrust_1.png 12 42 fight
+baekmujin.parry sd/baekmujin_f/parry.png 8 48 fight
+baekmujin.counter sd/baekmujin_f/counter.png 14 43 fight
+baekmujin.sky sd/baekmujin_f/sky.png 9 60 fight
+baekmujin.finish sd/baekmujin_f/finish.png 14 42 fight

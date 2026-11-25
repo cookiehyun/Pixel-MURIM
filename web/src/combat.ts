@@ -1,7 +1,7 @@
 // Port of Combat.bas: hit resolution, guard, combo scaling, meter, hit stop, KO.
 import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE, MT_SUPER_RIFT } from "./data";
 import * as FX from "./fx";
-import { F, hitRect, hurtRect, applyHit, applyBlock, startSuperSlash, atWall, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
+import { F, hitRect, hurtRect, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
 
 export const C = { HitStop: 0, SuperFreeze: 0, SuperOwner: 0, SlowMo: 0, ImpactDark: 0, WhiteFlash: 0, KoFinished: false };
 const KO_TICKS = 80;
@@ -79,6 +79,7 @@ function checkMelee(a: number, d: number): void {
 /** One hit of move mv from attacker a on defender d at (cx, cy). */
 export function applyAttack(a: number, d: number, mv: number, cx: number, cy: number, isProj: boolean, lastHit: boolean): void {
   if (mKoTimer > 0) return;
+  if (parrying(d) && D.MvLevel[mv] !== LV_UNBLOCK) { counterStrike(d, a, cx, cy); return; }
   const mt = D.MvType[mv];
   const special = mt !== MT_NORMAL;
   let hits = isProj || mt === MT_RUSH ? D.MvP2[mv] : 1;
