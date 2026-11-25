@@ -1652,12 +1652,9 @@ function drawCrash(i: number, t: number): void {
       if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) brush(g, bend, 5, C_CORE(), C_HOT(), 1, t);
       if (ghost) {
         const e = t - CRASH_GHOST_END - 1;
-        for (let q = 0; q < 3; q++) {
-          const [bx, by] = bez(g, bend, 0.2 + q * 0.3);
-          burst(bx, by, e - q, k === 2 ? 3.2 : 2.4);
-        }
-        if (e >= 0 && e < 10) for (let q = 0; q < 16; q++) {              // the strokes shatter into red shards
-          const a = q * 0.9 + k, d = 3 + e * (2 + (q % 3)), [x0, y0] = bez(g, bend, (q + 0.5) / 16);
+        if (k === 2) burst(f.cineCX, vint(f.footY) - 22, e, 2.6);        // one burst where the strokes cross
+        if (e >= 0 && e < 8) for (let q = 0; q < 6; q++) {               // each stroke breaks into a few shards
+          const a = q * 1.7 + k, d = 3 + e * (1.5 + (q % 3) * 0.5), [x0, y0] = bez(g, bend, (q + 0.5) / 6);
           R.fillRect(clng(x0 + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.7 + e * e * 0.12), 2, 1, q % 3 ? C_HOT() : C_CORE());
         }
       }
