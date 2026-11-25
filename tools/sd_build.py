@@ -106,6 +106,9 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
             if nm == "-" or nm not in CLASSIC: continue
             # legs are only re-lengthened on standing poses (folded legs in a crouch, a jump or on the floor stay)
             if CLASSIC[nm] < 0.85 * CLASSIC.get("idle_0", CLASSIC[nm]) or nm.startswith(("down", "roll", "jump", "j", "c")): continue
+            # only plain standing frames: an arcade attack frame's height includes the raised blade or the high kick,
+            # and stretching the legs to it made the strike frame bigger than the rest
+            if not nm.startswith(("idle", "walk", "dash", "bdash", "hit")): continue
             f = f"{tmp}/fig_{k}.png"
             _, top, bot, fg, a = hair_size(f)
             want = int(round(CLASSIC[nm] * kh * float(scale)))      # picture rows for the arcade frame's height
