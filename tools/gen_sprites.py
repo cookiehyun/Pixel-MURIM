@@ -719,6 +719,7 @@ MOVE_ANIMS = {
     ],
     "cheonma": [
         ("sp1_pre", 2, ["palm_0"]),
+        ("sp1_rec", 4, ["palm_1", "palm_1", "hp_3"]),   # the palms stay out while the strike lands, then settle
         ("sp2_pre", 2, ["draw_0"]),
         ("super_pre", 2, ["draw_0"]),          # the sword art starts by drawing the blade
     ],

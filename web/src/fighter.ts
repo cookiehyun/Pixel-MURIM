@@ -1082,6 +1082,13 @@ const SMALL_PALM = [".....oo.o...", "...ooloolo..", "...orlorlog.", "...orlorlol
   ".odorlorlolo", "oddorrrrrrlo", "odrdrlllrllo", "oordrlwwlrlo", ".ordrlwwlrlo",
   ".oddrrlllrlo", "..odrrrrrlo.", "..oodrrrlog.", "...odrrrlo..", "...oooooo..."];
 
+// Danwoo's palm a quarter bigger (every fourth row and column doubled)
+const MID_PALM = (() => {
+  const grow = (n: number) => { const ix: number[] = []; for (let k = 0; k < n; k++) { ix.push(k); if (k % 4 === 1) ix.push(k); } return ix; };
+  const cols = grow(SMALL_PALM[0].length);
+  return grow(SMALL_PALM.length).map((r) => cols.map((c) => SMALL_PALM[r][c]).join(""));
+})();
+
 function drawDemonPalm(i: number): void {
   const t = F[i].stTick - D.MvStartup[F[i].mv];
   if (t < 0 || t > D.MvActive[F[i].mv] + 1) return;
@@ -1097,7 +1104,7 @@ function drawDemonPalm(i: number): void {
     }
     return -1;
   };
-  drawArt(i, BIG_PALM, 11, -41, ink);
+  drawArt(i, MID_PALM, 14, -37, ink);              // a size up from Danwoo's, its heel on the SD palm
 }
 
 function drawArt(i: number, rows: string[], dx: number, dy: number, ink: (ch: string) => number): void {

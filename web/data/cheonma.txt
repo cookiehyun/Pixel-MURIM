@@ -2508,6 +2508,7 @@ ANIM walk 3 walk_0 walk_1 walk_2 walk_3
 ANIM crouch 1 crouch
 ANIM jump 1 jump
 ANIM sp1_pre 2 palm_0
+ANIM sp1_rec 4 palm_1 palm_1 hp_3
 ANIM sp2_pre 2 draw_0
 ANIM super_pre 2 draw_0
 ANIM hp_pre 2 hp_p hp_0
