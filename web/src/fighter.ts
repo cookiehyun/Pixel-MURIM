@@ -1442,27 +1442,28 @@ export function debugStart(i: number, slot: number): boolean {
 // Form (moves.txt p1): 1 = three sword waves converge on the foe, 2 = dash in and carve three cuts that burst,
 // 3 = three blades fall from the sky. Everything lives on the fighter (cineCX/cineCY/cineX0/hitCount) for rollback.
 
-const CRASH_WAVE_T = 10, CRASH_CUTS = [3, 7, 11], CRASH_CUT_BURST = 18, CRASH_BLADES = [4, 10, 16];
+const CRASH_WAVE_T = 10, CRASH_CUTS = [3, 7, 11], CRASH_CUT_BURST = 18, CRASH_BLADES = [4, 10, 16], CRASH_GHOST_END = 34;
+const GHOST = 8;   // form 3: all three blades struck clean - they stay standing as afterimages, then break together
 const SW = (n: string) => spriteId("cheonmasw." + n);
 
-/** One strike of the art: hits when the foe's body overlaps the box; blocked strikes chip. */
-function crashHit(i: number, x: number, y: number, w: number, h: number, dmg: number, final: boolean): boolean {
+/** One strike of the art: hits when the foe's body overlaps the box; blocked strikes chip. 0 miss, 1 blocked, 2 hit. */
+function crashHit(i: number, x: number, y: number, w: number, h: number, dmg: number, final: boolean): number {
   const o = 1 - i, hr = hurtRect(o);
-  if (!hr || hr.x > x + w || hr.x + hr.w < x || hr.y > y + h || hr.y + hr.h < y) return false;
+  if (!hr || hr.x > x + w || hr.x + hr.w < x || hr.y > y + h || hr.y + hr.h < y) return 0;
   const cx = vint(F[o].x + 0.5), cy = vint(F[o].footY) - 18;
   if (Combat.blocks(o, D.MvLevel[F[i].mv])) {
     applyBlock(o, 10, final ? 2 : 0.4);
     Combat.dealDamage(o, Math.trunc(dmg / 4));
     FX.spawn(cx, cy, FX.FX_BLOCK);
     Combat.C.HitStop = 2;
-    return true;
+    return 1;
   }
   Combat.dealDamage(o, dmg); Combat.addComboHit(i); Combat.addMeter(i, 0);
   if (final) { applyHit(o, 0, 3, true); Combat.C.WhiteFlash = 2; Combat.C.HitStop = 6; }
   else { applyHit(o, 16, 0.3, false); Combat.C.HitStop = 2; }
   F[o].flash = 2;
   FX.spawn(cx, cy, FX.FX_HEAVY);
-  return true;
+  return 2;
 }
 
 function crashStep(i: number, t: number): void {
@@ -1514,12 +1515,26 @@ function crashStep(i: number, t: number): void {
       Combat.C.WhiteFlash = 2; Combat.C.HitStop = 6; Combat.C.ImpactDark = 4;
     }
   } else {
-    f.cineSpr = t < CRASH_BLADES[2] + 2 ? SW("sp_a") : SW("ovh_1");
+    const ghost = (f.hitCount & GHOST) !== 0;
+    f.cineSpr = t < CRASH_BLADES[2] + 2 ? SW("sp_a") : ghost && t < CRASH_GHOST_END ? SW("ovh_1") : SW("sp_1");
     const k = CRASH_BLADES.indexOf(t);
     if (k >= 0) {
       const bx = bladeX(i, k), half = k === 2 ? 11 : 7;
-      crashHit(i, bx - half, 0, half * 2, GROUND_Y, k === 2 ? total - 120 : 60, k === 2);
+      const all = k === 2 && (f.hitCount & 3) === 3;     // the first two struck clean: the third holds instead of throwing
+      const r = crashHit(i, bx - half, 0, half * 2, GROUND_Y, k < 2 ? 60 : all ? 100 : total - 120, k === 2 && !all);
+      if (r === 2) f.hitCount |= 1 << k;
+      if (all && r === 2) { f.hitCount |= GHOST; fo.stun = Math.max(fo.stun, CRASH_GHOST_END - t + 2); }
       if (k === 2) Combat.C.ImpactDark = 4;
+    }
+    if (ghost && t < CRASH_GHOST_END) {
+      if (fo.state === ST_HIT) fo.stun = Math.max(fo.stun, 3);       // pinned among the afterimages
+      if (t >= CRASH_GHOST_END - 4) Combat.C.ImpactDark = 2;
+    }
+    if (ghost && t === CRASH_GHOST_END) {                // the afterimages break all at once
+      Combat.dealDamage(o, total - 220); Combat.addComboHit(i);
+      applyHit(o, 0, 3.5, true); fo.flash = 2;
+      Combat.C.WhiteFlash = 3; Combat.C.HitStop = 8; Combat.C.ImpactDark = 5;
+      FX.spawn(f.cineCX, vint(fo.footY) - 18, FX.FX_HEAVY);
     }
   }
   if (t === D.MvActive[f.mv] - 1) f.cineSpr = -1;
@@ -1622,10 +1637,35 @@ function drawCrash(i: number, t: number): void {
     for (let k = 0; k < 3; k++) {
       const t0 = CRASH_BLADES[k], bx = bladeX(i, k), half = k === 2 ? 5 : 3, s = t - t0;
       if (s >= -3 && s < 0) R.fillRect(bx, 0, 1, gy, s === -1 ? C_HOT() : C_RED());   // a thin red line marks the spot
-      if (s >= 0 && s < 8) drawSkyBlade(bx, s === 0 ? gy * 0.55 : gy, k === 2 ? 1.4 : 1, s);
+      const ghost = (f.hitCount & GHOST) !== 0;
+      if (ghost && s >= 4 && t < CRASH_GHOST_END) drawGhostBlade(bx, gy, k === 2 ? 1.4 : 1, t, k);
+      else if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) drawSkyBlade(bx, gy, k === 2 ? 1.4 : 1, 0);
+      else if (s >= 0 && s < (ghost ? 4 : 8)) drawSkyBlade(bx, s === 0 ? gy * 0.55 : gy, k === 2 ? 1.4 : 1, s);
       if (s >= 1) burst(bx, gy - 6, s - 1, k === 2 ? 3.4 : 1.8);
+      if (ghost) {
+        const e = t - CRASH_GHOST_END - 1;
+        burst(bx, gy - [30, 22, 40][k], e, k === 2 ? 4.2 : 2.6);
+        if (e >= 0 && e < 10) for (let q = 0; q < 14; q++) {              // the blades shatter into red shards
+          const a = q * 0.449 + k, d = 4 + e * (2.5 + (q % 3)), y0 = gy - 10 - ((q * 7 + k * 13) % 50);
+          R.fillRect(clng(bx + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.6 + e * e * 0.15), 2, 1, q % 3 ? C_HOT() : C_CORE());
+        }
+      }
     }
   }
+}
+
+/** The blade left standing after a clean strike: a flickering doubled outline, the sword's afterimage. */
+function drawGhostBlade(bx: number, gy: number, k: number, t: number, n: number): void {
+  const half = Math.round(4 * k), L = Math.round(70 * k), top = gy - L;
+  const sway = [(t + n) % 4 < 2 ? -2 : 2, (t + n) % 4 < 2 ? 2 : -2];
+  for (let y = Math.max(0, top - 15); y <= gy; y++) {
+    const fromTip = gy - y, w = y < top ? 1 : fromTip < half * 2 ? Math.trunc(fromTip / 2) : half;
+    for (const dx of sway)                              // the trembling doubles either side
+      if ((y + t) % 3 === 0) { R.putPixel(bx - w - 1 + dx, y, C_DARK()); R.putPixel(bx + w + 1 + dx, y, C_DARK()); }
+    for (let x = -w; x <= w; x++) if ((x + y + t) % 2 === 0) R.putPixel(bx + x, y, Math.abs(x) <= w * 0.35 ? C_HOT() : C_RED());
+    R.putPixel(bx - w - 1, y, C_HOT()); R.putPixel(bx + w + 1, y, C_HOT());
+  }
+  if (top - 3 >= 0) R.fillRect(bx - half - Math.round(5 * k), top - 3, (half + Math.round(5 * k)) * 2 + 1, 1, C_HOT());
 }
 
 /** A giant crimson sword of light standing point-down in the ground (tip at y = tip), fading after it lands. */
