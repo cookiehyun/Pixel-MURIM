@@ -1775,6 +1775,21 @@ function bloodDisc(cx: number, cy: number, r: number, fill: number, t: number): 
     }
 }
 
+/** An open blood hand at (cx, cy) reaching along angle `a`: a palm and four hooked talons with pale tips. */
+function clawHand(cx: number, cy: number, a: number, k: number, t: number): void {
+  bloodDisc(cx, cy, Math.round(3.6 * k), B_RED(), t);
+  for (let q = 0; q < 4; q++) {
+    const spread = (q - 1.5) * 0.45, a0 = a + spread, L1 = 5 * k, L2 = 5 * k;
+    const x1 = cx + Math.cos(a0) * (3 * k + L1), y1 = cy + Math.sin(a0) * (3 * k + L1);
+    const a1 = a0 + (spread >= 0 ? 0.9 : -0.9);              // the talon hooks inward
+    const x2 = x1 + Math.cos(a1) * L2, y2 = y1 + Math.sin(a1) * L2;
+    thickLine(cx + Math.cos(a0) * 2 * k, cy + Math.sin(a0) * 2 * k, x1, y1, 1.3 * k, B_RED(), B_RED(), B_DARK());
+    thickLine(x1, y1, x2, y2, 0.9 * k, B_HOT(), B_RED(), B_DARK());
+    R.putPixel(clng(x2), clng(y2), B_LIGHT());
+  }
+  void t;
+}
+
 /** A thick muscled blood arm: the upper arm swells in the middle, the forearm widens to a big clenched fist.
  *  Glowing cracks run along it. (bx, by) shoulder, (ex, ey) elbow, (hx, hy) fist. */
 function muscleArm(bx: number, by: number, ex: number, ey: number, hx: number, hy: number, k: number, t: number): void {
@@ -1794,21 +1809,14 @@ function muscleArm(bx: number, by: number, ex: number, ey: number, hx: number, h
   seg(bx, by, ex, ey, 3, 2.6, 1.4);                       // upper arm: a bulging biceps
   bloodDisc(ex, ey, Math.round(2.6 * k), B_RED(), t);       // the elbow knot
   seg(ex, ey, hx, hy, 2, 2.8, 0.8);                       // forearm widening to the wrist
-  const L = Math.hypot(hx - ex, hy - ey) || 1, ux = (hx - ex) / L, uy = (hy - ey) / L, nx = -uy, ny = ux;
-  const fr = Math.round(6 * k), fx0 = hx + ux * (fr - 2), fy0 = hy + uy * (fr - 2);
-  bloodDisc(fx0, fy0, fr, B_RED(), t);                      // the fist: a big clenched ball past the wrist
-  for (let q = -1; q <= 1; q++) {                           // finger creases and the knuckle ridge
-    for (let d = 0; d < fr; d++) R.putPixel(clng(fx0 + ux * (d - 1) + nx * q * 2.2), clng(fy0 + uy * (d - 1) + ny * q * 2.2), B_DARK());
-    R.putPixel(clng(fx0 + ux * (fr - 1) + nx * q * 2.2), clng(fy0 + uy * (fr - 1) + ny * q * 2.2), B_LIGHT());
-  }
-  R.putPixel(clng(fx0 - ux * 2 - nx * (fr - 1)), clng(fy0 - uy * 2 - ny * (fr - 1)), B_LIGHT());   // the thumb
+  clawHand(hx, hy, Math.atan2(hy - ey, hx - ex), k, t);   // an open hand of blood with hooked talons
   for (let d = 0; d < 2; d++) {                             // blood dripping off the fist
     const s = ((t * 2 + d * 7) % 12) / 12;
     if (s < 0.8) R.putPixel(clng(hx - 2 + d * 4), clng(hy + 5 * k + s * 8), B_HOT());
   }
 }
 
-/** 혈마수: a huge blood arm bursts from behind his shoulder, swings over his head and drives its fist into the foe. */
+/** 혈마수: a huge blood arm grows out of his sleeve, reaches across the hitbox and rakes it with a crescent. */
 function drawDemonArm(i: number): void {
   const f = F[i], mv = f.mv, s = D.MvStartup[mv], a = D.MvActive[mv], t = f.stTick;
   let p = 0;
@@ -1816,36 +1824,52 @@ function drawDemonArm(i: number): void {
   else if (t >= s && t < s + a) p = 1;
   else if (t >= s + a && t < s + a + 5) p = 1 - (t - s - a + 1) / 6;
   if (p <= 0) return;
-  const fx = f.facing, x = f.x, y = f.footY, reach = (D.MvHbX[mv] + D.MvHbW[mv] - 4) * p;
-  muscleArm(x - fx * 4, y - 32, x + fx * reach * 0.3, y - 48 - 2 * p, x + fx * reach, y - 26 - (1 - p) * 10, 1.1, t);
+  const fx = f.facing, x = f.x, y = f.footY, reach = (D.MvHbX[mv] + D.MvHbW[mv] - 6) * p;
+  const hx = x + fx * 10, hy = y - 26, cx = x + fx * Math.max(14, reach), cy = y - 28;
+  muscleArm(hx, hy, hx + (cx - hx) * 0.55, hy - 3 + Math.sin(t * 0.8) * 1.5, cx, cy, 0.9 + 0.3 * p, t);
+  for (let q = 0; q < 6; q++) R.putPixel(clng(hx + (cx - hx) * (q / 6)), clng(hy - 6 - ((q * 5 + t * 3) % 7)), B_HOT());   // spray
+  const r = t - s;                                          // the rake: a crescent sweeping down in front of the claw
+  if (r >= 1 && r < a + 3) {
+    const R0 = 14, fade = r >= a;
+    for (let d = -60; d <= 80; d += 3) {
+      const ang = d * 0.0174533, th = (1 - Math.abs(d - 10) / 75) * 3.2;
+      for (let w = 0; w <= th; w++) {
+        const rr = R0 - w, px = cx + fx * (2 + Math.cos(ang) * rr * 0.55), py = cy + Math.sin(ang) * rr;
+        if (fade && (w + d) % 2) continue;
+        R.putPixel(clng(px), clng(py), w < th * 0.4 ? B_LIGHT() : w < th * 0.8 ? B_HOT() : B_RED());
+      }
+    }
+  }
 }
 
-/** The frenzy: two great blood arms grow from his shoulders behind him and flex, fists raised. */
+/** The frenzy: two great blood arms spread out to both sides from his shoulders and raise their claws. */
 function drawFrenzyArms(i: number): void {
-  const f = F[i], fx = f.facing, x = f.x, y = f.footY, t = mDraw;
-  const b0 = Math.sin(t * 0.15) * 1.5, b1 = Math.sin(t * 0.15 + 1.6) * 1.5;
-  muscleArm(x - fx * 4, y - 31, x - fx * 18, y - 36 + b0, x - fx * 19, y - 54 + b0, 1, t);       // the back arm, flexed
-  muscleArm(x - fx * 1, y - 33, x + fx * 9, y - 44 + b1, x + fx * 12, y - 60 + b1, 0.95, t + 3); // the front arm, fist over his head
+  const f = F[i], x = f.x, y = f.footY, t = mDraw;
+  for (const sd of [-1, 1]) {
+    const b = Math.sin(t * 0.15 + (sd > 0 ? 1.6 : 0)) * 1.5;
+    muscleArm(x + sd * 3, y - 32, x + sd * 21, y - 30 + b, x + sd * 23, y - 50 + b, 1, t + (sd > 0 ? 3 : 0));
+  }
 }
 
 /** The blood wave (frenzy sp1): rings of blood spikes run out along the ground on both sides. */
 function drawBloodWave(i: number): void {
   const f = F[i], t = f.stTick - D.MvStartup[f.mv];
   if (t < 0 || t > D.MvActive[f.mv] + 8) return;
-  const gx = clng(f.x), gy = clng(f.footY);
-  for (let k = 0; k <= 2; k++) {
-    const rad = (t - k * 2) * 7 + 6;
-    if (rad <= 6 || rad >= 60) continue;
-    const h = Math.max(4, 22 - Math.trunc(rad / 4) - k * 3);
-    for (let s = -1; s <= 1; s += 2) {
-      for (let q = 0; q < 3; q++) {                          // a crown of blood spikes, the middle one tallest
-        const sx = gx + s * (rad + q * 3 - 3), hh = q === 1 ? h : Math.trunc(h * 0.6);
-        R.fillRect(sx - 1, gy - hh, 3, hh, k === 0 ? B_HOT() : B_RED());
-        R.fillRect(sx, gy - hh, 1, Math.max(1, hh - 2), k === 0 ? B_LIGHT() : B_HOT());
-        R.putPixel(sx, gy - hh - 1, B_DARK());
+  const gx = f.x, gy = f.footY;
+  for (let k = 0; k <= 1; k++) {
+    const rx = (t - k * 3) * 7 + 8, ry = rx * 0.22;
+    if (rx <= 8 || rx >= 64) continue;
+    const old = rx > 44;
+    for (let d = 0; d < 360; d += 2) {
+      const c = Math.cos(d * 0.0174533), sn = Math.sin(d * 0.0174533);
+      for (let w = 0; w < (k === 0 ? 3 : 2); w++) {
+        if (old && (d + w) % 4) continue;
+        R.putPixel(clng(gx + c * (rx - w)), clng(gy + sn * (ry - w * 0.3)), w === 0 ? B_HOT() : w === 1 ? B_LIGHT() : B_RED());
       }
-      if (k === 0) R.fillRect(s < 0 ? gx - rad : gx, gy - 1, rad, 2, B_RED());
+    }
+    for (let q = 0; q < 14; q++) {                           // splashes thrown up off the ring
+      const d = q * 25.7 + k * 13, c = Math.cos(d * 0.0174533), sn = Math.sin(d * 0.0174533), up = ((q * 5 + t * 3) % 9);
+      R.fillRect(clng(gx + c * rx), clng(gy + sn * ry - up), 1, 2, q % 3 ? B_HOT() : B_LIGHT());
     }
   }
-  if (t < 3) for (let q = 0; q < 10; q++) R.putPixel(gx + ((q * 13) % 21) - 10, gy - 4 - ((q * 7 + t * 5) % 16), B_HOT());
 }

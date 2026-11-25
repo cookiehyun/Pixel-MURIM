@@ -801,3 +801,15 @@ hyeolma.sp_a sd/hyeolma_f/sp_a.png 15 41 fight
 hyeolma.kneel sd/hyeolma_f/kneel.png 17 30 fight
 hyeolma.fall sd/hyeolma_f/fall.png 13 17 fight
 hyeolma.palm_0 sd/hyeolma_f/palm_0.png 13 46 fight
+sd_maengju.stand sd/maengju/stand.png 7 36
+sd_maengju.slash sd/maengju/slash.png 12 40
+sd_maengju.grabbed sd/maengju/grabbed.png 11 33
+sd_maengju.stagger sd/maengju/stagger.png 15 33
+sd_dog.sleep sd/dog/sleep.png 8 7
+sd_dog.look_up sd/dog/look_up.png 8 12
+sd_dog.stand sd/dog/stand.png 6 14
+sd_dog.growl sd/dog/growl.png 9 10
+ANIM sd_maengju.idle 10 stand stand
+ANIM sd_maengju.walk 10 stand stand
+ANIM sd_dog.idle 10 sleep sleep
+ANIM sd_dog.walk 10 stand stand
