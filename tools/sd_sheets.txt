@@ -84,7 +84,6 @@ hongryeon 186.webp 9.17 rush_0,rush_1,sp_0,sp_1,sp_2~,su_0,su_1 legs
 hongryeon 187.webp 9.04 dp_0,dp_1,dp_2,dp_3,dp_4,dp_5
 # Cheonma (188 model; scale = head size matched against 189 idle, 41 art px tall)
 @height cheonma 41
-@alias cheonma cheonmasw
 cheonma 189.webp 8.76 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
 cheonma 190.webp 10.58 lp_0,lp_1,hp_2,hp_p,hp_0,hp_1,hp_3 legs
 cheonma 196.png 7.81 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3 legs
@@ -128,6 +127,8 @@ hyeolma 229.webp 7.56 su_0,su_1,su_2,su_3,su_4
 @skin seolhwa
 @skin hongryeon
 @skin cheonma
+@breathe cheonma
+@breathe hyeolma
 @skin hyeolma
 @colors hyeolma 64
 @skin cheonmasw

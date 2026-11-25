@@ -255,6 +255,18 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     q = ln.split()
     if len(q) >= 3 and q[0] == "@face" and q[1] == char:
         subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_face.py"), out, q[2], *q[3:]], check=True)
+# "@breathe <char>": the sheet's second stand frame is a different pose (arms dropped), so idle_1 is made from idle_0
+# instead - everything above the belt sinks one pixel, a breath
+for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
+    q = ln.split()
+    if len(q) == 2 and q[0] == "@breathe" and q[1] == char and any(n == "idle_0" for n, _, _ in anchors):
+        a = np.asarray(Image.open(os.path.join(out, "idle_0.png")).convert("RGBA"))
+        ys = np.where((a[:, :, 3] > 0).any(1))[0]; belt = ys.min() + int((ys.max() - ys.min()) * 0.55)
+        b = a.copy(); b[ys.min():belt + 1] = 0
+        b[ys.min() + 1:belt + 1] = a[ys.min():belt]
+        Image.fromarray(b).save(os.path.join(out, "idle_1.png"))
+        x0, y0 = next((x, y) for n, x, y in anchors if n == "idle_0")
+        anchors = [(n, x0, y0) if n == "idle_1" else (n, x, y) for n, x, y in anchors]
 with open(os.path.join(out, "anchors.txt"), "w") as fh:
     for n, x, y in anchors: fh.write(f"{n} {x} {y}\n")
 print(len(anchors), "frames")

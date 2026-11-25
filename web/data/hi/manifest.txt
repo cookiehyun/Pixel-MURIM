@@ -639,58 +639,34 @@ hongryeon.dp_2 sd/hongryeon_f/dp_2.png 13 36 fight
 hongryeon.dp_3 sd/hongryeon_f/dp_3.png 10 41 fight
 hongryeon.dp_4 sd/hongryeon_f/dp_4.png 6 40 fight
 hongryeon.dp_5 sd/hongryeon_f/dp_5.png 8 35 fight
-# cheonma: SD fighter art (tools/sd_build.py), drawn at the classic size
-cheonma.idle_0 sd/cheonma_f/idle_0.png 11 41 fight
-cheonma.idle_1 sd/cheonma_f/idle_1.png 12 41 fight
-cheonma.walk_0 sd/cheonma_f/walk_0.png 12 41 fight
-cheonma.walk_1 sd/cheonma_f/walk_1.png 12 41 fight
-cheonma.walk_2 sd/cheonma_f/walk_2.png 13 41 fight
-cheonma.walk_3 sd/cheonma_f/walk_3.png 11 41 fight
-cheonma.dash sd/cheonma_f/dash.png 17 37 fight
-cheonma.bdash sd/cheonma_f/bdash.png 10 37 fight
-cheonma.lp_0 sd/cheonma_f/lp_0.png 11 41 fight
-cheonma.lp_1 sd/cheonma_f/lp_1.png 11 40 fight
-cheonma.hp_2 sd/cheonma_f/hp_2.png 11 40 fight
-cheonma.hp_p sd/cheonma_f/hp_p.png 11 41 fight
-cheonma.hp_0 sd/cheonma_f/hp_0.png 12 41 fight
-cheonma.hp_1 sd/cheonma_f/hp_1.png 14 39 fight
-cheonma.hp_3 sd/cheonma_f/hp_3.png 10 40 fight
-cheonma.lk_0 sd/cheonma_f/lk_0.png 13 39 fight
-cheonma.lk_1 sd/cheonma_f/lk_1.png 10 39 fight
-cheonma.hk_p sd/cheonma_f/hk_p.png 10 39 fight
-cheonma.hk_0 sd/cheonma_f/hk_0.png 12 39 fight
-cheonma.hk_1 sd/cheonma_f/hk_1.png 11 38 fight
-cheonma.hk_2 sd/cheonma_f/hk_2.png 12 39 fight
-cheonma.hk_3 sd/cheonma_f/hk_3.png 11 39 fight
-cheonma.crouch sd/cheonma_f/crouch.png 11 31 fight
-cheonma.clp sd/cheonma_f/clp.png 11 31 fight
-cheonma.chp_0 sd/cheonma_f/chp_0.png 12 30 fight
-cheonma.chp_1 sd/cheonma_f/chp_1.png 11 36 fight
-cheonma.clk sd/cheonma_f/clk.png 10 30 fight
-cheonma.chk sd/cheonma_f/chk.png 11 26 fight
-cheonma.jump sd/cheonma_f/jump.png 10 39 fight
-cheonma.jp sd/cheonma_f/jp.png 10 39 fight
-cheonma.jk sd/cheonma_f/jk.png 9 39 fight
-cheonma.guard sd/cheonma_f/guard.png 12 39 fight
-cheonma.cguard sd/cheonma_f/cguard.png 12 33 fight
-cheonma.hit_0 sd/cheonma_f/hit_0.png 13 39 fight
-cheonma.hit_1 sd/cheonma_f/hit_1.png 13 41 fight
-cheonma.chit sd/cheonma_f/chit.png 12 33 fight
-cheonma.down_0 sd/cheonma_f/down_0.png 25 28 fight
-cheonma.down_1 sd/cheonma_f/down_1.png 17 13 fight
-cheonma.intro sd/cheonma_f/intro.png 11 39 fight
-cheonma.win sd/cheonma_f/win.png 14 39 fight
-cheonma.roll_0 sd/cheonma_f/roll_0.png 11 29 fight
-cheonma.roll_1 sd/cheonma_f/roll_1.png 13 24 fight
-cheonma.roll_2 sd/cheonma_f/roll_2.png 9 26 fight
-cheonma.roll_3 sd/cheonma_f/roll_3.png 12 27 fight
-cheonma.throw_0 sd/cheonma_f/throw_0.png 11 35 fight
-cheonma.throw_1 sd/cheonma_f/throw_1.png 16 35 fight
-cheonma.ovh_0 sd/cheonma_f/ovh_0.png 11 38 fight
-cheonma.ovh_1 sd/cheonma_f/ovh_1.png 13 30 fight
-cheonma.palm_0 sd/cheonma_f/palm_0.png 11 41 fight
-cheonma.palm_1 sd/cheonma_f/palm_1.png 14 40 fight
-cheonma.draw_0 sd/cheonma_f/draw_0.png 11 40 fight
+sd_maengju.stand sd/maengju/stand.png 7 36
+sd_maengju.slash sd/maengju/slash.png 12 40
+sd_maengju.grabbed sd/maengju/grabbed.png 11 33
+sd_maengju.stagger sd/maengju/stagger.png 15 33
+sd_dog.sleep sd/dog/sleep.png 8 7
+sd_dog.look_up sd/dog/look_up.png 8 12
+sd_dog.stand sd/dog/stand.png 6 14
+sd_dog.growl sd/dog/growl.png 9 10
+ANIM sd_maengju.idle 10 stand stand
+ANIM sd_maengju.walk 10 stand stand
+ANIM sd_dog.idle 10 sleep sleep
+ANIM sd_dog.walk 10 stand stand
+ANIM hyeolma.sp1_pre 3 arm_0 arm_1
+ANIM hyeolma.sp1_seq 2 arm_2 arm_3
+ANIM hyeolma.sp1_rec 4 arm_3 arm_4 arm_5
+ANIM hyeolma.super_pre 2 su_0 su_1 su_2 su_3
+ANIM hyeolma.super_seq 1 su_4
+ANIM hyeolma.super_rec 3 su_4 su_4 su_4
+hyeolma.wave_0 sd/hyeolma_fx/wave_0.png 14 2 fight
+hyeolma.wave_1 sd/hyeolma_fx/wave_1.png 24 10 fight
+hyeolma.wave_2 sd/hyeolma_fx/wave_2.png 44 18 fight
+hyeolma.wave_3 sd/hyeolma_fx/wave_3.png 53 24 fight
+hyeolma.wave_4 sd/hyeolma_fx/wave_4.png 46 15 fight
+hyeolma.wave_5 sd/hyeolma_fx/wave_5.png 41 3 fight
+hyeolma.farm_0 sd/hyeolma_fx/farm_0.png 52 58 fight
+hyeolma.farm_1 sd/hyeolma_fx/farm_1.png 52 58 fight
+hyeolma.farm_2 sd/hyeolma_fx/farm_2.png 52 58 fight
+hyeolma.farm_3 sd/hyeolma_fx/farm_3.png 52 58 fight
 # cheonmasw: cheonma's SD fighter art (tools/sd_build.py @alias)
 cheonmasw.hp_p sd/cheonma_f/hp_p.png 11 41 fight
 # cheonmasw: SD fighter art (tools/sd_build.py), drawn at the classic size
@@ -747,18 +723,6 @@ cheonmasw.draw_0 sd/cheonmasw_f/draw_0.png 10 41 fight
 cheonmasw.sp_a sd/cheonmasw_f/sp_a.png 10 54 fight
 cheonmasw.sp_1 sd/cheonmasw_f/sp_1.png 17 39 fight
 cheonmasw.lp_1 sd/cheonmasw_f/lp_1.png 17 39 fight
-sd_maengju.stand sd/maengju/stand.png 7 36
-sd_maengju.slash sd/maengju/slash.png 12 40
-sd_maengju.grabbed sd/maengju/grabbed.png 11 33
-sd_maengju.stagger sd/maengju/stagger.png 15 33
-sd_dog.sleep sd/dog/sleep.png 8 7
-sd_dog.look_up sd/dog/look_up.png 8 12
-sd_dog.stand sd/dog/stand.png 6 14
-sd_dog.growl sd/dog/growl.png 9 10
-ANIM sd_maengju.idle 10 stand stand
-ANIM sd_maengju.walk 10 stand stand
-ANIM sd_dog.idle 10 sleep sleep
-ANIM sd_dog.walk 10 stand stand
 # hyeolma: SD fighter art (tools/sd_build.py), drawn at the classic size
 hyeolma.idle_0 sd/hyeolma_f/idle_0.png 13 41 fight
 hyeolma.idle_1 sd/hyeolma_f/idle_1.png 13 41 fight
@@ -824,19 +788,55 @@ hyeolma.su_1 sd/hyeolma_f/su_1.png 14 43 fight
 hyeolma.su_2 sd/hyeolma_f/su_2.png 17 47 fight
 hyeolma.su_3 sd/hyeolma_f/su_3.png 31 46 fight
 hyeolma.su_4 sd/hyeolma_f/su_4.png 39 57 fight
-ANIM hyeolma.sp1_pre 3 arm_0 arm_1
-ANIM hyeolma.sp1_seq 2 arm_2 arm_3
-ANIM hyeolma.sp1_rec 4 arm_3 arm_4 arm_5
-ANIM hyeolma.super_pre 2 su_0 su_1 su_2 su_3
-ANIM hyeolma.super_seq 1 su_4
-ANIM hyeolma.super_rec 3 su_4 su_4 su_4
-hyeolma.wave_0 sd/hyeolma_fx/wave_0.png 14 2 fight
-hyeolma.wave_1 sd/hyeolma_fx/wave_1.png 24 10 fight
-hyeolma.wave_2 sd/hyeolma_fx/wave_2.png 44 18 fight
-hyeolma.wave_3 sd/hyeolma_fx/wave_3.png 53 24 fight
-hyeolma.wave_4 sd/hyeolma_fx/wave_4.png 46 15 fight
-hyeolma.wave_5 sd/hyeolma_fx/wave_5.png 41 3 fight
-hyeolma.farm_0 sd/hyeolma_fx/farm_0.png 52 58 fight
-hyeolma.farm_1 sd/hyeolma_fx/farm_1.png 52 58 fight
-hyeolma.farm_2 sd/hyeolma_fx/farm_2.png 52 58 fight
-hyeolma.farm_3 sd/hyeolma_fx/farm_3.png 52 58 fight
+# cheonma: SD fighter art (tools/sd_build.py), drawn at the classic size
+cheonma.idle_0 sd/cheonma_f/idle_0.png 11 41 fight
+cheonma.idle_1 sd/cheonma_f/idle_1.png 11 41 fight
+cheonma.walk_0 sd/cheonma_f/walk_0.png 12 41 fight
+cheonma.walk_1 sd/cheonma_f/walk_1.png 12 41 fight
+cheonma.walk_2 sd/cheonma_f/walk_2.png 13 41 fight
+cheonma.walk_3 sd/cheonma_f/walk_3.png 11 41 fight
+cheonma.dash sd/cheonma_f/dash.png 17 37 fight
+cheonma.bdash sd/cheonma_f/bdash.png 10 37 fight
+cheonma.lp_0 sd/cheonma_f/lp_0.png 11 41 fight
+cheonma.lp_1 sd/cheonma_f/lp_1.png 11 40 fight
+cheonma.hp_2 sd/cheonma_f/hp_2.png 11 40 fight
+cheonma.hp_p sd/cheonma_f/hp_p.png 11 41 fight
+cheonma.hp_0 sd/cheonma_f/hp_0.png 12 41 fight
+cheonma.hp_1 sd/cheonma_f/hp_1.png 14 39 fight
+cheonma.hp_3 sd/cheonma_f/hp_3.png 10 40 fight
+cheonma.lk_0 sd/cheonma_f/lk_0.png 13 39 fight
+cheonma.lk_1 sd/cheonma_f/lk_1.png 10 39 fight
+cheonma.hk_p sd/cheonma_f/hk_p.png 10 39 fight
+cheonma.hk_0 sd/cheonma_f/hk_0.png 12 39 fight
+cheonma.hk_1 sd/cheonma_f/hk_1.png 11 38 fight
+cheonma.hk_2 sd/cheonma_f/hk_2.png 12 39 fight
+cheonma.hk_3 sd/cheonma_f/hk_3.png 11 39 fight
+cheonma.crouch sd/cheonma_f/crouch.png 11 31 fight
+cheonma.clp sd/cheonma_f/clp.png 11 31 fight
+cheonma.chp_0 sd/cheonma_f/chp_0.png 12 30 fight
+cheonma.chp_1 sd/cheonma_f/chp_1.png 11 36 fight
+cheonma.clk sd/cheonma_f/clk.png 10 30 fight
+cheonma.chk sd/cheonma_f/chk.png 11 26 fight
+cheonma.jump sd/cheonma_f/jump.png 10 39 fight
+cheonma.jp sd/cheonma_f/jp.png 10 39 fight
+cheonma.jk sd/cheonma_f/jk.png 9 39 fight
+cheonma.guard sd/cheonma_f/guard.png 12 39 fight
+cheonma.cguard sd/cheonma_f/cguard.png 12 33 fight
+cheonma.hit_0 sd/cheonma_f/hit_0.png 13 39 fight
+cheonma.hit_1 sd/cheonma_f/hit_1.png 13 41 fight
+cheonma.chit sd/cheonma_f/chit.png 12 33 fight
+cheonma.down_0 sd/cheonma_f/down_0.png 25 28 fight
+cheonma.down_1 sd/cheonma_f/down_1.png 17 13 fight
+cheonma.intro sd/cheonma_f/intro.png 11 39 fight
+cheonma.win sd/cheonma_f/win.png 14 39 fight
+cheonma.roll_0 sd/cheonma_f/roll_0.png 11 29 fight
+cheonma.roll_1 sd/cheonma_f/roll_1.png 13 24 fight
+cheonma.roll_2 sd/cheonma_f/roll_2.png 9 26 fight
+cheonma.roll_3 sd/cheonma_f/roll_3.png 12 27 fight
+cheonma.throw_0 sd/cheonma_f/throw_0.png 11 35 fight
+cheonma.throw_1 sd/cheonma_f/throw_1.png 16 35 fight
+cheonma.ovh_0 sd/cheonma_f/ovh_0.png 11 38 fight
+cheonma.ovh_1 sd/cheonma_f/ovh_1.png 13 30 fight
+cheonma.palm_0 sd/cheonma_f/palm_0.png 11 41 fight
+cheonma.palm_1 sd/cheonma_f/palm_1.png 14 40 fight
+cheonma.draw_0 sd/cheonma_f/draw_0.png 11 40 fight
