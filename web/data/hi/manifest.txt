@@ -773,7 +773,7 @@ hyeolma.throw_1 sd/hyeolma_f/throw_1.png 21 38 fight
 hyeolma.ovh_0 sd/hyeolma_f/ovh_0.png 13 42 fight
 hyeolma.ovh_1 sd/hyeolma_f/ovh_1.png 16 35 fight
 hyeolma.palm_1 sd/hyeolma_f/palm_1.png 14 41 fight
-hyeolma.sp_a sd/hyeolma_f/sp_a.png 16 41 fight
+hyeolma.sp_a sd/hyeolma_f/sp_a.png 25 41 fight
 hyeolma.kneel sd/hyeolma_f/kneel.png 18 30 fight
 hyeolma.fall sd/hyeolma_f/fall.png 14 17 fight
 hyeolma.palm_0 sd/hyeolma_f/palm_0.png 12 41 fight

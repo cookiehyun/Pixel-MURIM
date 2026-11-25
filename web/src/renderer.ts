@@ -299,7 +299,12 @@ export function hiArtOrigin(id: number, x: number, y: number, flip: boolean, sx:
 export const hiScale = (id: number) => mHiS || D.SprHiS[id] || HI;
 
 /** Rage look for hi-res art: flickering red / orange rim, flame tongues off the top edge, embers, red wash. */
-export function drawRageHi(id: number, x: number, y: number, flip: boolean, f: number): void {
+export function drawRageHi(id: number, x: number, y: number, flip: boolean, f: number, blood = false): void {
+  const rim = blood ? RGB(163, 13, 43) : RGB(200, 30, 20);
+  const glint = blood ? RGB(231, 37, 64) : RGB(255, 120, 40);
+  const base = blood ? RGB(175, 16, 47) : RGB(220, 40, 20);
+  const mid = blood ? RGB(198, 23, 58) : RGB(255, 140, 40);
+  const tip = blood ? RGB(216, 43, 73) : RGB(255, 230, 120);
   const w = D.SprW[id], h = D.SprH[id], off = D.SprOff[id];
   const on = (sx: number, sy: number) => sx >= 0 && sy >= 0 && sx < w && sy < h && D.SprPix[off + sy * w + sx] >= 0;
   const put = (sx: number, sy: number, c: number, a = 1) => {
@@ -314,7 +319,7 @@ export function drawRageHi(id: number, x: number, y: number, flip: boolean, f: n
       if (on(sx, sy)) continue;
       if (!(on(sx + 1, sy) || on(sx - 1, sy) || on(sx, sy + 1) || on(sx, sy - 1))) continue;
       const k = (((sx * 7 + sy * 13 + f * 5) % 6) + 6) % 6;
-      put(sx, sy, k < 4 ? RGB(200, 30, 20) : RGB(255, 120, 40));
+      put(sx, sy, k < 4 ? rim : glint);
     }
   for (let sx = 0; sx < w; sx++) {
     let top = -1;
@@ -322,7 +327,10 @@ export function drawRageHi(id: number, x: number, y: number, flip: boolean, f: n
     if (top < 0) continue;
     const t = (((sx * 31 + f * 17) % 7) + 7) % 7;
     if (t <= 2) continue;
-    for (let k = 1; k < t; k++) put(sx, top - k - 1, k === t - 1 ? RGB(255, 230, 120) : k > t / 2 ? RGB(255, 140, 40) : RGB(220, 40, 20));
+    const height = blood ? Math.ceil(t / 2) : t;
+    for (let k = 1; k < height; k++) {
+      put(sx, top - k - 1, k === height - 1 ? tip : k > height / 2 ? mid : base, blood ? 0.65 : 1);
+    }
   }
 }
 

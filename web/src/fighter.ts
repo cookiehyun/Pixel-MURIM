@@ -1025,6 +1025,7 @@ function drawOne(i: number): void {
     const id = rageSprite(currentSprite(i));
     if (f.prefix === "hyeolma") {
       drawFrenzyArms(i, id);
+      R.drawRageHi(id, x, y, flip, mDraw, true);
       R.drawSprite(id, x, y, flip, tint, f.skin || (i === 1 && F[0].prefix === f.prefix && !F[0].skin));
       if (tint < 0) R.tintHi(id, x, y, flip, RGB(156, 18, 44), 0.24);
       return;

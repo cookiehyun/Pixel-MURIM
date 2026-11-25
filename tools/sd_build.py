@@ -279,6 +279,10 @@ if char == "hyeolma":
                 scaled = frame.resize((round(w * 0.90), round(h * 0.90)), Image.Resampling.NEAREST)
             scaled.save(path)
             anchors[k] = (name, round(ax * scaled.width / w), round(ay * scaled.height / h))
+        elif name == "sp_a":
+            # The last opaque row contains one boot. The cast and its symmetric
+            # ground wave share the fighter origin directly below the torso.
+            anchors[k] = (name, 25, ay)
         elif name.startswith("su_"):
             # Keep the growing arms attached to the body and discard isolated flecks.
             path = os.path.join(out, name + ".png")
