@@ -1764,24 +1764,51 @@ function bloodWaveMove(): number {
   return mWaveMv;
 }
 
-/** One blood limb from the back (bx, by) through the elbow (ex, ey) to the claw (cx, cy), claws opening forward. */
-function bloodLimb(bx: number, by: number, ex: number, ey: number, cx: number, cy: number, w: number, fx: number, t: number): void {
-  thickLine(bx, by, ex, ey, w * 0.8, B_RED(), B_RED(), B_DARK());
-  thickLine(ex, ey, cx, cy, w, (t % 4 < 2) ? B_HOT() : B_RED(), B_RED(), B_DARK());
-  thickLine(ex, ey, cx, cy, Math.max(0.6, w * 0.3), B_LIGHT(), B_HOT(), B_HOT());
-  const L = Math.hypot(cx - ex, cy - ey) || 1, ux = (cx - ex) / L, uy = (cy - ey) / L;
-  for (let k = -1; k <= 1; k++) {                          // three claws
-    const a = Math.atan2(uy, ux) + k * 0.5, len = 5 + (k === 0 ? 2 : 0);
-    thickLine(cx, cy, cx + Math.cos(a) * len, cy + Math.sin(a) * len, 0.7, B_LIGHT(), B_HOT(), B_DARK());
-  }
-  for (let d = 0; d < 3; d++) {                            // blood dripping off the arm
-    const s = ((t * 2 + d * 7) % 12) / 12, px = ex + (cx - ex) * (0.3 + d * 0.25), py = ey + (cy - ey) * (0.3 + d * 0.25) + s * 8;
-    if (s < 0.8) R.putPixel(clng(px), clng(py), B_HOT());
-  }
-  void fx;
+/** A filled disc with a dark rim (a fist, a shoulder knot). */
+function bloodDisc(cx: number, cy: number, r: number, fill: number, t: number): void {
+  for (let y = -r - 1; y <= r + 1; y++)
+    for (let x = -r - 1; x <= r + 1; x++) {
+      const d = Math.hypot(x, y);
+      if (d > r + 0.6) continue;
+      const rim = d > r - 0.6, lit = x * 0.6 - y * 0.8 > r * 0.3;
+      R.putPixel(clng(cx + x), clng(cy + y), rim ? B_DARK() : lit ? ((t + x) % 5 === 0 ? B_LIGHT() : B_HOT()) : fill);
+    }
 }
 
-/** 혈마수: the arm bursts from behind his shoulder and reaches across the hitbox, then sinks back. */
+/** A thick muscled blood arm: the upper arm swells in the middle, the forearm widens to a big clenched fist.
+ *  Glowing cracks run along it. (bx, by) shoulder, (ex, ey) elbow, (hx, hy) fist. */
+function muscleArm(bx: number, by: number, ex: number, ey: number, hx: number, hy: number, k: number, t: number): void {
+  const seg = (x0: number, y0: number, x1: number, y1: number, w0: number, w1: number, bulge: number) => {
+    const L = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
+    for (let s = 0; s <= L; s += 0.5) {
+      const u = s / L, w = (w0 + (w1 - w0) * u + bulge * Math.sin(Math.PI * u)) * k;
+      const x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u;
+      for (let d = -Math.ceil(w) - 1; d <= Math.ceil(w) + 1; d++) {
+        const ad = Math.abs(d), px = clng(x + nx * d), py = clng(y + ny * d);
+        R.putPixel(px, py, ad > w ? B_DARK() : d < -w * 0.35 ? B_HOT() : B_RED());
+      }
+      // the crack: a bright vein that zigzags down the middle
+      if (Math.trunc(s * 2) % 2 === 0) R.putPixel(clng(x + nx * Math.sin(s * 0.9) * w * 0.4), clng(y + ny * Math.sin(s * 0.9) * w * 0.4), (t + Math.trunc(s)) % 6 < 3 ? B_LIGHT() : B_HOT());
+    }
+  };
+  seg(bx, by, ex, ey, 3, 2.6, 1.4);                       // upper arm: a bulging biceps
+  bloodDisc(ex, ey, Math.round(2.6 * k), B_RED(), t);       // the elbow knot
+  seg(ex, ey, hx, hy, 2, 2.8, 0.8);                       // forearm widening to the wrist
+  const L = Math.hypot(hx - ex, hy - ey) || 1, ux = (hx - ex) / L, uy = (hy - ey) / L, nx = -uy, ny = ux;
+  const fr = Math.round(6 * k), fx0 = hx + ux * (fr - 2), fy0 = hy + uy * (fr - 2);
+  bloodDisc(fx0, fy0, fr, B_RED(), t);                      // the fist: a big clenched ball past the wrist
+  for (let q = -1; q <= 1; q++) {                           // finger creases and the knuckle ridge
+    for (let d = 0; d < fr; d++) R.putPixel(clng(fx0 + ux * (d - 1) + nx * q * 2.2), clng(fy0 + uy * (d - 1) + ny * q * 2.2), B_DARK());
+    R.putPixel(clng(fx0 + ux * (fr - 1) + nx * q * 2.2), clng(fy0 + uy * (fr - 1) + ny * q * 2.2), B_LIGHT());
+  }
+  R.putPixel(clng(fx0 - ux * 2 - nx * (fr - 1)), clng(fy0 - uy * 2 - ny * (fr - 1)), B_LIGHT());   // the thumb
+  for (let d = 0; d < 2; d++) {                             // blood dripping off the fist
+    const s = ((t * 2 + d * 7) % 12) / 12;
+    if (s < 0.8) R.putPixel(clng(hx - 2 + d * 4), clng(hy + 5 * k + s * 8), B_HOT());
+  }
+}
+
+/** 혈마수: a huge blood arm bursts from behind his shoulder, swings over his head and drives its fist into the foe. */
 function drawDemonArm(i: number): void {
   const f = F[i], mv = f.mv, s = D.MvStartup[mv], a = D.MvActive[mv], t = f.stTick;
   let p = 0;
@@ -1789,19 +1816,16 @@ function drawDemonArm(i: number): void {
   else if (t >= s && t < s + a) p = 1;
   else if (t >= s + a && t < s + a + 5) p = 1 - (t - s - a + 1) / 6;
   if (p <= 0) return;
-  const fx = f.facing, x = f.x, y = f.footY, reach = (D.MvHbX[mv] + D.MvHbW[mv]) * p;
-  // it rises from behind his shoulder, arcs over, and drives down onto the foe
-  const bx = x - fx * 4, by = y - 30, ex = x + fx * reach * 0.35, ey = y - 46 - 4 * p;
-  bloodLimb(bx, by, ex, ey, x + fx * reach, y - 26, 2.4 + 1.6 * p, fx, t);
+  const fx = f.facing, x = f.x, y = f.footY, reach = (D.MvHbX[mv] + D.MvHbW[mv] - 4) * p;
+  muscleArm(x - fx * 4, y - 32, x + fx * reach * 0.3, y - 48 - 2 * p, x + fx * reach, y - 26 - (1 - p) * 10, 1.1, t);
 }
 
-/** The frenzy: two blood arms rise from his back over his head and sway, claws open toward the foe. */
+/** The frenzy: two great blood arms grow from his shoulders behind him and flex, fists raised. */
 function drawFrenzyArms(i: number): void {
   const f = F[i], fx = f.facing, x = f.x, y = f.footY, t = mDraw;
-  // spread behind him like a pair of wings: one rears up over his back, the other reaches out behind; claws open
-  const sw0 = Math.sin(t * 0.12) * 2, sw1 = Math.sin(t * 0.12 + 2.1) * 2;
-  bloodLimb(x - fx * 4, y - 32, x - fx * 15, y - 50 + sw0, x - fx * 6, y - 64 - sw0, 3, fx, t);
-  bloodLimb(x - fx * 6, y - 26, x - fx * 22, y - 32 + sw1, x - fx * 30, y - 46 - sw1, 2.6, fx, t + 3);
+  const b0 = Math.sin(t * 0.15) * 1.5, b1 = Math.sin(t * 0.15 + 1.6) * 1.5;
+  muscleArm(x - fx * 4, y - 31, x - fx * 18, y - 36 + b0, x - fx * 19, y - 54 + b0, 1, t);       // the back arm, flexed
+  muscleArm(x - fx * 1, y - 33, x + fx * 9, y - 44 + b1, x + fx * 12, y - 60 + b1, 0.95, t + 3); // the front arm, fist over his head
 }
 
 /** The blood wave (frenzy sp1): rings of blood spikes run out along the ground on both sides. */
