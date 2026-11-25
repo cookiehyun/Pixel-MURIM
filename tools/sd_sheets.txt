@@ -84,6 +84,7 @@ hongryeon 186.webp 9.17 rush_0,rush_1,sp_0,sp_1,sp_2~,su_0,su_1 legs
 hongryeon 187.webp 9.04 dp_0,dp_1,dp_2,dp_3,dp_4,dp_5
 # Cheonma (188 model; scale = head size matched against 189 idle, 41 art px tall)
 @height cheonma 41
+@alias cheonma cheonmasw
 cheonma 189.webp 8.76 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
 cheonma 190.webp 10.58 lp_0,lp_1,hp_2,hp_p,hp_0,hp_1,hp_3 legs
 cheonma 196.png 7.81 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3 legs
@@ -92,6 +93,12 @@ cheonma 197.webp 6.9 -,-,-,-,-,-,jump,jp,jk
 cheonma 193.webp 7.72 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win legs
 cheonma 194.webp 8.5 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1 legs
 cheonma 195.webp 15.4 palm_0,palm_1,draw_0 legs
+# Cheonma with the sword drawn (its own frames replace the @alias ones; scale = head size against 189)
+@height cheonmasw 41
+cheonmasw 198.webp 7.15 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
+cheonmasw 199.webp 7.98 lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3 legs
+cheonmasw 200.webp 8.32 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3 legs
+cheonmasw 201.webp 6.5 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
@@ -101,6 +108,9 @@ cheonma 195.webp 15.4 palm_0,palm_1,draw_0 legs
 @skin seolhwa
 @skin hongryeon
 @skin cheonma
+@skin cheonmasw
+@colors cheonmasw 64
+@blade cheonmasw B49CF0
 @colors cheonma 64
 @colors hongryeon 64
 @colors muyeong 64
@@ -112,3 +122,4 @@ cheonma 195.webp 15.4 palm_0,palm_1,draw_0 legs
 @face danwoo hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3,spin_t
 @face hongryeon win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3,hk_t,dp_2,dp_3,dp_4
 @face cheonma win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
+@face cheonmasw win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3

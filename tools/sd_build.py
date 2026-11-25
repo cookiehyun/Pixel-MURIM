@@ -56,6 +56,10 @@ if os.path.exists(tf):
 ref_head = None
 kh = 1.0
 FACE_SKIP = {}
+BLADE = {}                                                  # "@blade <char> RRGGBB": the colour of a pale blade
+for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
+    q = ln.split()
+    if len(q) == 3 and q[0] == "@blade": BLADE[q[1]] = np.array([int(q[2][i:i + 2], 16) for i in (0, 2, 4)], float)
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     q = ln.split()
     if len(q) >= 3 and q[0] == "@face": FACE_SKIP[q[1]] = set(q[2].split(","))                                                    # SD height / arcade height (idle_0)
@@ -80,6 +84,15 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     pic, scale, names = p[1], p[2], p[3].split(",")
     tmp = os.path.join(out, "_split", pic)
     subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_split.py"), os.path.join(ROOT, "docs", "art", "sd", "src", pic), tmp, str(len(names))], check=True, capture_output=True)
+    if char in BLADE:                                     # a pale blade the palette would fold into the skin: tinted first
+        for k in range(len(names)):
+            f = f"{tmp}/fig_{k}.png"
+            a = np.asarray(Image.open(f).convert("RGB")).astype(int)
+            r_, g_, b_ = a[..., 0], a[..., 1], a[..., 2]
+            pale = (np.minimum(np.minimum(r_, g_), b_) > 150) & (b_ >= r_ - 15) & (np.abs(a - a[2, 2]).sum(2) >= 60)
+            lum = a[pale].mean(1, keepdims=True) / 255.0
+            a[pale] = np.clip(BLADE[char] * (0.55 + 0.6 * lum), 0, 255)
+            Image.fromarray(a.astype(np.uint8)).save(f)
     for k, nm in enumerate(names):                          # "name~": the AI drew this one facing left - mirrored
         if nm.endswith("~"):
             names[k] = nm[:-1]
