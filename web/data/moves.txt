@@ -175,10 +175,10 @@ baekmujin  jp  A  4  4  0  61  8  6  O  0  9  -14  13  8  jump  jp  N  0  0  -
 baekmujin  jk  A  4  5  0  77  9  7  O  0  9  -11  8  6  jump  jk  N  0  0  -
 baekmujin  throw  S  3  1  8  100  0  0  H  1  0  -30  16  10  throw_0  throw_1  T  0  0  -
 # 금강벽 (CT: a parry stance; a hit landing in its active window is cancelled and answered by sp2c)
-baekmujin  sp2  S  2  22  12  0  0  0  H  0  0  0  0  0  parry  parry  CT  0  0  624P  300
-baekmujin  sp2c  S  1  4  12  150  16  0  H  1  4  -44  38  44  parry  counter  N  0  0  -
+baekmujin  sp2  S  2  22  12  0  0  0  H  0  0  0  0  0  gw_0  gw_0  CT  0  0  624P  300
+baekmujin  sp2c  S  4  3  12  150  16  0  H  1  4  -44  38  44  gw_hit  gc_1  N  0  0  -
 baekmujin  sp1  S  4  4  10  100  14  8  H  0  12  -30  22  12  thrust_0  thrust_1  R  5  0  26P  300
-baekmujin  super  S  8  42  6  320  0  0  H  1  0  0  0  0  sky  finish  SC  3  0  2626P
+baekmujin  super  S  10  42  6  320  0  0  H  1  0  0  0  0  bs_2  bs_4  SC  3  0  2626P
 baekmujin  ovh  S  8  2  10  77  11  6  O  0  12  -36  17  16  ovh_0  ovh_1  N  1.0  0  -
 # hongryeon (fan dancer): mid-range fans, returning fan throw, lotus spin anti-air, fire-pillar super
 hongryeon  lp    S    3       2      5        28     6       4         H     0  10  -28 9   7   lp_0       lp_1      N    0    0  -

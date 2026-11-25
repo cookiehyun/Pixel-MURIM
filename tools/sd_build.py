@@ -295,6 +295,21 @@ if char == "hyeolma":
             ImageDraw.floodfill(mask, (int(xs[torso]), int(ys[torso])), 128)
             pixels[np.asarray(mask) != 128] = 0
             Image.fromarray(pixels).save(path)
+# "@keepbody <char> <names>": these frames keep only what touches the body (stray sparks the split handed them go)
+for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
+    q = ln.split()
+    if len(q) == 3 and q[0] == "@keepbody" and q[1] == char:
+        for name, ax, ay in anchors:
+            if name not in q[2].split(","): continue
+            path = os.path.join(out, name + ".png")
+            pixels = np.array(Image.open(path).convert("RGBA"))
+            alpha = pixels[:, :, 3]
+            ys, xs = np.nonzero(alpha)
+            torso = np.argmin((xs - ax) ** 2 + (ys - ay + 18) ** 2)
+            mask = Image.fromarray(alpha).filter(ImageFilter.MaxFilter(3))
+            ImageDraw.floodfill(mask, (int(xs[torso]), int(ys[torso])), 128)
+            pixels[np.asarray(mask) != 128] = 0
+            Image.fromarray(pixels).save(path)
 with open(os.path.join(out, "anchors.txt"), "w") as fh:
     for n, x, y in anchors: fh.write(f"{n} {x} {y}\n")
 print(len(anchors), "frames")

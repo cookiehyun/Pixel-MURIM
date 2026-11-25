@@ -2174,7 +2174,10 @@ ANIM hp_pre 2 hp_0 hp_a hp_a
 ANIM hp_seq 2 hp_1
 ANIM hp_rec 3 hp_2 hp_2 hp_3
 ANIM sp1_rec 3 thrust_1 thrust_0 thrust_0
-ANIM sp2c_rec 3 counter finish finish idle_0
-ANIM super_pre 2 sky
+ANIM sp2_seq 3 gw_0 gw_1
+ANIM sp2_rec 3 gw_0 idle_0
+ANIM sp2c_pre 2 gw_hit gc_0
+ANIM sp2c_rec 3 gc_1 gc_2 gc_2 idle_0
+ANIM super_pre 2 bs_0 bs_1 bs_1 bs_2 bs_2
 ANIM hk_pre 2 hk_p hk_0
 ANIM hk_rec 3 hk_2 hk_3

@@ -1549,7 +1549,12 @@ function crashStep(i: number, t: number): void {
     }
   } else {
     const ghost = (f.hitCount & GHOST) !== 0;
-    f.cineSpr = t < CRASH_BLADES[2] + 2 ? SW("sp_a") : ghost && t < CRASH_GHOST_END ? SW("ovh_1") : SW("sp_1");
+    if (mCrashKit === "baekmujin") {
+      f.cineSpr = SW(t < 6 ? "bs_3" : "bs_4");          // the swing that sends the swords, then the finish
+      const want = f.cineCX - f.facing * 46;             // the swords rain wide: he slides back out from under them
+      if (t < 5 && (f.x - want) * f.facing > 0) { f.x += (want - f.x) * 0.5; clampX(i); }
+    }
+    else f.cineSpr = t < CRASH_BLADES[2] + 2 ? SW("sp_a") : ghost && t < CRASH_GHOST_END ? SW("ovh_1") : SW("sp_1");
     const k = CRASH_BLADES.indexOf(t - 1);
     if (k >= 0) {
       const all = k === 2 && (f.hitCount & 3) === 3;     // the first two struck clean: the third holds instead of throwing
@@ -1621,6 +1626,7 @@ function thickLine(x0: number, y0: number, x1: number, y1: number, w: number, co
 function drawCrash(i: number, t: number): void {
   const f = F[i], form = D.MvP1[f.mv] || 1, gy = vint(f.footY);
   mCrashKit = f.kit === "baekmujin" ? "baekmujin" : "cheonma";
+  if (mCrashKit === "baekmujin" && form === 3) { drawSkySwords(i, t); return; }
   if (t < 0) {                                          // gathering: dark red sparks drawn into the blade
     const s = t + D.MvStartup[f.mv];
     for (let k = 0; k < 10; k++) {
@@ -1790,14 +1796,32 @@ export function parrying(d: number): boolean {
 /** d parried a hit from a: the blow is cancelled, a gold flash, and the counter cut (<move>c) starts. */
 export function counterStrike(d: number, a: number, cx: number, cy: number): void {
   const f = F[d], mv = moveId(mvKeyOf(f.mv) + "c");
-  FX.spawn(cx, cy, FX.FX_BLOCK);
-  FX.spawn(vint(f.x + f.facing * 8 + 0.5), vint(f.footY) - 26, FX.FX_SLASH);
-  Combat.showText("COUNTER", 20, d);
+  Combat.showText("COUNTER", 20, d);                     // the flash on the blade is in the counter's first frame
   Combat.C.HitStop = 8; Combat.C.WhiteFlash = 1;
   F[a].hasHit = true;
   if (mv < 0) return;
   f.mv = mv; f.hasHit = false; f.hitCount = 0;
   setState(d, ST_ATTACK);
+}
+
+/** 백일천검 on the foe's side: the light swords of baekmujin_fx fall_0..5 at the marked spot (drawn for the foe facing
+ *  left, so mirrored when Baek Mujin faces left). Three blades strike at CRASH_BLADES; if all three cut clean they stand
+ *  glowing until CRASH_GHOST_END and burst together, otherwise the third blade's burst ends it at once. */
+function drawSkySwords(i: number, t: number): void {
+  const f = F[i];
+  if (t < 0) return;                                   // the gathering is in his own frames (bs_0..2)
+  const ghost = (f.hitCount & GHOST) !== 0, b = CRASH_BLADES;
+  const end = ghost ? CRASH_GHOST_END : b[2] + 3;
+  let k: number;
+  if (t <= b[0]) k = 0;
+  else if (t <= b[1]) k = 1;
+  else if (t <= b[2]) k = 2;
+  else if (t < end) k = 3;
+  else if (t < end + 4) k = 4;
+  else if (t < end + 8) k = 5;
+  else return;
+  const nm = "baekmujin.fall_" + k;
+  if (hasSprite(nm)) R.drawSprite(spriteId(nm), f.cineCX, vint(GROUND_Y + 0.5), f.facing < 0);
 }
 
 // ---- Hyeolma: the blood frenzy and its blood wave (the demon arm and the frenzy coming on are drawn in his SD frames)
