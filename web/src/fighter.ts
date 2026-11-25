@@ -499,7 +499,7 @@ function updateAttack(i: number, d: boolean): void {
       break;
     case MT_SUPER_QUAKE:
       if (t === D.MvStartup[f.mv]) {
-        Combat.showText(f.superName, 40, i);
+        if (f.mv === f.moves[MV_SUPER]) Combat.showText(f.superName, 40, i);
         FX.spawn(vint(f.x + 0.5), vint(f.footY) - 4, FX.FX_BLOCK);
       }
       break;
@@ -575,6 +575,7 @@ function startAttack(i: number, atk: number, crouching: boolean, chained: boolea
   if (atk === MV_OVH) { mv = f.moves[MV_OVH]; crouching = false; }
   else if (atk >= MV_SP1) {
     mv = f.moves[atk];
+    if (atk === MV_SP1 && f.rage > 0 && f.prefix === "hyeolma") mv = bloodWaveMove();   // in the frenzy: the blood wave
     const mt = D.MvType[mv];
     if ((mt === MT_PROJ || mt === MT_SUPER_PROJ || mt === MT_PROJ_BOOM || mt === MT_SUPER_FIRE) && Proj.alive(i)) return false;
     if (!canAfford(i, atk)) return false;
@@ -873,7 +874,9 @@ export function draw(): void {
   for (let i = 0; i <= 1; i++) {
     if (isDrain(i)) drawDrainOrbs(i);
     const f = F[i];
-    if ((f.kit === "cheonma" || f.kit === "hyeolma") && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
+    if (f.kit === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
+    if (f.kit === "hyeolma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonArm(i);
+    if (f.kit === "hyeolma" && f.state === ST_ATTACK && f.mv === bloodWaveMove()) drawBloodWave(i);
     if (f.kit === "cheonmasw" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonCut(i);
     if ((f.prefix === "danwoo" || f.prefix === "sd_danwoo") && f.state === ST_ATTACK) {
       const own = D.SprHi[currentSprite(i)] && D.SprHiS[currentSprite(i)] !== 3;   // hi-res art that draws its own effects
@@ -1013,16 +1016,17 @@ function drawOne(i: number): void {
   const x = vint(f.x + 0.5), y = vint(f.footY + 0.5), flip = f.facing < 0;
   if (rageShown(i)) {
     const id = rageSprite(currentSprite(i));
+    if (f.prefix === "hyeolma") drawFrenzyArms(i);       // two blood demon arms rise behind him
     if (D.SprHi[id]) {                                    // hi-res art: aura and red wash drawn at art resolution
       R.drawRageHi(id, x, y, flip, mDraw);
       R.drawSprite(id, x, y, flip, tint);
       if (tint < 0) R.tintHi(id, x, y, flip, RGB(255, 40, 20), 0.18);
-      drawSteam(x + f.facing * 2, y - 38);
+      if (f.prefix === "cheolsan") drawSteam(x + f.facing * 2, y - 38);
       return;
     }
     drawRageAura(i, id, x, y, flip);
     R.drawSprite(id, x, y, flip, tint);
-    drawSteam(x + f.facing * 2, y - 36);
+    if (f.prefix === "cheolsan") drawSteam(x + f.facing * 2, y - 36);
     return;
   }
   if ((demonAwake(i) || drainLinked(i)) && tint < 0) {
@@ -1220,7 +1224,7 @@ function moveName(i: number): string {
 }
 
 export const raging = (i: number) => F[i].rage > 0;
-const rageShown = (i: number) => F[i].prefix === "cheolsan" && (F[i].rage > 0 || (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE));
+const rageShown = (i: number) => (F[i].prefix === "cheolsan" || F[i].prefix === "hyeolma") && (F[i].rage > 0 || (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE));
 
 const rageMap = new Map<number, number>();
 function rageSprite(id: number): number {
@@ -1582,13 +1586,13 @@ function burst(cx: number, cy: number, s: number, big: number): void {
   }
 }
 
-function thickLine(x0: number, y0: number, x1: number, y1: number, w: number, core: number, edge: number): void {
+function thickLine(x0: number, y0: number, x1: number, y1: number, w: number, core: number, edge: number, dark = C_DARK()): void {
   const L = Math.max(1, Math.hypot(x1 - x0, y1 - y0)), nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
   for (let s = 0; s <= L; s++) {
     const x = x0 + (x1 - x0) * s / L, y = y0 + (y1 - y0) * s / L, taper = 1 - Math.abs(s / L - 0.5) * 2;
     const ww = Math.max(0, w * (0.35 + 0.65 * taper));
     for (let d = -Math.ceil(ww) - 1; d <= Math.ceil(ww) + 1; d++)
-      R.putPixel(clng(x + nx * d), clng(y + ny * d), Math.abs(d) <= ww * 0.5 ? core : Math.abs(d) <= ww ? edge : C_DARK());
+      R.putPixel(clng(x + nx * d), clng(y + ny * d), Math.abs(d) <= ww * 0.5 ? core : Math.abs(d) <= ww ? edge : dark);
   }
 }
 
@@ -1749,4 +1753,75 @@ function drawDemonCut(i: number): void {
       R.putPixel(clng(cx + f.facing * c * r), clng(cy + s * r), col);
     }
   }
+}
+
+// ---- Hyeolma: 혈마수 (a demon arm of blood strikes from his back), the blood frenzy and its blood wave
+
+const B_DARK = () => RGB(60, 4, 14), B_RED = () => RGB(160, 16, 30), B_HOT = () => RGB(230, 50, 60), B_LIGHT = () => RGB(255, 150, 150);
+let mWaveMv = -2;
+function bloodWaveMove(): number {
+  if (mWaveMv === -2) mWaveMv = moveId("hyeolma.sp1r");
+  return mWaveMv;
+}
+
+/** One blood limb from the back (bx, by) through the elbow (ex, ey) to the claw (cx, cy), claws opening forward. */
+function bloodLimb(bx: number, by: number, ex: number, ey: number, cx: number, cy: number, w: number, fx: number, t: number): void {
+  thickLine(bx, by, ex, ey, w * 0.8, B_RED(), B_RED(), B_DARK());
+  thickLine(ex, ey, cx, cy, w, (t % 4 < 2) ? B_HOT() : B_RED(), B_RED(), B_DARK());
+  thickLine(ex, ey, cx, cy, Math.max(0.6, w * 0.3), B_LIGHT(), B_HOT(), B_HOT());
+  const L = Math.hypot(cx - ex, cy - ey) || 1, ux = (cx - ex) / L, uy = (cy - ey) / L;
+  for (let k = -1; k <= 1; k++) {                          // three claws
+    const a = Math.atan2(uy, ux) + k * 0.5, len = 5 + (k === 0 ? 2 : 0);
+    thickLine(cx, cy, cx + Math.cos(a) * len, cy + Math.sin(a) * len, 0.7, B_LIGHT(), B_HOT(), B_DARK());
+  }
+  for (let d = 0; d < 3; d++) {                            // blood dripping off the arm
+    const s = ((t * 2 + d * 7) % 12) / 12, px = ex + (cx - ex) * (0.3 + d * 0.25), py = ey + (cy - ey) * (0.3 + d * 0.25) + s * 8;
+    if (s < 0.8) R.putPixel(clng(px), clng(py), B_HOT());
+  }
+  void fx;
+}
+
+/** 혈마수: the arm bursts from behind his shoulder and reaches across the hitbox, then sinks back. */
+function drawDemonArm(i: number): void {
+  const f = F[i], mv = f.mv, s = D.MvStartup[mv], a = D.MvActive[mv], t = f.stTick;
+  let p = 0;
+  if (t >= s - 2 && t < s) p = 0.35 * (t - s + 3);
+  else if (t >= s && t < s + a) p = 1;
+  else if (t >= s + a && t < s + a + 5) p = 1 - (t - s - a + 1) / 6;
+  if (p <= 0) return;
+  const fx = f.facing, x = f.x, y = f.footY, reach = (D.MvHbX[mv] + D.MvHbW[mv]) * p;
+  // it rises from behind his shoulder, arcs over, and drives down onto the foe
+  const bx = x - fx * 4, by = y - 30, ex = x + fx * reach * 0.35, ey = y - 46 - 4 * p;
+  bloodLimb(bx, by, ex, ey, x + fx * reach, y - 26, 2.4 + 1.6 * p, fx, t);
+}
+
+/** The frenzy: two blood arms rise from his back over his head and sway, claws open toward the foe. */
+function drawFrenzyArms(i: number): void {
+  const f = F[i], fx = f.facing, x = f.x, y = f.footY, t = mDraw;
+  // spread behind him like a pair of wings: one rears up over his back, the other reaches out behind; claws open
+  const sw0 = Math.sin(t * 0.12) * 2, sw1 = Math.sin(t * 0.12 + 2.1) * 2;
+  bloodLimb(x - fx * 4, y - 32, x - fx * 15, y - 50 + sw0, x - fx * 6, y - 64 - sw0, 3, fx, t);
+  bloodLimb(x - fx * 6, y - 26, x - fx * 22, y - 32 + sw1, x - fx * 30, y - 46 - sw1, 2.6, fx, t + 3);
+}
+
+/** The blood wave (frenzy sp1): rings of blood spikes run out along the ground on both sides. */
+function drawBloodWave(i: number): void {
+  const f = F[i], t = f.stTick - D.MvStartup[f.mv];
+  if (t < 0 || t > D.MvActive[f.mv] + 8) return;
+  const gx = clng(f.x), gy = clng(f.footY);
+  for (let k = 0; k <= 2; k++) {
+    const rad = (t - k * 2) * 7 + 6;
+    if (rad <= 6 || rad >= 60) continue;
+    const h = Math.max(4, 22 - Math.trunc(rad / 4) - k * 3);
+    for (let s = -1; s <= 1; s += 2) {
+      for (let q = 0; q < 3; q++) {                          // a crown of blood spikes, the middle one tallest
+        const sx = gx + s * (rad + q * 3 - 3), hh = q === 1 ? h : Math.trunc(h * 0.6);
+        R.fillRect(sx - 1, gy - hh, 3, hh, k === 0 ? B_HOT() : B_RED());
+        R.fillRect(sx, gy - hh, 1, Math.max(1, hh - 2), k === 0 ? B_LIGHT() : B_HOT());
+        R.putPixel(sx, gy - hh - 1, B_DARK());
+      }
+      if (k === 0) R.fillRect(s < 0 ? gx - rad : gx, gy - 1, rad, 2, B_RED());
+    }
+  }
+  if (t < 3) for (let q = 0; q < 10; q++) R.putPixel(gx + ((q * 13) % 21) - 10, gy - 4 - ((q * 7 + t * 5) % 16), B_HOT());
 }
