@@ -16,12 +16,12 @@ PAL n 100A0E
 PAL e C890FF
 PAL t E4D8FF
 PAL T 8A60D0
-PAL W DCE4EC
-PAL Q FFFFFF
+PAL W C4B4EC
+PAL Q F0E8FF
 PAL y E8B848
 PAL m 241430
 PAL r 8A60D0
-PAL c 1A1014
+PAL c 3A2258
 PAL u B8A486
 PAL U D8CCB4
 SPRITE idle_0 29 44 12 43
@@ -2509,7 +2509,7 @@ ANIM crouch 1 crouch
 ANIM jump 1 jump
 ANIM sp1_pre 2 palm_0
 ANIM sp2_pre 2 draw_0
-ANIM super_pre 2 sp_a sp_a palm_0
+ANIM super_pre 2 draw_0
 ANIM hp_pre 2 hp_p hp_0
 ANIM hp_rec 3 hp_2 hp_3
 ANIM hk_pre 2 hk_p hk_0

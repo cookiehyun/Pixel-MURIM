@@ -459,7 +459,7 @@ CHEONMA = dict(                          # final boss (arcade): the Heavenly Dem
     head="cheonma",
     scabbard=dict(length=14),
 )
-CHEONMA["palette"].update({"W": "DCE4EC", "Q": "FFFFFF", "y": "E8B848", "m": "241430", "r": "8A60D0", "c": "1A1014"})
+CHEONMA["palette"].update({"W": "C4B4EC", "Q": "F0E8FF", "y": "E8B848", "m": "241430", "r": "8A60D0", "c": "3A2258"})   # violet blade and scabbard
 
 # Cheonma with the long sword drawn (sp2 draws / sheathes, the super leaves it drawn): Muyeong's sword work
 CHEONMA_SW = dict(CHEONMA, name="cheonmasw", weapon=dict(kind="sword", length=14),
@@ -720,7 +720,7 @@ MOVE_ANIMS = {
     "cheonma": [
         ("sp1_pre", 2, ["palm_0"]),
         ("sp2_pre", 2, ["draw_0"]),
-        ("super_pre", 2, ["sp_a", "sp_a", "palm_0"]),
+        ("super_pre", 2, ["draw_0"]),          # the sword art starts by drawing the blade
     ],
     "cheonmasw": [
         ("lp_rec", 2, ["lp_1", "lp_0"]),
