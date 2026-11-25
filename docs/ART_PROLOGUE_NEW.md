@@ -8,6 +8,16 @@
 - 색 규칙: **빨강은 혈마 몫**, 천마신교는 보라·검정·은회색(지금 천마와 같은 계열).
 - 이펙트(붉은 기운, 검광 등)는 SD 그림에 넣지 않습니다. 코드로 붙입니다. 정지 컷 그림에만 넣습니다.
 
+### 지난 서장 때 실제로 한 방식 (그대로 따름)
+
+| 종류 | GPT에 첨부한 것 | 받은 크기 | 게임에 넣는 도구 |
+|---|---|---|---|
+| 배경 | 구도 그림 `docs/art/bg/*.png`(gen_bg_refs.py) + 화풍 `village_ref.webp` | 2000×667 (3:1) | `tools/bg_add.py` → `web/data/maps/<이름>.png` |
+| SD 인물 | 기준 SD 그림 + 인물 설정 그림 `docs/art/cast/*.png`(gen_cast.py) | 2000×667, 4프레임, #FF00FF | `sd_split.py` → `pixelize.py` → `sd_add.py` → `web/data/hi/sd/<인물>/` |
+| 클로즈업 | 화풍 그림 | 1672×941 (16:9), SD 아닌 세밀한 픽셀화 | `bg_add.py` (지도 한 장으로 띄움, 예: mask_closeup) |
+
+새 인물은 제가 먼저 **설정 그림(cast)과 배경 구도 그림(bg)** 을 만들어 드리고, 그걸 같이 첨부해 받는 것이 지난번 순서였습니다.
+
 ---
 
 ## 0. 공통 문장
@@ -28,12 +38,12 @@ Model sheet, 4 frames: 1. standing idle 2. walking 3. a typical action pose 4. s
 
 ### 배경용 (첨부: 구도 없이 `docs/art/sd/village_ref.webp` 한 장)
 ```
-Pixel art game background in the same style as the attached image. Very wide (2:1), strict flat side view for a side-scrolling game, no perspective, no people, no text. Ground line near the bottom (the bottom 15% is the floor people stand on).
+Pixel art game background in the same style as the attached image. Very wide (3:1, like 2000x667), strict flat side view for a side-scrolling game, no perspective, no people, no text. Ground line near the bottom (the bottom 15% is the floor people stand on).
 ```
 
 ### 정지 컷 그림용 (첨부: `village_ref.webp`)
 ```
-A single pixel art cutscene illustration for a wuxia story, in the same pixel style and palette feel as the attached image (crisp pixels, limited palette, dark outlines). 16:9, cinematic framing, no text, no letters, no watermark.
+A single pixel art cutscene illustration for a wuxia story, in the same pixel style and palette feel as the attached image (crisp pixels, limited palette, dark outlines). 16:9 (like 1672x941), cinematic framing, detailed (not chibi), no text, no letters, no watermark.
 ```
 
 ### 이상할 때 (같은 대화창에서)
