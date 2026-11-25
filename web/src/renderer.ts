@@ -346,6 +346,7 @@ export const PHYS_W = PW, PHYS_H = PH;
 
 /** Darken / tint a screen-pixel rectangle toward color by a (dialogue boxes). */
 export function shadeRect(x: number, y: number, w: number, h: number, color: number, a: number): void {
+  x = Math.round(x); y = Math.round(y); w = Math.round(w); h = Math.round(h);   // fractional corners drew nothing
   const x0 = Math.max(0, x), y0 = Math.max(0, y), x1 = Math.min(PW, x + w), y1 = Math.min(PH, y + h);
   for (let j = y0; j < y1; j++) for (let i = x0; i < x1; i++) blendAt(i + j * PW, color, a);
 }

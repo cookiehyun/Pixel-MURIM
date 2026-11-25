@@ -127,8 +127,9 @@ let mActive = false, mSnap = false, mFlash = 0, mShake = 0;
 // scene dressing drawn in code: props (things on the ground, a falling beam, writing on a board), a place caption,
 // the opening moon and the closing title
 interface Prop { id: string; kind: string; x: number; y: number; t: number; text?: string }
+const LATE_PROPS = ["beam", "night", "black"];   // drawn over the people (a falling beam, the night coming on, black)
 let props: Prop[] = [];
-let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0, mWaitA = false;
+let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0, mWaitA = false, mTitleText = "서장 「혈월의 밤」 끝";
 let mFadeOut = 0, mFadeIn = 0, mFadeFor: Step | null = null, mFadeDone: Step | null = null;
 
 export const active = () => mActive;
@@ -230,7 +231,7 @@ function exec(s: Step): boolean {
     case "moon": mMoon = 0; return true;
     case "prop": props = props.filter((q) => q.id !== s.id); props.push({ id: String(s.id), kind: String(s.kind), x: Number(s.x), y: Number(s.y ?? GROUND), t: 0, text: s.text as string | undefined }); return true;
     case "unprop": props = props.filter((q) => q.id !== s.id); return true;
-    case "title": mTitle = true; mTitleT = 0; return false;
+    case "title": mTitle = true; mTitleT = 0; if (s.text) mTitleText = String(s.text); return false;
     case "waitA": mWaitA = true; return false;
     case "narr": queue.push(["cut", "(" + String(s.text) + ")"]); nextLine(); return false;
     case "duel": {
@@ -565,7 +566,7 @@ export function render(): void {
   if (mTitle) { titleRender(); return; }
   FM.drawBack(map, camX, mTick);
   if (duel && duel.dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, 0, 0.55);   // super freeze / heavy impact: the world goes dark
-  for (const q of props) if (q.kind !== "beam") drawProp(q);
+  for (const q of props) if (!LATE_PROPS.includes(q.kind)) drawProp(q);
   const order = ents.slice().sort((a, b) => (a.small ? 1 : 0) - (b.small ? 1 : 0) || (a.id === "player" ? 1 : 0) - (b.id === "player" ? 1 : 0));
   for (const e of order) {
     if (e.st === ST_DEAD && e.t > 10 && Math.trunc(e.t / 3) % 2 === 0) continue;
@@ -593,7 +594,7 @@ export function render(): void {
   }
   for (const pf of puffs) for (let k = 0; k < 5; k++) R.shadeCircle((pf.x - camX + (k - 2) * 5) * PX, (pf.y - pf.t * 0.3 - (k % 2) * 4) * PX, (5 + pf.t * 0.4) * PX, RGB(70, 66, 76), 0.5 * (1 - pf.t / 30));
   FX.draw();
-  for (const q of props) if (q.kind === "beam") drawProp(q);
+  for (const q of props) if (LATE_PROPS.includes(q.kind)) drawProp(q);
   FM.drawFront(map, camX, mTick);
   if (mMoon >= 0) moonRender();
   if (mCapT > 0 && !talking()) {
@@ -722,6 +723,66 @@ function drawProp(q: Prop): void {
       if (Math.trunc(q.t / 10) % 3 === 0) R.physRect(sx + 4, sy - 12, 2, 2, RGB(255, 255, 255));
       break;
     }
+    case "redmist": {                                      // red qi rising off an open hand / a body
+      for (let k = 0; k < 9; k++) {
+        const ph = (q.t * 2 + k * 11) % 40, up = ph * 1.4, r = Math.max(2, 9 - ph * 0.2);
+        R.shadeCircle(sx + ((k * 7) % 13 - 6) * 3 + Math.sin((q.t + k * 9) * 0.15) * 4, sy - up * PX * 0.5, r * 1.6, k % 3 ? RGB(200, 20, 36) : RGB(255, 90, 90), 0.35);
+      }
+      break;
+    }
+    case "night": R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(8, 12, 36), Math.min(0.55, q.t / 160)); break;
+    case "black": R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); break;
+    case "scrollfire": {                                   // the scroll map: towns catch fire one by one, then the two flags close in
+      const towns = [[46, 38], [53, 79], [146, 28], [156, 64], [55, 55], [126, 49]];
+      towns.forEach(([x, y], k) => {
+        const age = q.t - k * 14;
+        if (age < 0 || k === 5) return;
+        const fx = x * PX, fy = y * PX, g = Math.min(1, age / 20);
+        R.shadeCircle(fx, fy, 22 * g, RGB(160, 20, 20), 0.35);
+        for (let f = 0; f < 5; f++) {
+          const h = (8 + ((q.t * 3 + f * 7 + k * 5) % 10)) * g;
+          R.shadeRect(fx - 12 + f * 5, fy - h * 1.5, 5, h * 1.5, f % 2 ? RGB(255, 140, 30) : RGB(220, 40, 20), 0.85);
+        }
+      });
+      const ft = q.t - 100;
+      if (ft > 0) {                                        // the alliance's white flag from the left, the cult's black flag from the right
+        const u = Math.min(1, ft / 70), tx = 126 * PX, ty = 49 * PX;
+        for (const [x0, c, c2] of [[-10, RGB(240, 236, 220), RGB(214, 180, 90)], [202, RGB(30, 20, 36), RGB(150, 90, 210)]] as [number, number, number][]) {
+          const x = (x0 * PX) + (tx + (x0 < 0 ? -24 : 24) - x0 * PX) * u, y = 64 * PX + (ty - 64 * PX) * u;
+          R.physRect(x, y - 42, 3, 48, RGB(70, 44, 24));
+          R.physRect(x + (x0 < 0 ? 3 : -27), y - 42, 27, 18, c2);
+          R.physRect(x + (x0 < 0 ? 5 : -25), y - 40, 23, 14, c);
+        }
+        if (u >= 1) R.shadeCircle(tx, ty, 26 + Math.sin(q.t * 0.3) * 3, RGB(200, 10, 20), 0.45);   // the cult's seat, where they meet
+      }
+      break;
+    }
+    case "bloodback": {                                    // one drop climbs back up the groove into the scar
+      const path = [[60, 73], [72, 74], [84, 75], [92, 68], [104, 55]];
+      const u = (q.t - 40) / 110;
+      if (u < 0) break;
+      if (u >= 1) { if (q.t < 175) R.shadeCircle(104 * PX, 55 * PX, 10, RGB(255, 60, 60), 0.6 * (1 - (q.t - 150) / 25)); break; }
+      const seg = Math.min(path.length - 2, Math.floor(u * (path.length - 1))), w = u * (path.length - 1) - seg;
+      const x = path[seg][0] + (path[seg + 1][0] - path[seg][0]) * w, y = path[seg][1] + (path[seg + 1][1] - path[seg][1]) * w;
+      R.shadeCircle(x * PX, y * PX, 12, RGB(200, 20, 30), 0.35);
+      R.physRect(Math.round(x * PX) - 4, Math.round(y * PX) - 4, 9, 9, RGB(80, 0, 10));
+      R.physRect(Math.round(x * PX) - 3, Math.round(y * PX) - 3, 7, 7, RGB(180, 12, 28));
+      R.physRect(Math.round(x * PX) - 2, Math.round(y * PX) - 3, 3, 3, RGB(255, 130, 130));
+      break;
+    }
+    case "ripple": {                                       // round ripples on the dark water, twice, the same interval apart
+      for (const st of [20, 90]) {
+        const a = q.t - st;
+        if (a < 0 || a > 60) continue;
+        for (const lag of [0, 10]) {
+          const r = (a - lag) * 0.5;
+          if (r <= 0) continue;
+          const alpha = Math.max(0, 0.6 - a / 100);
+          for (let d = 0; d < 360; d += 4) R.shadeRect(q.x * PX + Math.cos(d * 0.01745) * r * PX - 1, q.y * PX + Math.sin(d * 0.01745) * r * PX * 0.9 - 1, 3, 3, RGB(170, 180, 220), alpha);
+        }
+      }
+      break;
+    }
     case "text":                                           // writing on something in the picture (a name board)
       KF.draw(q.text ?? "", sx, sy, RGB(46, 22, 12), 2, 1, -1);
       break;
@@ -756,7 +817,7 @@ function titleRender(): void {
   R.shadeCircle(R.PHYS_W / 2, 120, r + 14, RGB(120, 10, 16), 0.3);
   R.shadeCircle(R.PHYS_W / 2, 120, r, RGB(200, 30, 36), 1);
   if (r > 30) for (const [dx, dy, rr] of [[-18, -12, 12], [16, 10, 15], [-6, 24, 8]]) R.shadeCircle(R.PHYS_W / 2 + dx * r / 70, 120 + dy * r / 70, rr * r / 70, RGB(150, 18, 26), 0.55);
-  if (r >= 70 && mTitleT > 50) KF.draw("서장 「혈월의 밤」 끝", R.PHYS_W / 2, 222, RGB(230, 210, 180), 2, 1);
+  if (r >= 70 && mTitleT > 50) KF.draw(mTitleText, R.PHYS_W / 2, 222, RGB(230, 210, 180), 2, 1);
   if (mTitleT > 60 && Math.trunc(mTitleT / 8) % 2 === 0) Font.drawText("A = NEXT", SCREEN_W - 4, 92, RGB(150, 140, 170), 1, 2);
 }
 

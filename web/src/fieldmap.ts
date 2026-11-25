@@ -24,9 +24,10 @@ export interface FieldMap {
 // ---------------------------------------------------------------- picture maps (data/maps/<name>.png, see tools/bg_add.py)
 
 const pictures = new Map<string, { w: number; h: number; pix: Int32Array }>();
-export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut", "emei_snow", "namgung_fire", "xiha_station", "cheonma_hall", "dark_room", "mask_closeup", "bamboo_cut", "hairpin_closeup", "mouth_closeup", "stable_closeup", "token_closeup", "cheongpung_dawn"];
+export const PICTURE_MAPS = ["cheongpung_fire", "shaolin_library", "shaolin_yard", "bamboo_hut", "emei_snow", "namgung_fire", "xiha_station", "cheonma_hall", "dark_room", "mask_closeup", "bamboo_cut", "hairpin_closeup", "mouth_closeup", "stable_closeup", "token_closeup", "cheongpung_dawn",
+  "blood_battlefield", "blood_altar", "postwar_ruins", "postwar_rebuild", "luoyang_market", "hyeolma_face", "scroll_map", "hyeolma_hand", "two_flags", "well_down"];
 const RAIN_MAPS = ["bamboo_hut", "bamboo_cut"], SNOW_MAPS = ["emei_snow", "hairpin_closeup"];
-const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard", "namgung_fire"];
+const FIRE_MAPS = ["cheongpung_fire", "shaolin_yard", "namgung_fire", "blood_battlefield"];
 
 let loading: Promise<void> | null = null, loaded = false;
 export const ready = () => loaded;

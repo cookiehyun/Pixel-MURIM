@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "docs", "story")
 OUT = os.path.join(ROOT, "web", "data")
 ROUTES = [  # id, file, owner (route character; None = several)
-    ("prologue", "00_prologue.md", None), ("danwoo", "01_danwoo.md", "단우"), ("cheolsan", "02_cheolsan.md", "철산"),
+    ("prologue", "../story_new/00_prologue.md", None),   # the rewritten prologue (the other routes follow later) ("danwoo", "01_danwoo.md", "단우"), ("cheolsan", "02_cheolsan.md", "철산"),
     ("muyeong", "03_muyeong.md", "무영"), ("seolhwa", "04_seolhwa.md", "설화"), ("heukrim", "05_heukrim.md", "흑림"),
     ("hongryeon", "06_hongryeon.md", "홍련"), ("cheonma", "07_cheonma.md", "천마"), ("finale", "08_finale.md", None),
 ]
