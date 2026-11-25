@@ -80,6 +80,10 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     pic, scale, names = p[1], p[2], p[3].split(",")
     tmp = os.path.join(out, "_split", pic)
     subprocess.run([sys.executable, os.path.join(ROOT, "tools", "sd_split.py"), os.path.join(ROOT, "docs", "art", "sd", "src", pic), tmp, str(len(names))], check=True, capture_output=True)
+    for k, nm in enumerate(names):                          # "name~": the AI drew this one facing left - mirrored
+        if nm.endswith("~"):
+            names[k] = nm[:-1]
+            Image.open(f"{tmp}/fig_{k}.png").transpose(Image.FLIP_LEFT_RIGHT).save(f"{tmp}/fig_{k}.png")
     if ref_head is None:                                   # the first sheet sets the head size (art pixels)
         ref_head = float(np.median([head_len(f"{tmp}/fig_{k}.png") or 0 for k in range(len(names))])) / float(scale)
     if len(p) > 4 and p[4] in ("fit", "legs"):
