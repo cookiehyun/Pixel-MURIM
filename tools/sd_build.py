@@ -198,5 +198,14 @@ if len(sys.argv) > 3 and sys.argv[3] == "--install":
     while lines and lines[-1] == "": lines.pop()
     lines.append(head)
     lines += [f"{char}.{n} sd/{char}_f/{n}.png {x} {y} fight" for n, x, y in anchors]
+    # "@alias <char> <other set>": the same SD frames stand in for another classic sprite set of the character
+    # (Heukrim with the sword drawn: the classic set's blade is lifted and drawn over them as an effect)
+    for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
+        q = ln.split()
+        if len(q) == 3 and q[0] == "@alias" and q[1] == char:
+            h2 = f"# {q[2]}: {char}'s SD fighter art (tools/sd_build.py @alias)"
+            lines = [l for l in lines if l != h2 and not (l.startswith(q[2] + ".") and l.endswith(" fight"))]
+            lines.append(h2)
+            lines += [f"{q[2]}.{n} sd/{char}_f/{n}.png {x} {y} fight" for n, x, y in anchors]
     open(man, "w").write("\n".join(lines) + "\n")
     print("installed", len(anchors), "frames to", dst)
