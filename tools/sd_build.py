@@ -6,7 +6,7 @@ palette per sheet) and clear the magenta fringe. Writes <out>/<frame>.png and <o
 """
 import os, subprocess, sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 char, out = sys.argv[1], sys.argv[2]
@@ -267,6 +267,30 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
         Image.fromarray(b).save(os.path.join(out, "idle_1.png"))
         x0, y0 = next((x, y) for n, x, y in anchors if n == "idle_0")
         anchors = [(n, x0, y0) if n == "idle_1" else (n, x, y) for n, x, y in anchors]
+# The relaxed frames on the punch, kick and demon-arm sheets have a roughly
+# 46-pixel body against idle's 41. Use that body ratio for the entire motion,
+# including the extended limbs and claw, and transform the hip/foot pivot with it.
+if char == "hyeolma":
+    for k, (name, ax, ay) in enumerate(anchors):
+        if name.startswith(("lp_", "hp_", "lk_", "hk_", "arm_")) or name == "palm_0":
+            path = os.path.join(out, name + ".png")
+            with Image.open(path) as frame:
+                w, h = frame.size
+                scaled = frame.resize((round(w * 0.90), round(h * 0.90)), Image.Resampling.NEAREST)
+            scaled.save(path)
+            anchors[k] = (name, round(ax * scaled.width / w), round(ay * scaled.height / h))
+        elif name.startswith("su_"):
+            # Keep the growing arms attached to the body and discard isolated flecks.
+            path = os.path.join(out, name + ".png")
+            with Image.open(path) as frame:
+                pixels = np.array(frame.convert("RGBA"))
+            alpha = pixels[:, :, 3]
+            ys, xs = np.nonzero(alpha)
+            torso = np.argmin((xs - ax) ** 2 + (ys - ay + 18) ** 2)
+            mask = Image.fromarray(alpha).filter(ImageFilter.MaxFilter(3))
+            ImageDraw.floodfill(mask, (int(xs[torso]), int(ys[torso])), 128)
+            pixels[np.asarray(mask) != 128] = 0
+            Image.fromarray(pixels).save(path)
 with open(os.path.join(out, "anchors.txt"), "w") as fh:
     for n, x, y in anchors: fh.write(f"{n} {x} {y}\n")
 print(len(anchors), "frames")

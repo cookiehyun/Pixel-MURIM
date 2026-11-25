@@ -657,16 +657,16 @@ ANIM hyeolma.sp1_rec 4 arm_3 arm_4 arm_5
 ANIM hyeolma.super_pre 2 su_0 su_1 su_2 su_3
 ANIM hyeolma.super_seq 1 su_4
 ANIM hyeolma.super_rec 3 su_4 su_4 su_4
-hyeolma.wave_0 sd/hyeolma_fx/wave_0.png 14 2 fight
-hyeolma.wave_1 sd/hyeolma_fx/wave_1.png 24 10 fight
-hyeolma.wave_2 sd/hyeolma_fx/wave_2.png 44 18 fight
-hyeolma.wave_3 sd/hyeolma_fx/wave_3.png 53 24 fight
-hyeolma.wave_4 sd/hyeolma_fx/wave_4.png 46 15 fight
-hyeolma.wave_5 sd/hyeolma_fx/wave_5.png 41 3 fight
-hyeolma.farm_0 sd/hyeolma_fx/farm_0.png 52 58 fight
-hyeolma.farm_1 sd/hyeolma_fx/farm_1.png 52 58 fight
-hyeolma.farm_2 sd/hyeolma_fx/farm_2.png 52 58 fight
-hyeolma.farm_3 sd/hyeolma_fx/farm_3.png 52 58 fight
+hyeolma.wave_0 sd/hyeolma_fx/wave_0.png 8 2 fight
+hyeolma.wave_1 sd/hyeolma_fx/wave_1.png 14 10 fight
+hyeolma.wave_2 sd/hyeolma_fx/wave_2.png 26 18 fight
+hyeolma.wave_3 sd/hyeolma_fx/wave_3.png 31 24 fight
+hyeolma.wave_4 sd/hyeolma_fx/wave_4.png 27 15 fight
+hyeolma.wave_5 sd/hyeolma_fx/wave_5.png 24 3 fight
+hyeolma.farm_0 sd/hyeolma_fx/farm_0.png 28 37 fight
+hyeolma.farm_1 sd/hyeolma_fx/farm_1.png 28 37 fight
+hyeolma.farm_2 sd/hyeolma_fx/farm_2.png 28 37 fight
+hyeolma.farm_3 sd/hyeolma_fx/farm_3.png 28 37 fight
 # cheonmasw: cheonma's SD fighter art (tools/sd_build.py @alias)
 cheonmasw.hp_p sd/cheonma_f/hp_p.png 11 41 fight
 # cheonmasw: SD fighter art (tools/sd_build.py), drawn at the classic size
@@ -732,20 +732,20 @@ hyeolma.walk_2 sd/hyeolma_f/walk_2.png 14 41 fight
 hyeolma.walk_3 sd/hyeolma_f/walk_3.png 15 41 fight
 hyeolma.dash sd/hyeolma_f/dash.png 18 34 fight
 hyeolma.bdash sd/hyeolma_f/bdash.png 14 36 fight
-hyeolma.lp_0 sd/hyeolma_f/lp_0.png 13 46 fight
-hyeolma.lp_1 sd/hyeolma_f/lp_1.png 14 46 fight
-hyeolma.hp_2 sd/hyeolma_f/hp_2.png 14 46 fight
-hyeolma.hp_p sd/hyeolma_f/hp_p.png 14 46 fight
-hyeolma.hp_0 sd/hyeolma_f/hp_0.png 16 46 fight
-hyeolma.hp_1 sd/hyeolma_f/hp_1.png 19 45 fight
-hyeolma.hp_3 sd/hyeolma_f/hp_3.png 14 46 fight
-hyeolma.hk_3 sd/hyeolma_f/hk_3.png 13 45 fight
-hyeolma.lk_0 sd/hyeolma_f/lk_0.png 12 46 fight
-hyeolma.lk_1 sd/hyeolma_f/lk_1.png 12 45 fight
-hyeolma.hk_p sd/hyeolma_f/hk_p.png 13 45 fight
-hyeolma.hk_0 sd/hyeolma_f/hk_0.png 12 45 fight
-hyeolma.hk_1 sd/hyeolma_f/hk_1.png 12 45 fight
-hyeolma.hk_2 sd/hyeolma_f/hk_2.png 12 44 fight
+hyeolma.lp_0 sd/hyeolma_f/lp_0.png 12 41 fight
+hyeolma.lp_1 sd/hyeolma_f/lp_1.png 12 41 fight
+hyeolma.hp_2 sd/hyeolma_f/hp_2.png 12 41 fight
+hyeolma.hp_p sd/hyeolma_f/hp_p.png 12 41 fight
+hyeolma.hp_0 sd/hyeolma_f/hp_0.png 14 41 fight
+hyeolma.hp_1 sd/hyeolma_f/hp_1.png 17 40 fight
+hyeolma.hp_3 sd/hyeolma_f/hp_3.png 13 41 fight
+hyeolma.hk_3 sd/hyeolma_f/hk_3.png 12 40 fight
+hyeolma.lk_0 sd/hyeolma_f/lk_0.png 11 41 fight
+hyeolma.lk_1 sd/hyeolma_f/lk_1.png 11 40 fight
+hyeolma.hk_p sd/hyeolma_f/hk_p.png 12 40 fight
+hyeolma.hk_0 sd/hyeolma_f/hk_0.png 11 40 fight
+hyeolma.hk_1 sd/hyeolma_f/hk_1.png 11 40 fight
+hyeolma.hk_2 sd/hyeolma_f/hk_2.png 11 39 fight
 hyeolma.crouch sd/hyeolma_f/crouch.png 13 33 fight
 hyeolma.clp sd/hyeolma_f/clp.png 12 33 fight
 hyeolma.chp_0 sd/hyeolma_f/chp_0.png 12 33 fight
@@ -776,13 +776,13 @@ hyeolma.palm_1 sd/hyeolma_f/palm_1.png 14 41 fight
 hyeolma.sp_a sd/hyeolma_f/sp_a.png 16 41 fight
 hyeolma.kneel sd/hyeolma_f/kneel.png 18 30 fight
 hyeolma.fall sd/hyeolma_f/fall.png 14 17 fight
-hyeolma.palm_0 sd/hyeolma_f/palm_0.png 14 46 fight
-hyeolma.arm_0 sd/hyeolma_f/arm_0.png 12 45 fight
-hyeolma.arm_1 sd/hyeolma_f/arm_1.png 13 45 fight
-hyeolma.arm_2 sd/hyeolma_f/arm_2.png 19 44 fight
-hyeolma.arm_3 sd/hyeolma_f/arm_3.png 19 45 fight
-hyeolma.arm_4 sd/hyeolma_f/arm_4.png 13 44 fight
-hyeolma.arm_5 sd/hyeolma_f/arm_5.png 13 45 fight
+hyeolma.palm_0 sd/hyeolma_f/palm_0.png 12 41 fight
+hyeolma.arm_0 sd/hyeolma_f/arm_0.png 11 40 fight
+hyeolma.arm_1 sd/hyeolma_f/arm_1.png 12 40 fight
+hyeolma.arm_2 sd/hyeolma_f/arm_2.png 17 39 fight
+hyeolma.arm_3 sd/hyeolma_f/arm_3.png 17 40 fight
+hyeolma.arm_4 sd/hyeolma_f/arm_4.png 12 39 fight
+hyeolma.arm_5 sd/hyeolma_f/arm_5.png 12 40 fight
 hyeolma.su_0 sd/hyeolma_f/su_0.png 17 43 fight
 hyeolma.su_1 sd/hyeolma_f/su_1.png 14 43 fight
 hyeolma.su_2 sd/hyeolma_f/su_2.png 17 47 fight

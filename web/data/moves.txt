@@ -142,7 +142,7 @@ cheonmasw  throw  S  3  1  8  125  0  0  H  1  0  -30  16  10  throw_0  throw_1 
 cheonmasw  sp1  S  9  3  14  150  16  0  U  1  6  -44  26  44  palm_0  palm_1  R  2.5  0  26P  400
 cheonmasw  sp2  S  3  1  7  0  0  0  H  0  0  0  0  0  draw_0  draw_0  SW  0  0  624P  0
 cheonmasw  super  S  8  42  6  340  0  0  H  1  0  0  0  0  sp_a  sp_1  SC  3  0  2626P
-# hyeolma (Blood Demon, story final boss): sp1 a blood demon arm (unblockable), sp2 the draining grab, super the blood
+# hyeolma (Blood Demon, story final boss): sp1 a blood demon arm, sp2 the draining grab, super the blood
 # frenzy (BK: red, two demon arms on his back; sp1 becomes sp1r, a blood wave on both sides)
 hyeolma  lp  S  3  2  5  35  6  4  H  0  10  -29  8  5  lp_0  lp_1  N  0  0  -
 hyeolma  hp  S  3  3  7  105  11  8  H  0  11  -29  9  7  hp_0  hp_1  N  1.2  0  -
@@ -155,9 +155,9 @@ hyeolma  chk  C  5  3  10  105  12  9  L  1  11  -5  9  5  crouch  chk  N  0  0 
 hyeolma  jp  A  4  4  0  70  8  6  O  0  7  -22  7  6  jump  jp  N  0  0  -
 hyeolma  jk  A  5  5  0  90  9  7  O  0  11  -12  8  6  jump  jk  N  0  0  -
 hyeolma  throw  S  3  1  8  125  0  0  H  1  0  -30  16  10  throw_0  throw_1  T  0  0  -
-hyeolma  sp1  S  6  4  12  120  14  12  U  1  8  -40  42  26  arm_1  arm_2  R  1.0  0  26P  300
-hyeolma  sp1r  S  6  4  10  100  0  0  H  1  -44  -24  88  24  sp_a  sp_a  SQ  0  0  26P  300
-hyeolma  sp2  S  3  1  16  120  0  0  H  1  0  -34  26  12  throw_0  throw_1  G  0  0  624P  300
+hyeolma  sp1  S  6  4  12  120  14  12  H  1  8  -40  42  26  arm_1  arm_2  R  1.0  0  26P  300
+hyeolma  sp1r  S  6  4  10  100  0  0  H  1  -28  -24  56  24  sp_a  sp_a  SQ  0  0  26P  300
+hyeolma  sp2  S  3  1  22  120  0  0  H  1  0  -34  26  12  throw_0  throw_1  G  0  0  624P  300
 hyeolma  super  S  8  1  8  0  0  0  H  0  0  0  0  0  sp_a  sp_a  BK  220  0  2626P
 hyeolma  ovh  S  8  2  10  85  11  6  O  0  11  -33  9  13  ovh_0  ovh_1  N  1.0  0  -
 # hongryeon (fan dancer): mid-range fans, returning fan throw, lotus spin anti-air, fire-pillar super

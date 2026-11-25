@@ -27,7 +27,7 @@ export const DUMMY_CPU = 0, DUMMY_IDLE = 1, DUMMY_GUARD = 2, DUMMY_ATTACK = 3, D
 
 const GRAVITY = 0.5, BACK_WALK = 0.75, GUARD_RANGE = 60, DOWN_LIE_TICKS = 16, GETUP_TICKS = 4, ROLL_TICKS = 8;
 const ROLL_SPEED = 3.5, WAKE_THROW_INV = 6, DRAIN_NG = 400, DRAIN_FIRST = 4, DRAIN_EVERY = 5, DRAIN_PULSES = 4;
-const DRAIN_RELEASE = 26, DUMMY_INTERVAL = 30, BUF_TICKS = 5, MAX_CHAIN = 3, HIST_LEN = 32, MOTION_WINDOW = 12;
+const DRAIN_RELEASE = DRAIN_FIRST + DRAIN_EVERY * DRAIN_PULSES, DUMMY_INTERVAL = 30, BUF_TICKS = 5, MAX_CHAIN = 3, HIST_LEN = 32, MOTION_WINDOW = 12;
 const SUPER_WINDOW = 20, DASH_TICKS = 6, TECH_WINDOW = 3, SG_END = 46, SS_END = 40;
 const RAGE_SPEED = 1.35, RIFT_CUTS = 5, RIFT_BREAK = 26, RIFT_END = 40, FLURRY_KICKS = 7, FLURRY_END = 38;
 
@@ -448,6 +448,10 @@ function updateFighter(i: number): void {
       break;
     }
     case ST_THROWN:
+      if (F[1 - i].prefix === "hyeolma" && (F[1 - i].state !== ST_THROW || F[1 - i].health <= 0)) {
+        applyHit(i, 4, 0, f.health <= 0);
+        break;
+      }
       f.vx = 0;
       if (f.stTick <= TECH_WINDOW && f.bufAtk === MV_THROW && D.MvType[F[1 - i].mv] === MT_THROW) techThrow(i);
       break;
@@ -746,6 +750,9 @@ function airStep(i: number): boolean {
 
 export function setState(i: number, st: number): void {
   const f = F[i];
+  if (i < 2 && st !== ST_THROW && isDrain(i) && F[1 - i].state === ST_THROWN) {
+    applyHit(1 - i, 4, 0, F[1 - i].health <= 0);
+  }
   if (f.state !== st || st === ST_ATTACK || st === ST_HIT || st === ST_DOWN || st === ST_THROW || st === ST_DASH) f.stTick = 0;
   f.state = st;
   f.cineSpr = -1;
@@ -868,7 +875,7 @@ export function draw(): void {
     if (F[i].state === ST_THROW && D.MvType[F[i].mv] === MT_SUPER_RIFT) drawRifts(i);
     if (F[i].state === ST_THROW && F[i].prefix === "seolhwa" && F[i].mv === F[i].moves[MV_SUPER]) drawFlurry(i);
     if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_SUPER_RIFT) drawRiftStreak(i, F[i].stTick - D.MvStartup[F[i].mv]);
-    if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE) drawRoar(i);
+    if (F[i].prefix !== "hyeolma" && F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_RAGE) drawRoar(i);
     if (F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_SUPER_CRASH) drawCrash(i, F[i].stTick - D.MvStartup[F[i].mv]);
   }
   for (let i = 0; i <= 1; i++) {
@@ -899,6 +906,7 @@ export function setPose(i: number, nm: string): void {
 export function clearGhosts(i: number): void { mGN[i] = 0; }
 
 function ghostColor(i: number): number {
+  if (F[i].prefix === "hyeolma" && raging(i)) return -1;
   if (F[i].rage > 0) return RGB(150, 24, 18);
   return F[i].prefix === "heukrim" || F[i].prefix === "sd_heuksa" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(60, 44, 92) : F[i].prefix === "hyeolma" ? RGB(96, 30, 40) : -1;
 }
@@ -1015,7 +1023,12 @@ function drawOne(i: number): void {
   const x = vint(f.x + 0.5), y = vint(f.footY + 0.5), flip = f.facing < 0;
   if (rageShown(i)) {
     const id = rageSprite(currentSprite(i));
-    if (f.prefix === "hyeolma") drawFrenzyArms(i);       // two blood demon arms rise behind him
+    if (f.prefix === "hyeolma") {
+      drawFrenzyArms(i, id);
+      R.drawSprite(id, x, y, flip, tint, f.skin || (i === 1 && F[0].prefix === f.prefix && !F[0].skin));
+      if (tint < 0) R.tintHi(id, x, y, flip, RGB(156, 18, 44), 0.24);
+      return;
+    }
     if (D.SprHi[id]) {                                    // hi-res art: aura and red wash drawn at art resolution
       R.drawRageHi(id, x, y, flip, mDraw);
       R.drawSprite(id, x, y, flip, tint);
@@ -1048,6 +1061,7 @@ export function isDrain(i: number): boolean {
 
 function drainStep(i: number): void {
   const o = 1 - i, t = F[i].stTick;
+  if (F[o].state !== ST_THROWN || F[i].health <= 0) return;
   if (t >= DRAIN_FIRST && (t - DRAIN_FIRST) % DRAIN_EVERY === 0 && Math.trunc((t - DRAIN_FIRST) / DRAIN_EVERY) < DRAIN_PULSES) {
     const dmg = Math.trunc(D.MvDamage[F[i].mv] / DRAIN_PULSES);
     Combat.dealDamage(o, dmg);
@@ -1060,7 +1074,7 @@ function drainStep(i: number): void {
     Combat.addMeter(i, 20);
     if (F[o].health <= 0) applyHit(o, 0, 1.5, true);
   }
-  if (t === DRAIN_RELEASE && F[o].state === ST_THROWN) applyHit(o, 4, 0, false);
+  if (t >= DRAIN_RELEASE && F[o].state === ST_THROWN) applyHit(o, 4, 0, false);
 }
 
 function drawDrainOrbs(i: number): void {
@@ -1763,16 +1777,28 @@ function bloodWaveMove(): number {
 }
 
 /** The frenzy: the two great blood arms (hyeolma_fx farm_*) breathe behind him whatever he is doing. */
-function drawFrenzyArms(i: number): void {
+const shoulderPixels: Record<string, [number, number]> = {
+  dash: [17, 14], bdash: [14, 15], jump: [12, 13], jp: [14, 14], jk: [15, 14],
+  crouch: [12, 15], clp: [13, 15], clk: [10, 15], chk: [12, 16], chp_1: [12, 17],
+  hp_1: [18, 13], ovh_1: [19, 15], throw_1: [22, 14], sp_a: [22, 14],
+  down_0: [13, 10], down_1: [28, 9], fall: [22, 9], kneel: [23, 15],
+  roll_0: [14, 15], roll_1: [19, 14], roll_2: [12, 13], roll_3: [17, 13],
+};
+
+function drawFrenzyArms(i: number, pose: number): void {
   const f = F[i];
   if (f.state === ST_ATTACK && D.MvType[f.mv] === MT_RAGE) return;   // the frenzy's own frames grow them
   const k = Math.trunc(mDraw / 6) % 4, nm = "hyeolma.farm_" + k;
-  if (hasSprite(nm)) R.drawSprite(spriteId(nm), vint(f.x + 0.5), vint(f.footY + 0.5), f.facing < 0);
+  const name = D.SprName[pose].slice("hyeolma.".length);
+  const [sx, sy] = shoulderPixels[name] ?? [D.SprAX[pose], 14];
+  const x = vint(f.x + 0.5) + (sx - D.SprAX[pose]) * f.facing;
+  const y = vint(f.footY + 0.5) + sy - D.SprAY[pose];
+  if (hasSprite(nm)) R.drawSprite(spriteId(nm), x, y, f.facing < 0);
 }
 
 /** The blood wave (frenzy sp1): rings of blood spikes run out along the ground on both sides. */
 function drawBloodWave(i: number): void {
-  const f = F[i], t = f.stTick - D.MvStartup[f.mv] + 2;
+  const f = F[i], t = f.stTick - D.MvStartup[f.mv] + 4;
   const k = Math.trunc(t / 2);
   if (t < 0 || k > 5) return;
   const nm = "hyeolma.wave_" + k;

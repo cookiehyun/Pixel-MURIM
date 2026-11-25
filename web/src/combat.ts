@@ -88,7 +88,7 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
   if (!lastHit) push = 0.4;
   if (mt === MT_SUPER_QUAKE) push = 3.5;
   // berserk Cheolsan: every special breaks the guard
-  const level = special && !isProj && raging(a) ? LV_UNBLOCK : D.MvLevel[mv];
+  const level = special && !isProj && F[a].prefix === "cheolsan" && raging(a) ? LV_UNBLOCK : D.MvLevel[mv];
   if (level === LV_UNBLOCK && F[d].state === ST_GUARD) showText("GUARD BREAK", 24, a);
 
   if ((mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE || mt === MT_SUPER_RIFT) && !blocks(d, level)) {
