@@ -1440,7 +1440,7 @@ export function debugStart(i: number, slot: number): boolean {
 
 // ---- Cheonma: 천마검법 (Cheonma sword art). Three strikes that meet in one crash; the sword stays drawn after.
 // Form (moves.txt p1): 1 = three sword waves converge on the foe, 2 = dash in and carve three cuts that burst,
-// 3 = three blades fall from the sky. Everything lives on the fighter (cineCX/cineCY/cineX0/hitCount) for rollback.
+// 3 = 삼절검: three blades fall slanting from the sky and cut three parallel scars (Yacha's left-handed copy reversed the last). Everything lives on the fighter (cineCX/cineCY/cineX0/hitCount) for rollback.
 
 const CRASH_WAVE_T = 10, CRASH_CUTS = [3, 7, 11], CRASH_CUT_BURST = 18, CRASH_BLADES = [4, 10, 16], CRASH_GHOST_END = 34;
 const GHOST = 8;   // form 3: all three blades struck clean - they stay standing as afterimages, then break together
@@ -1517,11 +1517,10 @@ function crashStep(i: number, t: number): void {
   } else {
     const ghost = (f.hitCount & GHOST) !== 0;
     f.cineSpr = t < CRASH_BLADES[2] + 2 ? SW("sp_a") : ghost && t < CRASH_GHOST_END ? SW("ovh_1") : SW("sp_1");
-    const k = CRASH_BLADES.indexOf(t);
+    const k = CRASH_BLADES.indexOf(t - 1);
     if (k >= 0) {
-      const bx = bladeX(i, k), half = k === 2 ? 11 : 7;
       const all = k === 2 && (f.hitCount & 3) === 3;     // the first two struck clean: the third holds instead of throwing
-      const r = crashHit(i, bx - half, 0, half * 2, GROUND_Y, k < 2 ? 60 : all ? 100 : total - 120, k === 2 && !all);
+      const r = crashHit(i, f.cineCX - 12, vint(f.footY) - 46, 24, 46, k < 2 ? 60 : all ? 100 : total - 120, k === 2 && !all);
       if (r === 2) f.hitCount |= 1 << k;
       if (all && r === 2) { f.hitCount |= GHOST; fo.stun = Math.max(fo.stun, CRASH_GHOST_END - t + 2); }
       if (k === 2) Combat.C.ImpactDark = 4;
@@ -1546,9 +1545,6 @@ function waveAt(i: number, k: number, t: number, ox: number): [number, number] {
   return [ox + (f.cineCX - ox) * ease, y0 + (f.cineCY - y0) * ease];
 }
 
-function bladeX(i: number, k: number): number {
-  return F[i].cineCX + [F[i].facing * 13, -F[i].facing * 13, 0][k];
-}
 
 const C_DARK = () => RGB(70, 6, 18), C_RED = () => RGB(200, 24, 44), C_HOT = () => RGB(255, 96, 104), C_CORE = () => RGB(255, 236, 236);
 
@@ -1634,57 +1630,56 @@ function drawCrash(i: number, t: number): void {
       }
     }
   } else {
+    // 삼절검: three blades fall slanting the same way (front-high to back-low) and cut three parallel scars;
+    // when all three strike clean the scars stay as afterimages, then break together
+    const ghost = (f.hitCount & GHOST) !== 0;
     for (let k = 0; k < 3; k++) {
-      const t0 = CRASH_BLADES[k], bx = bladeX(i, k), half = k === 2 ? 5 : 3, s = t - t0;
-      if (s >= -3 && s < 0) R.fillRect(bx, 0, 1, gy, s === -1 ? C_HOT() : C_RED());   // a thin red line marks the spot
-      const ghost = (f.hitCount & GHOST) !== 0;
-      if (ghost && s >= 4 && t < CRASH_GHOST_END) drawGhostBlade(bx, gy, k === 2 ? 1.4 : 1, t, k);
-      else if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) drawSkyBlade(bx, gy, k === 2 ? 1.4 : 1, 0);
-      else if (s >= 0 && s < (ghost ? 4 : 8)) drawSkyBlade(bx, s === 0 ? gy * 0.55 : gy, k === 2 ? 1.4 : 1, s);
-      if (s >= 1) burst(bx, gy - 6, s - 1, k === 2 ? 3.4 : 1.8);
+      const s = t - CRASH_BLADES[k], g = scarLine(i, k);
+      if (s === -2 || s === -1) thickLine(g[0], g[1], g[2], g[3], 0.4, C_RED(), C_RED());   // a faint line marks the cut
+      if (s === 0) drawFallingBlade(g, 0.45);
+      if (s === 1) { drawFallingBlade(g, 1); thickLine(g[0], g[1], g[2], g[3], 3.5, C_CORE(), C_HOT()); }
+      if (s >= 2 && s < 5) thickLine(g[0], g[1], g[2], g[3], 3.5 - s * 0.5, s < 3 ? C_CORE() : C_HOT(), C_RED());
+      if (s >= 1) burst(g[2], g[3], s - 1, k === 2 ? 3 : 2);
+      if (ghost && s >= 5 && t < CRASH_GHOST_END) {        // the scar left hanging in the air, trembling
+        const nx = -(g[3] - g[1]), ny = g[2] - g[0], L = Math.hypot(nx, ny), j = (t + k) % 4 < 2 ? 1.5 : -1.5;
+        const ox = nx / L * j, oy = ny / L * j;
+        thickLine(g[0] + ox, g[1] + oy, g[2] + ox, g[3] + oy, 1, C_DARK(), C_DARK());
+        thickLine(g[0], g[1], g[2], g[3], (t + k) % 2 ? 1.8 : 1.3, C_HOT(), C_RED());
+      } else if (!ghost && s >= 5 && s < 9) thickLine(g[0], g[1], g[2], g[3], 0.8, C_RED(), C_DARK());
+      if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) thickLine(g[0], g[1], g[2], g[3], 4, C_CORE(), C_HOT());
       if (ghost) {
         const e = t - CRASH_GHOST_END - 1;
-        burst(bx, gy - [30, 22, 40][k], e, k === 2 ? 4.2 : 2.6);
-        if (e >= 0 && e < 10) for (let q = 0; q < 14; q++) {              // the blades shatter into red shards
-          const a = q * 0.449 + k, d = 4 + e * (2.5 + (q % 3)), y0 = gy - 10 - ((q * 7 + k * 13) % 50);
-          R.fillRect(clng(bx + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.6 + e * e * 0.15), 2, 1, q % 3 ? C_HOT() : C_CORE());
+        for (let q = 0; q < 3; q++) {
+          const u = 0.2 + q * 0.3;
+          burst(g[0] + (g[2] - g[0]) * u, g[1] + (g[3] - g[1]) * u, e - q, k === 2 ? 3.2 : 2.4);
+        }
+        if (e >= 0 && e < 10) for (let q = 0; q < 16; q++) {              // the scars shatter into red shards
+          const u = (q + 0.5) / 16, a = q * 0.9 + k, d = 3 + e * (2 + (q % 3));
+          const x0 = g[0] + (g[2] - g[0]) * u, y0 = g[1] + (g[3] - g[1]) * u;
+          R.fillRect(clng(x0 + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.7 + e * e * 0.12), 2, 1, q % 3 ? C_HOT() : C_CORE());
         }
       }
     }
   }
 }
 
-/** The blade left standing after a clean strike: a flickering doubled outline, the sword's afterimage. */
-function drawGhostBlade(bx: number, gy: number, k: number, t: number, n: number): void {
-  const half = Math.round(4 * k), L = Math.round(70 * k), top = gy - L;
-  const sway = [(t + n) % 4 < 2 ? -2 : 2, (t + n) % 4 < 2 ? 2 : -2];
-  for (let y = Math.max(0, top - 15); y <= gy; y++) {
-    const fromTip = gy - y, w = y < top ? 1 : fromTip < half * 2 ? Math.trunc(fromTip / 2) : half;
-    for (const dx of sway)                              // the trembling doubles either side
-      if ((y + t) % 3 === 0) { R.putPixel(bx - w - 1 + dx, y, C_DARK()); R.putPixel(bx + w + 1 + dx, y, C_DARK()); }
-    for (let x = -w; x <= w; x++) if ((x + y + t) % 2 === 0) R.putPixel(bx + x, y, Math.abs(x) <= w * 0.35 ? C_HOT() : C_RED());
-    R.putPixel(bx - w - 1, y, C_HOT()); R.putPixel(bx + w + 1, y, C_HOT());
-  }
-  if (top - 3 >= 0) R.fillRect(bx - half - Math.round(5 * k), top - 3, (half + Math.round(5 * k)) * 2 + 1, 1, C_HOT());
+/** Scar k of 삼절검 as [x0, y0, x1, y1]: parallel cuts through the marked spot, high in front to low behind. */
+function scarLine(i: number, k: number): [number, number, number, number] {
+  const f = F[i], cx = f.cineCX, cy = vint(f.footY) - 22, fx = f.facing;
+  const dx = -fx * 0.62, dy = 1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+  const off = [-9, 9, 0][k], mx = cx + uy * off * fx, my = cy - ux * off * fx;
+  return [mx - ux * 30, my - uy * 30, mx + ux * 26, my + uy * 26];
 }
 
-/** A giant crimson sword of light standing point-down in the ground (tip at y = tip), fading after it lands. */
-function drawSkyBlade(bx: number, tip: number, k: number, s: number): void {
-  const half = Math.round(4 * k), L = Math.round(70 * k), fade = s >= 4;
-  const top = vint(tip) - L;
-  for (let y = Math.max(0, top); y <= tip; y++) {
-    const fromTip = tip - y, w = fromTip < half * 2 ? Math.trunc(fromTip / 2) : half;   // pointed tip
-    for (let x = -w - 1; x <= w + 1; x++) {
-      const e = Math.abs(x) > w;
-      if (fade && (x + y + s) % 2) continue;
-      R.putPixel(bx + x, y, e ? C_DARK() : Math.abs(x) <= w * 0.35 ? (s < 3 ? C_CORE() : C_HOT()) : C_RED());
-    }
-  }
-  if (top - 1 >= -12) {                               // the guard and grip above the blade
-    const gw = half + Math.round(5 * k);
-    R.fillRect(bx - gw, top - 3, gw * 2 + 1, 3, fade ? C_RED() : RGB(232, 184, 72));
-    R.fillRect(bx - 1, top - 3 - Math.round(12 * k), 3, Math.round(12 * k), C_DARK());
-  }
+/** The blade coming down along its cut: p = 0.45 halfway in from the sky, 1 = point at the end of the cut. */
+function drawFallingBlade(g: [number, number, number, number], p: number): void {
+  const L0 = Math.hypot(g[2] - g[0], g[3] - g[1]), ux = (g[2] - g[0]) / L0, uy = (g[3] - g[1]) / L0;
+  const tipX = g[2] - ux * (1 - p) * 140, tipY = g[3] - uy * (1 - p) * 140, BL = 56;
+  const hx = tipX - ux * BL, hy = tipY - uy * BL;
+  thickLine(hx, hy, tipX, tipY, 3, C_CORE(), C_RED());
+  const nx = -uy, ny = ux;
+  thickLine(hx - nx * 7, hy - ny * 7, hx + nx * 7, hy + ny * 7, 1, RGB(232, 184, 72), RGB(232, 184, 72));   // the guard
+  thickLine(hx - ux * 10, hy - uy * 10, hx, hy, 1, C_DARK(), C_DARK());                                  // the grip
 }
 
 // ---- Cheonma with the sword: 천마참 (one unblockable cut, a crimson crescent as tall as a man)
