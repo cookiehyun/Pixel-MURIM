@@ -71,17 +71,20 @@ export async function loadAll(): Promise<void> {
   }
 }
 
+const sprOwnArt = new Set<number>();          // SD fighter frames drawn for their own sprite set (not borrowed through @alias)
 // colours that classic fighter art uses only for effects
 const FX_COLORS: Record<string, number[]> = {
   danwoo: [RGB(0xd8, 0xec, 0xff), RGB(0x8f, 0xc0, 0xee), RGB(0xb8, 0xa4, 0x86), RGB(0xd8, 0xcc, 0xb4)],
   heukrim: [RGB(0xc8, 0xff, 0xb0), RGB(0x6a, 0xd0, 0x60)],
   heukrimsw: [RGB(0xc8, 0xff, 0xb0), RGB(0x6a, 0xd0, 0x60), RGB(0xdc, 0xe4, 0xec), RGB(0xff, 0xff, 0xff), RGB(0xb8, 0x9a, 0x50)],   // the drawn blade
+  "heukrimsw:own": [RGB(0xc8, 0xff, 0xb0), RGB(0x6a, 0xd0, 0x60)],                                                                  // its own SD frames hold the blade
   seolhwa: [RGB(0xff, 0xe0, 0xec), RGB(0xf6, 0xa8, 0xc4)],
   muyeong: [RGB(0xe8, 0xf2, 0xfa), RGB(0xa9, 0xc4, 0xdc)],
   cheolsan: [RGB(0xee, 0xf2, 0xf8), RGB(0xb8, 0xc4, 0xd4), RGB(0xb8, 0xa4, 0x86), RGB(0xd8, 0xcc, 0xb4)],
 };
 function liftEffects(id: number, ch: string): number {
-  const cols = FX_COLORS[ch];
+  const own = (D.SprName[id] ?? "") && sprOwnArt.has(id);   // SD art drawn for this set: lift only its trail, not the old blade
+  const cols = (own && FX_COLORS[ch + ":own"]) || FX_COLORS[ch];
   if (!cols || D.SprW[id] === undefined) return -1;
   const w = D.SprW[id], h = D.SprH[id], off = D.SprOff[id];
   const px: number[] = [];
@@ -133,6 +136,7 @@ async function loadHiSprites(): Promise<void> {
     }
     const id = sprIdx.get(p[0])!, w = data.width, h = data.height, breathe = p[4] === "breathe";
     if (p[4] === "fight") {
+      if (p[1].startsWith("sd/" + p[0].split(".")[0] + "_f/")) sprOwnArt.add(id);
       // SD art replacing a classic fighter frame: drawn at the classic size; the classic frame's painted effects
       // (kick crescents, palm glow, dust) are kept as an overlay so the arcade looks the same
       D.SprHiS[id] = 3;

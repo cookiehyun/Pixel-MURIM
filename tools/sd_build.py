@@ -194,7 +194,8 @@ if len(sys.argv) > 3 and sys.argv[3] == "--install":
     for n, _, _ in anchors: shutil.copy(os.path.join(out, n + ".png"), os.path.join(dst, n + ".png"))
     man = os.path.join(ROOT, "web", "data", "hi", "manifest.txt")
     head = f"# {char}: SD fighter art (tools/sd_build.py), drawn at the classic size"
-    lines = [l for l in open(man).read().split("\n") if l != head and not (l.startswith(char + ".") and l.endswith(" fight"))]
+    mine = {f"{char}.{n}" for n, _, _ in anchors}           # only this build's frames are replaced (an @alias may supply the rest)
+    lines = [l for l in open(man).read().split("\n") if l != head and not (l.split(" ")[0] in mine and l.endswith(" fight"))]
     while lines and lines[-1] == "": lines.pop()
     lines.append(head)
     lines += [f"{char}.{n} sd/{char}_f/{n}.png {x} {y} fight" for n, x, y in anchors]
