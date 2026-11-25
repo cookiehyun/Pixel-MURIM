@@ -105,6 +105,13 @@ cheonmasw 203.webp 7.7 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1
 cheonmasw 204.webp 10.8 palm_0,palm_1,draw_0,sp_a,sp_1
 # the light thrust: the short reach as the start, the full lunge (the sword art's finish) as the strike
 cheonmasw 204.webp 10.8 -,-,-,-,lp_1
+# Hyeolma, the Blood Demon (206 model; scale = head size matched against 217 walk, 41 art px tall)
+@height hyeolma 41
+hyeolma 217.webp 8.54 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
+hyeolma 218.webp 9.48 lp_0,lp_1,hp_2,hp_p,hp_0,hp_1,hp_3
+hyeolma 219.webp 9.14 hk_3,lk_0,lk_1,hk_p,hk_0,hk_1,hk_2
+hyeolma 220.webp 7.09 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
+hyeolma 221.webp 7.17 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
@@ -114,6 +121,8 @@ cheonmasw 204.webp 10.8 -,-,-,-,lp_1
 @skin seolhwa
 @skin hongryeon
 @skin cheonma
+@skin hyeolma
+@colors hyeolma 64
 @skin cheonmasw
 @colors cheonmasw 64
 @blade cheonmasw B49CF0
@@ -129,3 +138,4 @@ cheonmasw 204.webp 10.8 -,-,-,-,lp_1
 @face hongryeon win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3,hk_t,dp_2,dp_3,dp_4
 @face cheonma win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
 @face cheonmasw win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
+@face hyeolma win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3

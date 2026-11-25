@@ -461,6 +461,13 @@ CHEONMA = dict(                          # final boss (arcade): the Heavenly Dem
 )
 CHEONMA["palette"].update({"W": "C4B4EC", "Q": "F0E8FF", "y": "E8B848", "m": "241430", "r": "8A60D0", "c": "3A2258"})   # violet blade and scabbard
 
+# Hyeolma, the Blood Demon (story final boss): Cheonma's old kit in blood red - demon palm, the draining grab,
+# the blood burst - on his own long-haired body
+HYEOLMA = dict(CHEONMA, name="hyeolma", palette=dict(CHEONMA["palette"], **{
+    "b": "6E1420", "B": "400A12", "w": "A0283A", "e": "FF3030", "s": "F0DCD0", "S": "C8AEA4",
+    "t": "FFC8B8", "T": "E0503A", "r": "C23434"}))
+HYEOLMA.pop("scabbard", None)
+
 # Cheonma with the long sword drawn (sp2 draws / sheathes, the super leaves it drawn): Muyeong's sword work
 CHEONMA_SW = dict(CHEONMA, name="cheonmasw", weapon=dict(kind="sword", length=14),
                   scabbard=dict(length=14, empty=True))
@@ -722,6 +729,11 @@ MOVE_ANIMS = {
         ("sp1_rec", 4, ["palm_1", "palm_1", "hp_3"]),   # the palms stay out while the strike lands, then settle
         ("sp2_pre", 2, ["draw_0"]),
         ("super_pre", 2, ["draw_0"]),          # the sword art starts by drawing the blade
+    ],
+    "hyeolma": [
+        ("sp1_pre", 2, ["palm_0"]),
+        ("sp1_rec", 4, ["palm_1", "palm_1", "hp_3"]),
+        ("super_pre", 2, ["sp_a", "sp_a", "palm_0"]),
     ],
     "cheonmasw": [
         ("lp_rec", 2, ["lp_1", "lp_0"]),
@@ -1403,7 +1415,7 @@ if __name__ == "__main__":
     for spec, ov in ((DANWOO, DANWOO_OVERRIDES), (CHEOLSAN, CHEOLSAN_OVERRIDES), (MUYEONG, MUYEONG_OVERRIDES),
                      (SEOLHWA, SEOLHWA_OVERRIDES), (HEUKRIM, HEUKRIM_OVERRIDES), (HEUKRIM_SW, HEUKRIM_SW_OVERRIDES),
                      (CHEOLSAN_RAGE, CHEOLSAN_OVERRIDES),
-                     (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES), (CHEONMA_SW, CHEONMA_SW_OVERRIDES)):
+                     (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES), (CHEONMA_SW, CHEONMA_SW_OVERRIDES), (HYEOLMA, CHEONMA_OVERRIDES)):
         if only and spec["name"] != only:
             continue
         names = generate(spec, ov)

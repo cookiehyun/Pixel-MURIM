@@ -88,6 +88,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
       if (i === 1 && G.GameMode === MODE_ARCADE && Arcade.isBossFight()) setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1400, 32, 23);
       else setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1000, 32, 23);
       break;
+    case "hyeolma": setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1300, 32, 23); break;   // story final boss
     // story mode: SD art on the same bodies (sd_danwoo is danwoo move for move); 흑사, a rebel elder
     case "sd_danwoo": setup(i, prefix, x, 2, 3.2, -4.5, 1.8, 6, 1000, 30, 21); break;
     case "sd_heuksa": setup(i, prefix, x, 1.9, 3.1, -4.4, 1.7, 6, 1000, 31, 22); break;
@@ -105,6 +106,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
     case "heukrim": f.superName = "CHEONMA GANGRIM"; f.seqFx = FX.FX_DARK; break;
     case "hongryeon": f.superName = "HONGRYEON EOPHWA"; break;
     case "cheonma": f.superName = "CHEONMA GEOMBEOP"; f.seqFx = FX.FX_DARK; break;
+    case "hyeolma": f.superName = "HYEOLCHEON DAEBEOP"; f.seqFx = FX.FX_DARK; break;
     case "sd_heuksa": f.superName = "HEUKSA CHEONMANG"; f.seqFx = FX.FX_DARK; break;
     default: f.superName = "CHEONGPUNG JINCHEON";
   }
@@ -871,7 +873,7 @@ export function draw(): void {
   for (let i = 0; i <= 1; i++) {
     if (isDrain(i)) drawDrainOrbs(i);
     const f = F[i];
-    if (f.kit === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
+    if ((f.kit === "cheonma" || f.kit === "hyeolma") && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
     if (f.kit === "cheonmasw" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonCut(i);
     if ((f.prefix === "danwoo" || f.prefix === "sd_danwoo") && f.state === ST_ATTACK) {
       const own = D.SprHi[currentSprite(i)] && D.SprHiS[currentSprite(i)] !== 3;   // hi-res art that draws its own effects
@@ -896,7 +898,7 @@ export function clearGhosts(i: number): void { mGN[i] = 0; }
 
 function ghostColor(i: number): number {
   if (F[i].rage > 0) return RGB(150, 24, 18);
-  return F[i].prefix === "heukrim" || F[i].prefix === "sd_heuksa" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(60, 44, 92) : -1;
+  return F[i].prefix === "heukrim" || F[i].prefix === "sd_heuksa" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(60, 44, 92) : F[i].prefix === "hyeolma" ? RGB(96, 30, 40) : -1;
 }
 
 function updateGhosts(i: number): void {
@@ -1038,7 +1040,7 @@ function drawOne(i: number): void {
 }
 
 export function isDrain(i: number): boolean {
-  return F[i].state === ST_THROW && F[i].prefix === "cheonma" && D.MvType[F[i].mv] === MT_GRAB;
+  return F[i].state === ST_THROW && F[i].prefix === "hyeolma" && D.MvType[F[i].mv] === MT_GRAB;   // the Blood Demon's draining grab
 }
 
 function drainStep(i: number): void {
@@ -1092,15 +1094,15 @@ const MID_PALM = (() => {
 function drawDemonPalm(i: number): void {
   const t = F[i].stTick - D.MvStartup[F[i].mv];
   if (t < 0 || t > D.MvActive[F[i].mv] + 1) return;
-  const lit = t <= D.MvActive[F[i].mv];
+  const lit = t <= D.MvActive[F[i].mv], red = F[i].kit === "hyeolma";
   const ink = (ch: string): number => {
     switch (ch) {
-      case "o": return RGB(34, 14, 56);
-      case "d": return RGB(80, 40, 130);
-      case "r": return lit ? RGB(124, 72, 196) : RGB(80, 40, 130);
-      case "l": return lit ? RGB(184, 150, 240) : RGB(124, 72, 196);
-      case "w": return lit ? RGB(238, 232, 255) : RGB(184, 150, 240);
-      case "g": return lit ? RGB(150, 100, 230) : -1;
+      case "o": return red ? RGB(90, 8, 22) : RGB(34, 14, 56);
+      case "d": return (red ? RGB(150, 20, 38) : RGB(80, 40, 130));
+      case "r": return lit ? (red ? RGB(220, 40, 58) : RGB(124, 72, 196)) : (red ? RGB(150, 20, 38) : RGB(80, 40, 130));
+      case "l": return lit ? (red ? RGB(255, 120, 130) : RGB(184, 150, 240)) : (red ? RGB(220, 40, 58) : RGB(124, 72, 196));
+      case "w": return lit ? (red ? RGB(255, 215, 215) : RGB(238, 232, 255)) : (red ? RGB(255, 120, 130) : RGB(184, 150, 240));
+      case "g": return lit ? (red ? RGB(255, 70, 90) : RGB(150, 100, 230)) : -1;
     }
     return -1;
   };

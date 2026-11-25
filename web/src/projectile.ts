@@ -122,7 +122,7 @@ export function draw(): void {
   }
 }
 
-const isBurst = (k: number) => mType[k] === MT_SUPER_FIRE && (F[k].prefix === "cheonma" || F[k].prefix === "sd_heuksa");
+const isBurst = (k: number) => mType[k] === MT_SUPER_FIRE && (F[k].prefix === "hyeolma" || F[k].prefix === "sd_heuksa");
 // burst colours: the demon's red, or 흑사's violet smoke snakes
 const BURST = { cheonma: [RGB(200, 40, 80), RGB(200, 30, 60), RGB(255, 110, 120), RGB(255, 235, 235), RGB(120, 30, 140), RGB(60, 10, 50), RGB(90, 25, 80)],
   sd_heuksa: [RGB(120, 70, 150), RGB(70, 40, 90), RGB(150, 100, 180), RGB(220, 200, 235), RGB(40, 24, 50), RGB(20, 12, 26), RGB(60, 40, 76)] };

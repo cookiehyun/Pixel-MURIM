@@ -47,7 +47,7 @@ function hexColor(hx: string): number {
   return RGB(parseInt(hx.slice(0, 2), 16), parseInt(hx.slice(2, 4), 16), parseInt(hx.slice(4, 6), 16));
 }
 
-const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "cheonmasw", "fx", "npc"];
+const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "cheonmasw", "hyeolma", "fx", "npc"];
 const STAGES = ["sanmun", "MOUNTAIN GATE", "bamboo", "BAMBOO FOREST", "inn", "NIGHT INN", "snow", "SNOW PEAK", "waterfall", "WATERFALL"];
 
 export async function loadAll(): Promise<void> {
@@ -79,6 +79,7 @@ const FX_COLORS: Record<string, number[]> = {
   heukrimsw: [RGB(0xc8, 0xff, 0xb0), RGB(0x6a, 0xd0, 0x60), RGB(0xdc, 0xe4, 0xec), RGB(0xff, 0xff, 0xff), RGB(0xb8, 0x9a, 0x50)],   // the drawn blade
   "heukrimsw:own": [RGB(0xc8, 0xff, 0xb0), RGB(0x6a, 0xd0, 0x60)],                                                                  // its own SD frames hold the blade
   cheonma: [RGB(0xe4, 0xd8, 0xff), RGB(0x8a, 0x60, 0xd0)],
+  hyeolma: [RGB(0xff, 0xc8, 0xb8), RGB(0xe0, 0x50, 0x3a)],
   cheonmasw: [RGB(0xe4, 0xd8, 0xff), RGB(0x8a, 0x60, 0xd0), RGB(0xc4, 0xb4, 0xec), RGB(0xf0, 0xe8, 0xff)],   // the drawn blade
   "cheonmasw:own": [RGB(0xe4, 0xd8, 0xff), RGB(0x8a, 0x60, 0xd0)],                                         // its own SD frames hold the blade
   hongryeon: [RGB(0xff, 0xd8, 0xd0), RGB(0xf0, 0x70, 0x60)],

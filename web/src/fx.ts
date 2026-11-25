@@ -28,6 +28,7 @@ export function spawnHit(x: number, y: number, heavy: boolean, prefix: string): 
     case "heukrim": m = RGB(185, 255, 150); o = RGB(80, 190, 70); break;
     case "hongryeon": m = RGB(255, 215, 110); o = RGB(230, 70, 60); break;
     case "cheonma": m = RGB(190, 160, 240); o = RGB(90, 50, 150); break;
+    case "hyeolma": m = RGB(255, 140, 110); o = RGB(170, 30, 40); break;
     default: m = RGB(255, 224, 102); o = RGB(255, 130, 50);
   }
   const k = spawn(x, y, heavy ? FX_HEAVY : FX_HIT);
@@ -35,7 +36,7 @@ export function spawnHit(x: number, y: number, heavy: boolean, prefix: string): 
   if (heavy) {
     if (prefix === "cheolsan") spawn(x, GROUND_Y - 3, FX_SLAM);
     else if (prefix === "muyeong") spawn(x, y, FX_SLASH);
-    else if (prefix === "heukrim" || prefix === "cheonma" || prefix === "sd_heuksa") spawn(x, y, FX_DARK);
+    else if (prefix === "heukrim" || prefix === "cheonma" || prefix === "hyeolma" || prefix === "sd_heuksa") spawn(x, y, FX_DARK);
   }
 }
 

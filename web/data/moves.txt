@@ -142,6 +142,22 @@ cheonmasw  throw  S  3  1  8  125  0  0  H  1  0  -30  16  10  throw_0  throw_1 
 cheonmasw  sp1  S  9  3  14  150  16  0  U  1  6  -44  26  44  palm_0  palm_1  R  2.5  0  26P  400
 cheonmasw  sp2  S  3  1  7  0  0  0  H  0  0  0  0  0  draw_0  draw_0  SW  0  0  624P  0
 cheonmasw  super  S  8  42  6  340  0  0  H  1  0  0  0  0  sp_a  sp_1  SC  3  0  2626P
+# hyeolma (Blood Demon, story final boss): Cheonma's old kit - demon palm, the draining grab (sp2), the blood burst super
+hyeolma  lp  S  3  2  5  35  6  4  H  0  10  -29  8  5  lp_0  lp_1  N  0  0  -
+hyeolma  hp  S  3  3  7  105  11  8  H  0  11  -29  9  7  hp_0  hp_1  N  1.2  0  -
+hyeolma  lk  S  3  2  6  45  7  5  H  0  12  -19  9  6  lk_0  lk_1  N  0  0  -
+hyeolma  hk  S  4  3  7  115  12  9  H  0  9  -30  9  6  hk_0  hk_1  N  1.2  0  -
+hyeolma  clp  C  3  2  5  30  6  4  H  0  10  -22  8  5  crouch  clp  N  0  0  -
+hyeolma  chp  C  4  3  10  90  11  8  H  0  -2  -40  9  9  chp_0  chp_1  N  0  0  -
+hyeolma  clk  C  4  2  5  35  8  4  L  0  11  -6  9  6  crouch  clk  N  0  0  -
+hyeolma  chk  C  5  3  10  105  12  9  L  1  11  -5  9  5  crouch  chk  N  0  0  -
+hyeolma  jp  A  4  4  0  70  8  6  O  0  7  -22  7  6  jump  jp  N  0  0  -
+hyeolma  jk  A  5  5  0  90  9  7  O  0  11  -12  8  6  jump  jk  N  0  0  -
+hyeolma  throw  S  3  1  8  125  0  0  H  1  0  -30  16  10  throw_0  throw_1  T  0  0  -
+hyeolma  sp1  S  4  4  9  100  14  12  H  0  10  -30  12  14  palm_0  palm_1  R  4.0  0  26P  300
+hyeolma  sp2  S  3  1  16  120  0  0  H  1  0  -34  26  12  throw_0  throw_1  G  0  0  624P  300
+hyeolma  super  S  6  1  12  340  10  6  H  1  0  0  30  36  sp_a  palm_1  SF  0  4  2626P
+hyeolma  ovh  S  8  2  10  85  11  6  O  0  11  -33  9  13  ovh_0  ovh_1  N  1.0  0  -
 # hongryeon (fan dancer): mid-range fans, returning fan throw, lotus spin anti-air, fire-pillar super
 hongryeon  lp    S    3       2      5        28     6       4         H     0  10  -28 9   7   lp_0       lp_1      N    0    0  -
 hongryeon  hp  S  3  3  6  80  10  7  H  0  9  -33  10  10  hp_0  hp_1  N  1.2  0  -
