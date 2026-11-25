@@ -824,19 +824,19 @@ hyeolma.su_1 sd/hyeolma_f/su_1.png 14 43 fight
 hyeolma.su_2 sd/hyeolma_f/su_2.png 17 47 fight
 hyeolma.su_3 sd/hyeolma_f/su_3.png 31 46 fight
 hyeolma.su_4 sd/hyeolma_f/su_4.png 39 57 fight
-hyeolma.farm_0 sd/hyeolma_fx/farm_0.png 45 56 fight
-hyeolma.farm_1 sd/hyeolma_fx/farm_1.png 46 59 fight
-hyeolma.farm_2 sd/hyeolma_fx/farm_2.png 45 55 fight
-hyeolma.farm_3 sd/hyeolma_fx/farm_3.png 45 55 fight
-hyeolma.wave_0 sd/hyeolma_fx/wave_0.png 14 2 fight
-hyeolma.wave_1 sd/hyeolma_fx/wave_1.png 24 10 fight
-hyeolma.wave_2 sd/hyeolma_fx/wave_2.png 44 18 fight
-hyeolma.wave_3 sd/hyeolma_fx/wave_3.png 53 24 fight
-hyeolma.wave_4 sd/hyeolma_fx/wave_4.png 46 15 fight
-hyeolma.wave_5 sd/hyeolma_fx/wave_5.png 41 3 fight
 ANIM hyeolma.sp1_pre 3 arm_0 arm_1
 ANIM hyeolma.sp1_seq 2 arm_2 arm_3
 ANIM hyeolma.sp1_rec 4 arm_3 arm_4 arm_5
 ANIM hyeolma.super_pre 2 su_0 su_1 su_2 su_3
 ANIM hyeolma.super_seq 1 su_4
 ANIM hyeolma.super_rec 3 su_4 su_4 su_4
+hyeolma.wave_0 sd/hyeolma_fx/wave_0.png 14 2 fight
+hyeolma.wave_1 sd/hyeolma_fx/wave_1.png 24 10 fight
+hyeolma.wave_2 sd/hyeolma_fx/wave_2.png 44 18 fight
+hyeolma.wave_3 sd/hyeolma_fx/wave_3.png 53 24 fight
+hyeolma.wave_4 sd/hyeolma_fx/wave_4.png 46 15 fight
+hyeolma.wave_5 sd/hyeolma_fx/wave_5.png 41 3 fight
+hyeolma.farm_0 sd/hyeolma_fx/farm_0.png 52 58 fight
+hyeolma.farm_1 sd/hyeolma_fx/farm_1.png 52 58 fight
+hyeolma.farm_2 sd/hyeolma_fx/farm_2.png 52 58 fight
+hyeolma.farm_3 sd/hyeolma_fx/farm_3.png 52 58 fight

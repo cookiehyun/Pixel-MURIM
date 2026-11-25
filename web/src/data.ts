@@ -110,7 +110,31 @@ async function loadHiSprites(): Promise<void> {
   const cache = new Map<string, ImageData>();
   // download every picture at once (one by one was a round trip each: slow start on the web)
   const files = [...new Set(lines.map((l) => l.trim().split(/\s+/)).filter((p) => p.length >= 4 && p[0] !== "ANIM" && !p[0].startsWith("#")).map((p) => p[1]))];
-  await Promise.all(files.map(async (f) => {
+  // most pictures come packed in a few atlas sheets (tools/hi_atlas.py): one download each instead of hundreds
+  try {
+    const at = (await fetchLines("hi/atlas.txt")).map((l) => l.trim().split(/\s+/)).filter((p) => p.length === 6);
+    const sheets = [...new Set(at.map((p) => +p[1]))];
+    const data = new Map<number, ImageData>();
+    await Promise.all(sheets.map(async (n) => {
+      const bmp = await createImageBitmap(await (await fetch(`hi/atlas_${n}.png`)).blob());
+      const cv = document.createElement("canvas");
+      cv.width = bmp.width; cv.height = bmp.height;
+      const c2 = cv.getContext("2d")!;
+      c2.drawImage(bmp, 0, 0);
+      data.set(n, c2.getImageData(0, 0, bmp.width, bmp.height));
+    }));
+    for (const [f, n, x, y, w, h] of at) {
+      const sheet = data.get(+n);
+      if (!sheet) continue;
+      const out = new ImageData(+w, +h), sw = sheet.width;
+      for (let r = 0; r < +h; r++) {
+        const from = ((+y + r) * sw + +x) * 4;
+        out.data.set(sheet.data.subarray(from, from + +w * 4), r * +w * 4);
+      }
+      cache.set(f, out);
+    }
+  } catch { /* no atlas: every picture is fetched on its own */ }
+  await Promise.all(files.filter((f) => !cache.has(f)).map(async (f) => {
     try {
       const bmp = await createImageBitmap(await (await fetch("hi/" + f)).blob());
       const cv = document.createElement("canvas");

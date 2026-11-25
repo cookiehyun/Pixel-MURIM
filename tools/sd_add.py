@@ -41,3 +41,6 @@ for n in names:
 keep = [l for l in lines if l and not any(l.startswith(f"sd_{char}.{n} ") for n in names)]
 open(man, "w").write("\n".join(keep + new) + "\n")
 print("\n".join(new))
+
+import subprocess as _sp
+_sp.run([sys.executable, os.path.join(ROOT, "tools", "hi_atlas.py")], check=True)   # repack the atlas sheets

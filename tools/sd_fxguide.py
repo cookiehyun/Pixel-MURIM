@@ -87,3 +87,6 @@ lines_m = open(man).read().split("\n")
 mine = {l.split()[0] for l in out}
 keep_m = [l for l in lines_m if l and l.split()[0] not in mine]
 open(man, "w").write("\n".join(keep_m + out) + "\n")
+
+import subprocess as _sp
+_sp.run([sys.executable, os.path.join(ROOT, "tools", "hi_atlas.py")], check=True)   # repack the atlas sheets

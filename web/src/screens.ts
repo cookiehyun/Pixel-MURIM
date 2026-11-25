@@ -26,6 +26,10 @@ let mNotice = 0;
 let mCursor = 0, mMenuLevel = 0, mMenuTick = 0, mPhase = 0, mLevelSel = 1, mStageSel = 0;
 const mSel = [0, 1, 2, 3], mPick = [0, 1, 2, 3];
 
+// training: the RANDOM slot holds Hyeolma, the story's final boss, so he can be practised with
+const hyeolmaSlot = (k: number) => k === SLOT_RANDOM && G.GameMode === MODE_TRAINING;
+const pre = (k: number) => (hyeolmaSlot(k) ? "hyeolma" : rPrefix[k]);
+const nameOf = (k: number) => (hyeolmaSlot(k) ? "HYEOLMA" : rName[k]);
 export const rosterPrefix = (k: number) => rPrefix[k];
 export const rosterName = (k: number) => rName[k];
 export const rosterIndex = (p: string) => rPrefix.indexOf(p);
@@ -34,7 +38,8 @@ export function tickMenu(): void { mMenuTick++; }
 
 export function drawPortraitAt(k: number, x: number, y: number, w = 20, alt = false): void {
   R.fillRect(x, y, w, 20, RGB(26, 22, 36));
-  R.drawSpriteScaled(spriteId(rPrefix[k] + ".idle_0"), x + Math.trunc(w / 2) - rHeadX[k] * 2, y + 9 - rHeadY[k] * 2, false, 2, x + 1, y + 1, x + w - 2, y + 18, -1, alt);
+  const h = hyeolmaSlot(k) ? SLOT_CHEONMA : k;
+  R.drawSpriteScaled(spriteId(pre(k) + ".idle_0"), x + Math.trunc(w / 2) - rHeadX[h] * 2, y + 9 - rHeadY[h] * 2, false, 2, x + 1, y + 1, x + w - 2, y + 18, -1, alt);
 }
 
 export function drawBigView(prefix: string, x: number, flip: boolean, clipL: number, clipR: number, alt: boolean | number = false): void {
@@ -45,7 +50,7 @@ export function drawBigView(prefix: string, x: number, flip: boolean, clipL: num
 }
 
 const locked = (k: number) => k === SLOT_CHEONMA && !Arcade.bossUnlocked() && G.GameMode !== MODE_TRAINING;
-const isRandom = (k: number) => k === SLOT_RANDOM;
+const isRandom = (k: number) => k === SLOT_RANDOM && !hyeolmaSlot(k);
 function randomPick(): number {
   const n = ROSTER_SIZE + (locked(SLOT_CHEONMA) ? 0 : 1);
   return Math.floor(Math.random() * n);
@@ -192,8 +197,8 @@ export function selectTick(): void {
 }
 
 function selectDone(): void {
-  G.P1Char = rPrefix[mPick[0]];
-  G.P2Char = rPrefix[oppPick()];
+  G.P1Char = pre(mPick[0]);
+  G.P2Char = pre(oppPick());
   if (tagMode()) { G.P1Char2 = rPrefix[mPick[1]]; G.P2Char2 = rPrefix[mPick[3]]; }
   G.HumanIndex = 0;
   if (G.Multi) stageBegin();
@@ -242,8 +247,9 @@ export function selectRender(): void {
     Font.drawText("TO UNLOCK", cx, 34, cDim, 1, 1);
   } else if (isRandom(hover)) Font.drawBig(rName[hover], cx, 13, RGB(255, 240, 210), 1);
   else {
-    Font.drawBig(rName[hover], cx, 12, RGB(255, 240, 210), 1);
-    ["POW", "SPD", "RNG", "HP", "TEC"].forEach((l, j) => statRow(l, rStat[hover][j], 20 + j * 6));
+    Font.drawBig(nameOf(hover), cx, 12, RGB(255, 240, 210), 1);
+    const st = hyeolmaSlot(hover) ? [5, 3, 4, 5, 2] : rStat[hover];
+    ["POW", "SPD", "RNG", "HP", "TEC"].forEach((l, j) => statRow(l, st[j], 20 + j * 6));
   }
   for (let k = 0; k < ROSTER; k++) portrait(k);
   Font.drawText("A = OK  S = BACK", cx, 94, RGB(110, 100, 130), 1, 1);
@@ -253,8 +259,8 @@ function teamNames(upto = -1): void {
   if (upto < 0) upto = mPhase;
   for (let k = 0; k < 4; k++) {
     if (k >= upto) continue;
-    if (k <= 1) Font.drawText(rName[mPick[k]], 3, 19 + k * 6, cP1);
-    else Font.drawText(rName[mPick[k]], SCREEN_W - 3, 19 + (k - 2) * 6, cP2, 1, 2);
+    if (k <= 1) Font.drawText(nameOf(mPick[k]), 3, 19 + k * 6, cP1);
+    else Font.drawText(nameOf(mPick[k]), SCREEN_W - 3, 19 + (k - 2) * 6, cP2, 1, 2);
   }
 }
 
@@ -265,7 +271,7 @@ function statRow(lbl: string, v: number, y: number): void {
 
 function bigView(k: number, x: number, flip: boolean, clipL: number, clipR: number, alt = false): void {
   if (locked(k) || isRandom(k)) { Font.drawBig("?", x, 48, isRandom(k) ? RGB(200, 160, 80) : RGB(80, 70, 100), 3); return; }
-  drawBigView(rPrefix[k], x, flip, clipL, clipR, alt);
+  drawBigView(pre(k), x, flip, clipL, clipR, alt);
 }
 
 function portrait(k: number): void {

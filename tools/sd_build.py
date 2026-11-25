@@ -283,3 +283,4 @@ if len(sys.argv) > 3 and sys.argv[3] == "--install":
             lines += [f"{q[2]}.{n} sd/{char}_f/{n}.png {x} {y} fight" for n, x, y in anchors]
     open(man, "w").write("\n".join(lines) + "\n")
     print("installed", len(anchors), "frames to", dst)
+    subprocess.run([sys.executable, os.path.join(ROOT, "tools", "hi_atlas.py")], check=True)   # repack the atlas sheets
