@@ -875,7 +875,6 @@ export function draw(): void {
     if (isDrain(i)) drawDrainOrbs(i);
     const f = F[i];
     if (f.kit === "cheonma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonPalm(i);
-    if (f.kit === "hyeolma" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonArm(i);
     if (f.kit === "hyeolma" && f.state === ST_ATTACK && f.mv === bloodWaveMove()) drawBloodWave(i);
     if (f.kit === "cheonmasw" && f.state === ST_ATTACK && f.mv === f.moves[MV_SP1]) drawDemonCut(i);
     if ((f.prefix === "danwoo" || f.prefix === "sd_danwoo") && f.state === ST_ATTACK) {
@@ -1755,121 +1754,27 @@ function drawDemonCut(i: number): void {
   }
 }
 
-// ---- Hyeolma: 혈마수 (a demon arm of blood strikes from his back), the blood frenzy and its blood wave
+// ---- Hyeolma: the blood frenzy and its blood wave (the demon arm and the frenzy coming on are drawn in his SD frames)
 
-const B_DARK = () => RGB(60, 4, 14), B_RED = () => RGB(160, 16, 30), B_HOT = () => RGB(230, 50, 60), B_LIGHT = () => RGB(255, 150, 150);
 let mWaveMv = -2;
 function bloodWaveMove(): number {
   if (mWaveMv === -2) mWaveMv = moveId("hyeolma.sp1r");
   return mWaveMv;
 }
 
-/** A filled disc with a dark rim (a fist, a shoulder knot). */
-function bloodDisc(cx: number, cy: number, r: number, fill: number, t: number): void {
-  for (let y = -r - 1; y <= r + 1; y++)
-    for (let x = -r - 1; x <= r + 1; x++) {
-      const d = Math.hypot(x, y);
-      if (d > r + 0.6) continue;
-      const rim = d > r - 0.6, lit = x * 0.6 - y * 0.8 > r * 0.3;
-      R.putPixel(clng(cx + x), clng(cy + y), rim ? B_DARK() : lit ? ((t + x) % 5 === 0 ? B_LIGHT() : B_HOT()) : fill);
-    }
-}
-
-/** An open blood hand at (cx, cy) reaching along angle `a`: a palm and four hooked talons with pale tips. */
-function clawHand(cx: number, cy: number, a: number, k: number, t: number): void {
-  bloodDisc(cx, cy, Math.round(3.6 * k), B_RED(), t);
-  for (let q = 0; q < 4; q++) {
-    const spread = (q - 1.5) * 0.45, a0 = a + spread, L1 = 5 * k, L2 = 5 * k;
-    const x1 = cx + Math.cos(a0) * (3 * k + L1), y1 = cy + Math.sin(a0) * (3 * k + L1);
-    const a1 = a0 + (spread >= 0 ? 0.9 : -0.9);              // the talon hooks inward
-    const x2 = x1 + Math.cos(a1) * L2, y2 = y1 + Math.sin(a1) * L2;
-    thickLine(cx + Math.cos(a0) * 2 * k, cy + Math.sin(a0) * 2 * k, x1, y1, 1.3 * k, B_RED(), B_RED(), B_DARK());
-    thickLine(x1, y1, x2, y2, 0.9 * k, B_HOT(), B_RED(), B_DARK());
-    R.putPixel(clng(x2), clng(y2), B_LIGHT());
-  }
-  void t;
-}
-
-/** A thick muscled blood arm: the upper arm swells in the middle, the forearm widens to a big clenched fist.
- *  Glowing cracks run along it. (bx, by) shoulder, (ex, ey) elbow, (hx, hy) fist. */
-function muscleArm(bx: number, by: number, ex: number, ey: number, hx: number, hy: number, k: number, t: number): void {
-  const seg = (x0: number, y0: number, x1: number, y1: number, w0: number, w1: number, bulge: number) => {
-    const L = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / L, ny = (x1 - x0) / L;
-    for (let s = 0; s <= L; s += 0.5) {
-      const u = s / L, w = (w0 + (w1 - w0) * u + bulge * Math.sin(Math.PI * u)) * k;
-      const x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u;
-      for (let d = -Math.ceil(w) - 1; d <= Math.ceil(w) + 1; d++) {
-        const ad = Math.abs(d), px = clng(x + nx * d), py = clng(y + ny * d);
-        R.putPixel(px, py, ad > w ? B_DARK() : d < -w * 0.35 ? B_HOT() : B_RED());
-      }
-      // the crack: a bright vein that zigzags down the middle
-      if (Math.trunc(s * 2) % 2 === 0) R.putPixel(clng(x + nx * Math.sin(s * 0.9) * w * 0.4), clng(y + ny * Math.sin(s * 0.9) * w * 0.4), (t + Math.trunc(s)) % 6 < 3 ? B_LIGHT() : B_HOT());
-    }
-  };
-  seg(bx, by, ex, ey, 3, 2.6, 1.4);                       // upper arm: a bulging biceps
-  bloodDisc(ex, ey, Math.round(2.6 * k), B_RED(), t);       // the elbow knot
-  seg(ex, ey, hx, hy, 2, 2.8, 0.8);                       // forearm widening to the wrist
-  clawHand(hx, hy, Math.atan2(hy - ey, hx - ex), k, t);   // an open hand of blood with hooked talons
-  for (let d = 0; d < 2; d++) {                             // blood dripping off the fist
-    const s = ((t * 2 + d * 7) % 12) / 12;
-    if (s < 0.8) R.putPixel(clng(hx - 2 + d * 4), clng(hy + 5 * k + s * 8), B_HOT());
-  }
-}
-
-/** 혈마수: a huge blood arm grows out of his sleeve, reaches across the hitbox and rakes it with a crescent. */
-function drawDemonArm(i: number): void {
-  const f = F[i], mv = f.mv, s = D.MvStartup[mv], a = D.MvActive[mv], t = f.stTick;
-  let p = 0;
-  if (t >= s - 2 && t < s) p = 0.35 * (t - s + 3);
-  else if (t >= s && t < s + a) p = 1;
-  else if (t >= s + a && t < s + a + 5) p = 1 - (t - s - a + 1) / 6;
-  if (p <= 0) return;
-  const fx = f.facing, x = f.x, y = f.footY, reach = (D.MvHbX[mv] + D.MvHbW[mv] - 6) * p;
-  const hx = x + fx * 10, hy = y - 26, cx = x + fx * Math.max(14, reach), cy = y - 28;
-  muscleArm(hx, hy, hx + (cx - hx) * 0.55, hy - 3 + Math.sin(t * 0.8) * 1.5, cx, cy, 0.9 + 0.3 * p, t);
-  for (let q = 0; q < 6; q++) R.putPixel(clng(hx + (cx - hx) * (q / 6)), clng(hy - 6 - ((q * 5 + t * 3) % 7)), B_HOT());   // spray
-  const r = t - s;                                          // the rake: a crescent sweeping down in front of the claw
-  if (r >= 1 && r < a + 3) {
-    const R0 = 14, fade = r >= a;
-    for (let d = -60; d <= 80; d += 3) {
-      const ang = d * 0.0174533, th = (1 - Math.abs(d - 10) / 75) * 3.2;
-      for (let w = 0; w <= th; w++) {
-        const rr = R0 - w, px = cx + fx * (2 + Math.cos(ang) * rr * 0.55), py = cy + Math.sin(ang) * rr;
-        if (fade && (w + d) % 2) continue;
-        R.putPixel(clng(px), clng(py), w < th * 0.4 ? B_LIGHT() : w < th * 0.8 ? B_HOT() : B_RED());
-      }
-    }
-  }
-}
-
-/** The frenzy: two great blood arms spread out to both sides from his shoulders and raise their claws. */
+/** The frenzy: the two great blood arms (hyeolma_fx farm_*) breathe behind him whatever he is doing. */
 function drawFrenzyArms(i: number): void {
-  const f = F[i], x = f.x, y = f.footY, t = mDraw;
-  for (const sd of [-1, 1]) {
-    const b = Math.sin(t * 0.15 + (sd > 0 ? 1.6 : 0)) * 1.5;
-    muscleArm(x + sd * 3, y - 32, x + sd * 21, y - 30 + b, x + sd * 23, y - 50 + b, 1, t + (sd > 0 ? 3 : 0));
-  }
+  const f = F[i];
+  if (f.state === ST_ATTACK && D.MvType[f.mv] === MT_RAGE) return;   // the frenzy's own frames grow them
+  const k = Math.trunc(mDraw / 6) % 4, nm = "hyeolma.farm_" + k;
+  if (hasSprite(nm)) R.drawSprite(spriteId(nm), vint(f.x + 0.5), vint(f.footY + 0.5), f.facing < 0);
 }
 
 /** The blood wave (frenzy sp1): rings of blood spikes run out along the ground on both sides. */
 function drawBloodWave(i: number): void {
-  const f = F[i], t = f.stTick - D.MvStartup[f.mv];
-  if (t < 0 || t > D.MvActive[f.mv] + 8) return;
-  const gx = f.x, gy = f.footY;
-  for (let k = 0; k <= 1; k++) {
-    const rx = (t - k * 3) * 7 + 8, ry = rx * 0.22;
-    if (rx <= 8 || rx >= 64) continue;
-    const old = rx > 44;
-    for (let d = 0; d < 360; d += 2) {
-      const c = Math.cos(d * 0.0174533), sn = Math.sin(d * 0.0174533);
-      for (let w = 0; w < (k === 0 ? 3 : 2); w++) {
-        if (old && (d + w) % 4) continue;
-        R.putPixel(clng(gx + c * (rx - w)), clng(gy + sn * (ry - w * 0.3)), w === 0 ? B_HOT() : w === 1 ? B_LIGHT() : B_RED());
-      }
-    }
-    for (let q = 0; q < 14; q++) {                           // splashes thrown up off the ring
-      const d = q * 25.7 + k * 13, c = Math.cos(d * 0.0174533), sn = Math.sin(d * 0.0174533), up = ((q * 5 + t * 3) % 9);
-      R.fillRect(clng(gx + c * rx), clng(gy + sn * ry - up), 1, 2, q % 3 ? B_HOT() : B_LIGHT());
-    }
-  }
+  const f = F[i], t = f.stTick - D.MvStartup[f.mv] + 2;
+  const k = Math.trunc(t / 2);
+  if (t < 0 || k > 5) return;
+  const nm = "hyeolma.wave_" + k;
+  if (hasSprite(nm)) R.drawSprite(spriteId(nm), vint(f.x + 0.5), vint(f.footY + 0.5), f.facing < 0);
 }

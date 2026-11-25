@@ -110,6 +110,7 @@ for a, alpha, names, sc, spl in pictures:
             if not v and start is not None:
                 if x - start > 3 * sc: figs.append((start, x))
                 start = None
+    if len(names) == 1 and len(figs) > 1: figs = [(figs[0][0], figs[-1][1])]   # one figure with loose bits (blood spray)
     assert len(figs) == len(names), f"{len(figs)} figures found {figs}, names {names}"
     for name, (x0, x1) in zip(names, figs):
         if name == "-": continue
