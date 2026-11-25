@@ -455,9 +455,9 @@ seolhwa.rush_2 sd/seolhwa_f/rush_2.png 14 36 fight
 seolhwa.rush_3 sd/seolhwa_f/rush_3.png 10 37 fight
 seolhwa.sp_0 sd/seolhwa_f/sp_0.png 10 38 fight
 seolhwa.sp_1 sd/seolhwa_f/sp_1.png 14 37 fight
-seolhwa.dp_0 sd/seolhwa_f/dp_0.png 12 32 fight
-seolhwa.dp_1 sd/seolhwa_f/dp_1.png 12 37 fight
-seolhwa.dp_2 sd/seolhwa_f/dp_2.png 5 22 fight
-seolhwa.dp_3 sd/seolhwa_f/dp_3.png 5 40 fight
-seolhwa.dp_4 sd/seolhwa_f/dp_4.png 7 15 fight
-seolhwa.dp_5 sd/seolhwa_f/dp_5.png 13 38 fight
+seolhwa.dp_0 sd/seolhwa_f/dp_0.png 11 28 fight
+seolhwa.dp_1 sd/seolhwa_f/dp_1.png 11 32 fight
+seolhwa.dp_2 sd/seolhwa_f/dp_2.png 5 19 fight
+seolhwa.dp_3 sd/seolhwa_f/dp_3.png 6 36 fight
+seolhwa.dp_4 sd/seolhwa_f/dp_4.png 6 13 fight
+seolhwa.dp_5 sd/seolhwa_f/dp_5.png 12 33 fight
