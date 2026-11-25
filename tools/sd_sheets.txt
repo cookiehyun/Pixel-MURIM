@@ -118,6 +118,13 @@ hyeolma 218.webp 9.48 -,-,-,palm_0,-,-,-
 # the demon arm (sp1) and the frenzy coming on (super), drawn with their blood effects
 hyeolma 228.webp 7.05 arm_0,arm_1,arm_2,arm_3,arm_4,arm_5
 hyeolma 229.webp 7.56 su_0,su_1,su_2,su_3,su_4
+# Baek Mujin, the alliance lord - a swordsman (205 model; scale = head size matched against 233 stand, 42 art px with his topknot)
+@height baekmujin 42
+baekmujin 233.webp 7.14 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
+baekmujin 234.webp 7.36 lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3
+baekmujin 235.webp 8.06 lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3
+baekmujin 236.webp 7.07 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
+baekmujin 237.webp 7.6 guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
@@ -127,6 +134,9 @@ hyeolma 229.webp 7.56 su_0,su_1,su_2,su_3,su_4
 @skin seolhwa
 @skin hongryeon
 @skin cheonma
+@skin baekmujin
+@colors baekmujin 64
+@breathe baekmujin
 @breathe cheonma
 @breathe hyeolma
 @skin hyeolma
@@ -147,3 +157,4 @@ hyeolma 229.webp 7.56 su_0,su_1,su_2,su_3,su_4
 @face cheonma win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
 @face cheonmasw win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
 @face hyeolma fall,kneel,win,hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3
+@face baekmujin idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash,lp_0,lp_1,hp_0,hp_a,hp_1,hp_2,hp_3,lk_0,lk_1,hk_p,hk_0,hk_1,hk_2,hk_3,crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk,guard,cguard,hit_0,hit_1,chit,down_0,down_1,intro,win

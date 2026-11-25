@@ -468,6 +468,11 @@ HYEOLMA = dict(CHEONMA, name="hyeolma", palette=dict(CHEONMA["palette"], **{
     "t": "FFC8B8", "T": "E0503A", "r": "C23434"}))
 HYEOLMA.pop("scabbard", None)
 
+# Baek Mujin, the alliance lord (story boss): a swordsman in white, his blade light grey, white and gold
+BAEKMUJIN = dict(MUYEONG, name="baekmujin", palette=dict(MUYEONG["palette"], **{
+    "g": "E8E4D8", "G": "B8B2A4", "p": "8A8478", "P": "6A6458", "n": "2A2420",
+    "t": "FFF8E0", "T": "D8B860", "y": "E0B850", "m": "F0ECE0", "r": "D8B860"}))
+
 # Cheonma with the long sword drawn (sp2 draws / sheathes, the super leaves it drawn): Muyeong's sword work
 CHEONMA_SW = dict(CHEONMA, name="cheonmasw", weapon=dict(kind="sword", length=14),
                   scabbard=dict(length=14, empty=True))
@@ -734,6 +739,14 @@ MOVE_ANIMS = {
         ("sp1_pre", 2, ["palm_0"]),
         ("sp1_rec", 4, ["palm_1", "palm_1", "hp_3"]),
         ("super_pre", 2, ["sp_a", "sp_a", "palm_0"]),
+    ],
+    "baekmujin": [
+        ("lp_rec", 2, ["lp_1", "lp_0"]),
+        ("hp_pre", 2, ["hp_0", "hp_a", "hp_a"]),
+        ("hp_seq", 2, ["hp_1"]),
+        ("hp_rec", 3, ["hp_2", "hp_2", "hp_3"]),
+        ("sp2_seq", 2, ["rush_1", "rush_2"]),
+        ("sp2_rec", 3, ["rush_3", "rush_3", "rush_0"]),
     ],
     "cheonmasw": [
         ("lp_rec", 2, ["lp_1", "lp_0"]),
@@ -1415,7 +1428,7 @@ if __name__ == "__main__":
     for spec, ov in ((DANWOO, DANWOO_OVERRIDES), (CHEOLSAN, CHEOLSAN_OVERRIDES), (MUYEONG, MUYEONG_OVERRIDES),
                      (SEOLHWA, SEOLHWA_OVERRIDES), (HEUKRIM, HEUKRIM_OVERRIDES), (HEUKRIM_SW, HEUKRIM_SW_OVERRIDES),
                      (CHEOLSAN_RAGE, CHEOLSAN_OVERRIDES),
-                     (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES), (CHEONMA_SW, CHEONMA_SW_OVERRIDES), (HYEOLMA, CHEONMA_OVERRIDES)):
+                     (HONGRYEON, HONGRYEON_OVERRIDES), (CHEONMA, CHEONMA_OVERRIDES), (CHEONMA_SW, CHEONMA_SW_OVERRIDES), (HYEOLMA, CHEONMA_OVERRIDES), (BAEKMUJIN, MUYEONG_OVERRIDES)):
         if only and spec["name"] != only:
             continue
         names = generate(spec, ov)

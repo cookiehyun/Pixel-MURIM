@@ -89,6 +89,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
       else setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1000, 32, 23);
       break;
     case "hyeolma": setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1300, 32, 23); break;   // story final boss
+    case "baekmujin": setup(i, prefix, x, 1.9, 3, -4.3, 1.6, 7, 1150, 33, 23); break;  // story boss, the alliance lord
     // story mode: SD art on the same bodies (sd_danwoo is danwoo move for move); 흑사, a rebel elder
     case "sd_danwoo": setup(i, prefix, x, 2, 3.2, -4.5, 1.8, 6, 1000, 30, 21); break;
     case "sd_heuksa": setup(i, prefix, x, 1.9, 3.1, -4.4, 1.7, 6, 1000, 31, 22); break;
@@ -107,6 +108,7 @@ function setupCharacter(i: number, prefix: string, x: number): void {
     case "hongryeon": f.superName = "HONGRYEON EOPHWA"; break;
     case "cheonma": f.superName = "CHEONMA GEOMBEOP"; f.seqFx = FX.FX_DARK; break;
     case "hyeolma": f.superName = "HYEOLCHEON DAEBEOP"; f.seqFx = FX.FX_DARK; break;
+    case "baekmujin": f.superName = "BAEKIL CHEONGEOM"; break;
     case "sd_heuksa": f.superName = "HEUKSA CHEONMANG"; f.seqFx = FX.FX_DARK; break;
     default: f.superName = "CHEONGPUNG JINCHEON";
   }

@@ -39,7 +39,7 @@ const LOOK: Record<string, Look> = {
   천강: ["cheonma", 0, "CHEONMA"],
   야차: ["muyeong", SKIN_SHADOW, "YACHA"], 적운: ["muyeong", SKIN_PALE, "JEOGUN"], 진무: ["muyeong", SKIN_PALE, "JINMU"],
   남궁린: ["muyeong", SKIN_GOLD, "NAMGUNG RIN"], 금강귀: ["cheolsan", SKIN_IRON, "GEUMGANGGWI"], 당청향: ["hongryeon", SKIN_VIOLET, "DANG CHEONGHYANG"],
-  백무진: ["cheonma", SKIN_PALE, "BAEK MUJIN"], 혈마: ["hyeolma", 0, "HYEOLMA"], 위극: ["cheonma", SKIN_SHADOW, "WI GEUK"],
+  백무진: ["baekmujin", 0, "BAEK MUJIN"], 혈마: ["hyeolma", 0, "HYEOLMA"], 위극: ["cheonma", SKIN_SHADOW, "WI GEUK"],
   흑사: ["heukrim", SKIN_SHADOW, "HEUKSA"], 혈사: ["heukrim", SKIN_BLOOD, "HYEOLSA"], 혈강시: ["cheolsan", SKIN_CORPSE, "GANGSI"],
   갑주: ["cheolsan", SKIN_IRON, "ARMORED GANGSI"], 백면: ["seolhwa", SKIN_PALE, "BAEKMYEON"], 소연: ["seolhwa", SKIN_PALE, "SOYEON"],
   청사: ["heukrim", SKIN_ALT, "CHEONGSA"], 교도: ["muyeong", SKIN_CULT, "CULTIST"], 무사: ["muyeong", SKIN_IRON, "GUARD"],

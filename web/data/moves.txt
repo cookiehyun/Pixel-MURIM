@@ -160,6 +160,23 @@ hyeolma  sp1r  S  6  4  10  100  0  0  H  1  -28  -24  56  24  sp_a  sp_a  SQ  0
 hyeolma  sp2  S  3  1  22  120  0  0  H  1  0  -34  26  12  throw_0  throw_1  G  0  0  624P  300
 hyeolma  super  S  8  1  8  0  0  0  H  0  0  0  0  0  sp_a  sp_a  BK  220  0  2626P
 hyeolma  ovh  S  8  2  10  85  11  6  O  0  11  -33  9  13  ovh_0  ovh_1  N  1.0  0  -
+# baekmujin (alliance lord, story boss): a swordsman - Muyeong's sword work a little heavier; sp1 백운검 lunge thrust,
+# sp2 and the super are placeholders until 금강벽 (a counter) and 백일천검 are built
+baekmujin  lp  S  3  2  4  28  6  4  H  0  14  -27  15  5  lp_0  lp_1  N  0  0  -
+baekmujin  hp  S  3  2  7  94  10  7  H  0  12  -32  17  10  hp_0  hp_1  N  1.2  0  -
+baekmujin  lk  S  3  2  5  38  7  5  H  0  11  -18  8  6  lk_0  lk_1  N  0  0  -
+baekmujin  hk  S  4  3  6  99  11  8  H  0  8  -28  8  6  hk_0  hk_1  N  1.2  0  -
+baekmujin  clp  C  3  2  5  24  6  4  H  0  14  -21  15  5  crouch  clp  N  0  0  -
+baekmujin  chp  C  4  3  9  77  10  7  H  0  -2  -50  9  26  chp_0  chp_1  N  0  0  -
+baekmujin  clk  C  3  2  4  31  8  4  L  0  10  -6  8  6  crouch  clk  N  0  0  -
+baekmujin  chk  C  5  3  11  88  12  8  L  1  14  -11  17  6  crouch  chk  N  0  0  -
+baekmujin  jp  A  4  4  0  61  8  6  O  0  9  -14  13  8  jump  jp  N  0  0  -
+baekmujin  jk  A  4  5  0  77  9  7  O  0  9  -11  8  6  jump  jk  N  0  0  -
+baekmujin  throw  S  3  1  8  100  0  0  H  1  0  -30  16  10  throw_0  throw_1  T  0  0  -
+baekmujin  sp2  S  5  5  13  200  12  6  H  1  10  -32  20  24  rush_0  rush_1  SR  6  0  624P  400
+baekmujin  sp1  S  4  4  9  100  14  6  H  0  10  -30  20  20  rush_0  rush_1  R  5  0  26P  300
+baekmujin  super  S  7  4  12  320  12  6  H  1  10  -32  20  24  sp_0  rush_1  SR  6  0  2626P
+baekmujin  ovh  S  8  2  10  77  11  6  O  0  12  -36  17  16  ovh_0  ovh_1  N  1.0  0  -
 # hongryeon (fan dancer): mid-range fans, returning fan throw, lotus spin anti-air, fire-pillar super
 hongryeon  lp    S    3       2      5        28     6       4         H     0  10  -28 9   7   lp_0       lp_1      N    0    0  -
 hongryeon  hp  S  3  3  6  80  10  7  H  0  9  -33  10  10  hp_0  hp_1  N  1.2  0  -
