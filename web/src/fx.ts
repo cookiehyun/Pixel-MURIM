@@ -27,7 +27,7 @@ export function spawnHit(x: number, y: number, heavy: boolean, prefix: string): 
     case "seolhwa": m = RGB(255, 190, 215); o = RGB(240, 100, 150); petal = true; break;
     case "heukrim": m = RGB(185, 255, 150); o = RGB(80, 190, 70); break;
     case "hongryeon": m = RGB(255, 215, 110); o = RGB(230, 70, 60); break;
-    case "cheonma": m = RGB(255, 140, 110); o = RGB(170, 30, 40); break;
+    case "cheonma": m = RGB(190, 160, 240); o = RGB(90, 50, 150); break;
     default: m = RGB(255, 224, 102); o = RGB(255, 130, 50);
   }
   const k = spawn(x, y, heavy ? FX_HEAVY : FX_HIT);

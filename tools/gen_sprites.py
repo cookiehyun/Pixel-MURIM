@@ -444,13 +444,13 @@ CHEONMA = dict(                          # final boss (arcade): the Heavenly Dem
         "k": "0E080C",
         "s": "E6CDB8", "S": "B89A86",          # pale skin
         "h": "141018", "H": "2C2232",          # long black hair
-        "b": "8E1820", "B": "5A0E16",          # crimson robe / shade
+        "b": "4C2C72", "B": "2E1A48",          # violet robe / shade
         "w": "E8B848",                          # gold trim / crown
         "d": "1A1418",                          # black sash
         "p": "201820", "P": "140E14",
         "n": "100A0E",
-        "e": "FF4030",                          # glowing red eyes
-        "t": "FFC8B8", "T": "E0503A",          # demon trail
+        "e": "C890FF",                          # glowing violet eyes
+        "t": "E4D8FF", "T": "8A60D0",          # demon trail (violet: red is the Blood Demon's)
     },
     look=dict(arm_front="b", arm_back="B", arm_front2="b", arm_back2="B",
               leg_front="p", leg_back="P", boot="n",
@@ -459,7 +459,7 @@ CHEONMA = dict(                          # final boss (arcade): the Heavenly Dem
     head="cheonma",
     scabbard=dict(length=14),
 )
-CHEONMA["palette"].update({"W": "DCE4EC", "Q": "FFFFFF", "y": "E8B848", "m": "3A1418", "r": "C23434", "c": "1A1014"})
+CHEONMA["palette"].update({"W": "DCE4EC", "Q": "FFFFFF", "y": "E8B848", "m": "241430", "r": "8A60D0", "c": "1A1014"})
 
 # Cheonma with the long sword drawn (sp2 draws / sheathes, the super leaves it drawn): Muyeong's sword work
 CHEONMA_SW = dict(CHEONMA, name="cheonmasw", weapon=dict(kind="sword", length=14),

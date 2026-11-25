@@ -896,7 +896,7 @@ export function clearGhosts(i: number): void { mGN[i] = 0; }
 
 function ghostColor(i: number): number {
   if (F[i].rage > 0) return RGB(150, 24, 18);
-  return F[i].prefix === "heukrim" || F[i].prefix === "sd_heuksa" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(96, 30, 40) : -1;
+  return F[i].prefix === "heukrim" || F[i].prefix === "sd_heuksa" ? RGB(74, 56, 96) : F[i].prefix === "cheonma" ? RGB(60, 44, 92) : -1;
 }
 
 function updateGhosts(i: number): void {
@@ -1025,7 +1025,7 @@ function drawOne(i: number): void {
   }
   if ((demonAwake(i) || drainLinked(i)) && tint < 0) {
     if (Math.trunc(mFrame / 2) % 2 === 0 || drainLinked(i)) {
-      const red = RGB(200, 30, 50);
+      const red = drainLinked(i) ? RGB(200, 30, 50) : RGB(130, 80, 210);   // Cheonma's awakening glows violet
       R.drawSprite(currentSprite(i), x - 1, y, flip, red);
       R.drawSprite(currentSprite(i), x + 1, y, flip, red);
       R.drawSprite(currentSprite(i), x, y - 1, flip, red);
@@ -1088,12 +1088,12 @@ function drawDemonPalm(i: number): void {
   const lit = t <= D.MvActive[F[i].mv];
   const ink = (ch: string): number => {
     switch (ch) {
-      case "o": return RGB(90, 8, 22);
-      case "d": return RGB(150, 20, 38);
-      case "r": return lit ? RGB(220, 40, 58) : RGB(150, 20, 38);
-      case "l": return lit ? RGB(255, 120, 130) : RGB(220, 40, 58);
-      case "w": return lit ? RGB(255, 215, 215) : RGB(255, 120, 130);
-      case "g": return lit ? RGB(255, 70, 90) : -1;
+      case "o": return RGB(34, 14, 56);
+      case "d": return RGB(80, 40, 130);
+      case "r": return lit ? RGB(124, 72, 196) : RGB(80, 40, 130);
+      case "l": return lit ? RGB(184, 150, 240) : RGB(124, 72, 196);
+      case "w": return lit ? RGB(238, 232, 255) : RGB(184, 150, 240);
+      case "g": return lit ? RGB(150, 100, 230) : -1;
     }
     return -1;
   };
@@ -1546,7 +1546,8 @@ function waveAt(i: number, k: number, t: number, ox: number): [number, number] {
 }
 
 
-const C_DARK = () => RGB(70, 6, 18), C_RED = () => RGB(200, 24, 44), C_HOT = () => RGB(255, 96, 104), C_CORE = () => RGB(255, 236, 236);
+// Cheonma's colour is violet and steel (red belongs to the Blood Demon)
+const C_DARK = () => RGB(34, 14, 56), C_RED = () => RGB(104, 52, 168), C_HOT = () => RGB(176, 140, 236), C_CORE = () => RGB(240, 236, 255);
 
 function burst(cx: number, cy: number, s: number, big: number): void {
   if (s < 0 || s > 12) return;
@@ -1630,32 +1631,33 @@ function drawCrash(i: number, t: number): void {
       }
     }
   } else {
-    // 삼절검: three blades fall slanting the same way (front-high to back-low) and cut three parallel scars;
-    // when all three strike clean the scars stay as afterimages, then break together
+    // 삼절검: three blades fall slanting the same way (front-high to back-low) and cut three parallel brush strokes;
+    // when all three strike clean the strokes stay as smouldering afterimages, then break together
     const ghost = (f.hitCount & GHOST) !== 0;
     for (let k = 0; k < 3; k++) {
-      const s = t - CRASH_BLADES[k], g = scarLine(i, k);
-      if (s === -2 || s === -1) thickLine(g[0], g[1], g[2], g[3], 0.4, C_RED(), C_RED());   // a faint line marks the cut
+      const s = t - CRASH_BLADES[k], g = scarLine(i, k), bend = [3, -3, 0][k] * f.facing;
+      if (s === -2 || s === -1) brush(g, bend, 0.5, C_RED(), C_RED(), 1, t);                 // a faint line marks the cut
       if (s === 0) drawFallingBlade(g, 0.45);
-      if (s === 1) { drawFallingBlade(g, 1); thickLine(g[0], g[1], g[2], g[3], 3.5, C_CORE(), C_HOT()); }
-      if (s >= 2 && s < 5) thickLine(g[0], g[1], g[2], g[3], 3.5 - s * 0.5, s < 3 ? C_CORE() : C_HOT(), C_RED());
+      if (s === 1) { drawFallingBlade(g, 1); brush(g, bend, 4.5, C_CORE(), C_HOT(), 1, t); }
+      if (s >= 2 && s < 5) {
+        for (let e = 2; e >= 1; e--) brush(g, bend, 2.5, e === 1 ? C_RED() : C_DARK(), C_DARK(), 0.5, t, e * 3);   // the sweep's trail
+        brush(g, bend, 4.5 - s * 0.5, s < 3 ? C_CORE() : C_HOT(), C_RED(), 1, t);
+      }
       if (s >= 1) burst(g[2], g[3], s - 1, k === 2 ? 3 : 2);
-      if (ghost && s >= 5 && t < CRASH_GHOST_END) {        // the scar left hanging in the air, trembling
-        const nx = -(g[3] - g[1]), ny = g[2] - g[0], L = Math.hypot(nx, ny), j = (t + k) % 4 < 2 ? 1.5 : -1.5;
-        const ox = nx / L * j, oy = ny / L * j;
-        thickLine(g[0] + ox, g[1] + oy, g[2] + ox, g[3] + oy, 1, C_DARK(), C_DARK());
-        thickLine(g[0], g[1], g[2], g[3], (t + k) % 2 ? 1.8 : 1.3, C_HOT(), C_RED());
-      } else if (!ghost && s >= 5 && s < 9) thickLine(g[0], g[1], g[2], g[3], 0.8, C_RED(), C_DARK());
-      if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) thickLine(g[0], g[1], g[2], g[3], 4, C_CORE(), C_HOT());
+      if (ghost && s >= 5 && t < CRASH_GHOST_END) {        // the stroke left burning in the air
+        brush(g, bend, 3, C_DARK(), C_DARK(), 0.6, t, 3);
+        brush(g, bend, (t + k) % 2 ? 3 : 2.6, C_HOT(), C_RED(), 1, t);
+        embers(g, bend, t - CRASH_BLADES[k] - 5, k);
+      } else if (!ghost && s >= 5 && s < 9) brush(g, bend, 1.5, C_RED(), C_DARK(), 0.6, t);
+      if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) brush(g, bend, 5, C_CORE(), C_HOT(), 1, t);
       if (ghost) {
         const e = t - CRASH_GHOST_END - 1;
         for (let q = 0; q < 3; q++) {
-          const u = 0.2 + q * 0.3;
-          burst(g[0] + (g[2] - g[0]) * u, g[1] + (g[3] - g[1]) * u, e - q, k === 2 ? 3.2 : 2.4);
+          const [bx, by] = bez(g, bend, 0.2 + q * 0.3);
+          burst(bx, by, e - q, k === 2 ? 3.2 : 2.4);
         }
-        if (e >= 0 && e < 10) for (let q = 0; q < 16; q++) {              // the scars shatter into red shards
-          const u = (q + 0.5) / 16, a = q * 0.9 + k, d = 3 + e * (2 + (q % 3));
-          const x0 = g[0] + (g[2] - g[0]) * u, y0 = g[1] + (g[3] - g[1]) * u;
+        if (e >= 0 && e < 10) for (let q = 0; q < 16; q++) {              // the strokes shatter into red shards
+          const a = q * 0.9 + k, d = 3 + e * (2 + (q % 3)), [x0, y0] = bez(g, bend, (q + 0.5) / 16);
           R.fillRect(clng(x0 + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.7 + e * e * 0.12), 2, 1, q % 3 ? C_HOT() : C_CORE());
         }
       }
@@ -1663,12 +1665,56 @@ function drawCrash(i: number, t: number): void {
   }
 }
 
-/** Scar k of 삼절검 as [x0, y0, x1, y1]: parallel cuts through the marked spot, high in front to low behind. */
+/** A point on stroke g, bowed sideways by `bend` pixels at the middle (quadratic curve). */
+function bez(g: [number, number, number, number], bend: number, u: number): [number, number] {
+  const L = Math.hypot(g[2] - g[0], g[3] - g[1]), nx = -(g[3] - g[1]) / L, ny = (g[2] - g[0]) / L;
+  const cx = (g[0] + g[2]) / 2 + nx * bend * 2, cy = (g[1] + g[3]) / 2 + ny * bend * 2, v = 1 - u;
+  return [v * v * g[0] + 2 * v * u * cx + u * u * g[2], v * v * g[1] + 2 * v * u * cy + u * u * g[3]];
+}
+
+/** One brush stroke of the sword: a hairline at the start, full in the middle, the tail splitting into bristles.
+ *  `back` shifts it against the cut's bend (the trail of the sweep); `dens` < 1 leaves pixels out. */
+function brush(g: [number, number, number, number], bend: number, w: number, core: number, edge: number,
+  dens: number, t: number, back = 0): void {
+  const N = 70;
+  for (let k = 0; k <= N; k++) {
+    const u = k / N, [x, y] = bez(g, bend, u), [x2, y2] = bez(g, bend, Math.min(1, u + 0.01));
+    const L = Math.hypot(x2 - x, y2 - y) || 1, nx = -(y2 - y) / L, ny = (x2 - x) / L;
+    const sb = Math.sign(bend) || 1, bx = x - nx * back * sb, by = y - ny * back * sb;
+    const ww = w * Math.pow(Math.sin(Math.PI * Math.min(1, u * 1.15)), 0.6);
+    if (u > 0.72) {                                     // the tail frays into three bristles
+      for (const b of [-0.7, 0, 0.7]) {
+        if (((k * 7 + b * 10 + 13) | 0) % 5 === 0) continue;
+        const px = clng(bx + nx * b * w), py = clng(by + ny * b * w);
+        if (dens >= 1 || (px + py + t) % 2 === 0) R.putPixel(px, py, b === 0 ? core : edge);
+      }
+      continue;
+    }
+    for (let d = -Math.ceil(ww); d <= Math.ceil(ww); d++) {
+      const px = clng(bx + nx * d), py = clng(by + ny * d);
+      if (dens < 1 && (px + py + t) % 2) continue;
+      R.putPixel(px, py, Math.abs(d) <= ww * 0.45 ? core : Math.abs(d) <= ww ? edge : C_DARK());
+    }
+  }
+}
+
+/** Sparks rising off a burning stroke (age a ticks since it settled). */
+function embers(g: [number, number, number, number], bend: number, a: number, k: number): void {
+  for (let q = 0; q < 12; q++) {
+    const life = (a + q * 3) % 12, u = ((q * 37 + k * 11) % 100) / 100;
+    const [x, y] = bez(g, bend, 0.08 + u * 0.8);
+    const px = clng(x + Math.sin((life + q) * 0.7) * 2), py = clng(y - life * 1.6);
+    R.putPixel(px, py, life < 4 ? C_CORE() : life < 8 ? C_HOT() : C_RED());
+    if (life < 5) R.putPixel(px, py + 1, C_RED());
+  }
+}
+
+/** Stroke k of 삼절검 as [x0, y0, x1, y1]: the first two cross in an X on the marked spot, the third falls
+ *  straight down through the crossing. */
 function scarLine(i: number, k: number): [number, number, number, number] {
-  const f = F[i], cx = f.cineCX, cy = vint(f.footY) - 22, fx = f.facing;
-  const dx = -fx * 0.62, dy = 1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
-  const off = [-9, 9, 0][k], mx = cx + uy * off * fx, my = cy - ux * off * fx;
-  return [mx - ux * 30, my - uy * 30, mx + ux * 26, my + uy * 26];
+  const f = F[i], cx = f.cineCX, cy = vint(f.footY) - 22;
+  const dx = [-0.7, 0.7, 0][k] * f.facing, dy = 1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, r = k === 2 ? 34 : 30;
+  return [cx - ux * r, cy - uy * r, cx + ux * (k === 2 ? 22 : r), cy + uy * (k === 2 ? 22 : r)];
 }
 
 /** The blade coming down along its cut: p = 0.45 halfway in from the sky, 1 = point at the end of the cut. */
