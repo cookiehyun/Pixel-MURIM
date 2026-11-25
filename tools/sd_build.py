@@ -25,6 +25,14 @@ def hair_size(f):
     hair = fg & (r < 90) & (g < 90) & (b < 100) & (np.abs(r - b) < 30)
     hair[int(top + (bot - top + 1) * 0.45):] = False
     return float(np.sqrt(hair.sum())), top, bot, fg, a
+def body_top(fg, a, top, bot):
+    """the top of the body, not of a blade held up: light grey low-colour pixels and thin rows do not count"""
+    mx, mn = a.max(2), a.min(2)
+    body = fg & ~((mn > 140) & (mx - mn < 40))
+    need = max(3, int(fg.shape[1] * 0.02))
+    for y in range(top, bot):
+        if body[y].sum() >= need: return y
+    return top
 def head_len(f):
     """top of the head to the chin, in picture rows: the first run of face-skin rows from the top (fists lower down
     are separated from it by the collar)."""
@@ -62,6 +70,9 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
         if "idle_0" in CLASSIC: kh = float(q[3]) / CLASSIC["idle_0"]
     if len(q) == 3 and q[0] == "@height" and q[1] == char and "idle_0" in CLASSIC:
         kh = float(q[2]) / CLASSIC["idle_0"]                  # SD height of the standing frame (no model-sheet head)
+CROUCH = 0.80                                               # crouch height / standing height, every character
+CROUCHES = {"crouch", "clp", "chp_0", "clk", "chk", "cguard", "chit"}
+SD_H = kh * CLASSIC.get("idle_0", 38)
 for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
     p = ln.split()
     if not p or p[0].startswith("#") or p[0] != char or len(p) < 4:
@@ -96,6 +107,22 @@ for ln in open(os.path.join(ROOT, "tools", "sd_sheets.txt")):
             outp.paste(upper, (0, 0)); outp.paste(legs, (0, belt))
             outp.save(f)
         print(pic, "fit: scale", scale)
+    # crouches: AI sheets squat to different depths; legs are fitted so the crouch stands CROUCH x the standing height
+    if "crouch" in names or any(n in CROUCHES for n in names):
+        for k, nm in enumerate(names):
+            if nm not in CROUCHES: continue
+            f = f"{tmp}/fig_{k}.png"
+            _, top, bot, fg, a = hair_size(f)
+            top = body_top(fg, a, top, bot)
+            have = bot - top + 1; want = int(round(CROUCH * SD_H * float(scale)))
+            if not 0.75 < want / have < (1.4 if nm == "chit" else 1.3): continue          # not a plain crouch (a lunge, a raised blade): left as drawn
+            if abs(want - have) < 2: continue
+            belt = top + int(have * 0.45)
+            im = Image.open(f).convert("RGB")
+            upper = im.crop((0, 0, im.width, belt)); legs = im.crop((0, belt, im.width, bot + 1))
+            legs = legs.resize((im.width, max(1, legs.height + want - have)), Image.LANCZOS)
+            outp = Image.new("RGB", (im.width, belt + legs.height + 24), tuple(int(v) for v in a[2, 2]))
+            outp.paste(upper, (0, 0)); outp.paste(legs, (0, belt)); outp.save(f)
     jobs += [f"{tmp}/fig_{k}.png:{scale}={n}" for k, n in enumerate(names) if n != "-"]
 # one call for every sheet: one shared palette, so skin, cloth and hair are the same colours in every frame
 ncol = "40"                                                 # "@colors <char> <n>": more colours (a steel blade needs its own greys)
@@ -106,13 +133,30 @@ r = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "pixelize.py"), 
 for l in r.stdout.splitlines():
     q = l.split()
     if len(q) >= 3: anchors.append((q[0], int(q[1]), int(q[2])))
+# jumps: the arcade jump frames stand almost full height above the feet point; the tucked SD ones are lifted to match
+JUMPS = {"jump", "jp", "jk"}
+fixed = []
+for n, x, y in anchors:
+    if n in JUMPS and n in CLASSIC:
+        a = np.asarray(Image.open(os.path.join(out, n + ".png")).convert("RGBA"))
+        ys = np.where((a[:, :, 3] > 0).any(1))[0]
+        top_above = y - ys.min() + 1
+        want = int(round(min(CLASSIC[n], CLASSIC.get("jump", CLASSIC[n])) * kh))
+        if want > top_above: y += want - top_above           # the anchor sits below the feet: the frame floats
+    fixed.append((n, x, y))
+anchors = fixed
 # magenta fringe off (edge pixels go)
 for n, _, _ in anchors:
     f = os.path.join(out, n + ".png")
     a = np.asarray(Image.open(f).convert("RGBA")).copy()
     r_, g_, b_ = (a[:, :, i].astype(int) for i in range(3))
-    pink = (a[:, :, 3] > 0) & (r_ > 110) & (b_ > 90) & (g_ < np.minimum(r_, b_) * 0.72)
-    a[pink, 3] = 0
+    op = a[:, :, 3] > 0
+    pinkish = op & (r_ > 110) & (b_ > 90) & (g_ < np.minimum(r_, b_) * 0.72)
+    edge = np.zeros_like(op)
+    edge[1:, :] |= ~op[:-1, :]; edge[:-1, :] |= ~op[1:, :]; edge[:, 1:] |= ~op[:, :-1]; edge[:, :-1] |= ~op[:, 1:]
+    edge[0, :] = edge[-1, :] = True; edge[:, 0] = edge[:, -1] = True
+    magenta = op & (r_ > 190) & (b_ > 170) & (g_ < 90)
+    a[(pinkish & edge) | magenta, 3] = 0                    # background fringe only: purple cloth inside the figure stays
     Image.fromarray(a).save(f)
 # one skin colour: the AI sheets shade skin with several near-identical tones and borrow the shoe brown for cheek and
 # hand shadows; all skin tones become the most common one, and a brown pixel touching skin (above the feet) becomes one
