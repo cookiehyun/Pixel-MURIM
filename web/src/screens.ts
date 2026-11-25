@@ -26,20 +26,25 @@ let mNotice = 0;
 let mCursor = 0, mMenuLevel = 0, mMenuTick = 0, mPhase = 0, mLevelSel = 1, mStageSel = 0;
 const mSel = [0, 1, 2, 3], mPick = [0, 1, 2, 3];
 
-// training: the RANDOM slot holds Hyeolma, the story's final boss, so he can be practised with
-const hyeolmaSlot = (k: number) => k === SLOT_RANDOM && G.GameMode === MODE_TRAINING;
-const pre = (k: number) => (hyeolmaSlot(k) ? "hyeolma" : rPrefix[k]);
-const nameOf = (k: number) => (hyeolmaSlot(k) ? "HYEOLMA" : rName[k]);
+const training = () => G.GameMode === MODE_TRAINING;
+const trainingExtra = [{ prefix: "hyeolma", name: "HYEOLMA" }, { prefix: "baekmujin", name: "BAEK MUJIN" }];
+const pre = (k: number) => training() && k >= SLOT_RANDOM ? trainingExtra[k - SLOT_RANDOM].prefix : rPrefix[k];
+const nameOf = (k: number) => training() && k >= SLOT_RANDOM ? trainingExtra[k - SLOT_RANDOM].name : rName[k];
+const selectCount = () => training() ? SLOT_RANDOM + trainingExtra.length : ROSTER;
+const selectCols = () => training() ? 3 : GRID_COLS;
 export const rosterPrefix = (k: number) => rPrefix[k];
 export const rosterName = (k: number) => rName[k];
 export const rosterIndex = (p: string) => rPrefix.indexOf(p);
 export const menuTick = () => mMenuTick;
 export function tickMenu(): void { mMenuTick++; }
 
-export function drawPortraitAt(k: number, x: number, y: number, w = 20, alt = false): void {
-  R.fillRect(x, y, w, 20, RGB(26, 22, 36));
-  const h = hyeolmaSlot(k) ? SLOT_CHEONMA : k;
-  R.drawSpriteScaled(spriteId(pre(k) + ".idle_0"), x + Math.trunc(w / 2) - rHeadX[h] * 2, y + 9 - rHeadY[h] * 2, false, 2, x + 1, y + 1, x + w - 2, y + 18, -1, alt);
+export function drawPortraitAt(k: number, x: number, y: number, w = 20, alt = false, compact = false): void {
+  const height = compact ? 14 : 20, scale = compact ? 1 : 2;
+  R.fillRect(x, y, w, height, RGB(26, 22, 36));
+  const h = k >= SLOT_RANDOM ? SLOT_CHEONMA : k;
+  const id = spriteId(pre(k) + ".idle_0");
+  const faceY = compact ? 12 - D.SprAY[id] : rHeadY[h];
+  R.drawSpriteScaled(id, x + Math.trunc(w / 2) - rHeadX[h] * scale, y + Math.floor(height / 2) - 1 - faceY * scale, false, scale, x + 1, y + 1, x + w - 2, y + height - 2, -1, alt);
 }
 
 export function drawBigView(prefix: string, x: number, flip: boolean, clipL: number, clipR: number, alt: boolean | number = false): void {
@@ -50,7 +55,7 @@ export function drawBigView(prefix: string, x: number, flip: boolean, clipL: num
 }
 
 const locked = (k: number) => k === SLOT_CHEONMA && !Arcade.bossUnlocked() && G.GameMode !== MODE_TRAINING;
-const isRandom = (k: number) => k === SLOT_RANDOM && !hyeolmaSlot(k);
+const isRandom = (k: number) => k === SLOT_RANDOM && !training();
 function randomPick(): number {
   const n = ROSTER_SIZE + (locked(SLOT_CHEONMA) ? 0 : 1);
   return Math.floor(Math.random() * n);
@@ -180,9 +185,11 @@ const oppPick = () => (tagMode() ? mPick[2] : mPick[1]);
 export function selectTick(): void {
   mMenuTick++;
   let k = mSel[mPhase];
-  if (K.isPressed(K.BTN_LEFT)) k = Math.trunc(k / GRID_COLS) * GRID_COLS + (((k % GRID_COLS) + GRID_COLS - 1) % GRID_COLS);
-  if (K.isPressed(K.BTN_RIGHT)) k = Math.trunc(k / GRID_COLS) * GRID_COLS + (((k % GRID_COLS) + 1) % GRID_COLS);
-  if (K.isPressed(K.BTN_UP) || K.isPressed(K.BTN_DOWN)) k = (k + GRID_COLS) % ROSTER;
+  const cols = selectCols(), count = selectCount();
+  if (K.isPressed(K.BTN_LEFT)) k = Math.trunc(k / cols) * cols + (k % cols + cols - 1) % cols;
+  if (K.isPressed(K.BTN_RIGHT)) k = Math.trunc(k / cols) * cols + (k % cols + 1) % cols;
+  if (K.isPressed(K.BTN_UP)) k = (k + count - cols) % count;
+  else if (K.isPressed(K.BTN_DOWN)) k = (k + cols) % count;
   mSel[mPhase] = k;
   if (K.isPressed(K.BTN_LP) && !locked(k)) {
     if (isRandom(k)) k = randomPick();
@@ -205,9 +212,6 @@ function selectDone(): void {
   else if (G.GameMode === MODE_VSCPU || G.GameMode === MODE_ARCADE || tagMode()) { mLevelSel = G.CpuLevel; G.GameState = GS_LEVEL; }
   else stageBegin();
 }
-
-const boxX = (k: number) => 64 + (k % GRID_COLS) * (BOX_W + 1);
-const boxY = (k: number) => 50 + Math.trunc(k / GRID_COLS) * 22;
 
 function sidePanels(): void {
   R.beginFrame(true);
@@ -248,10 +252,11 @@ export function selectRender(): void {
   } else if (isRandom(hover)) Font.drawBig(rName[hover], cx, 13, RGB(255, 240, 210), 1);
   else {
     Font.drawBig(nameOf(hover), cx, 12, RGB(255, 240, 210), 1);
-    const st = hyeolmaSlot(hover) ? [5, 3, 4, 5, 2] : rStat[hover];
-    ["POW", "SPD", "RNG", "HP", "TEC"].forEach((l, j) => statRow(l, st[j], 20 + j * 6));
+    const stats = training() && hover === SLOT_RANDOM ? [5, 3, 4, 5, 2] : rStat[hover];
+    if (stats) ["POW", "SPD", "RNG", "HP", "TEC"].forEach((l, j) => statRow(l, stats[j], 20 + j * 6));
+    else Font.drawText("HP 1150", cx, 30, cDim, 1, 1);
   }
-  for (let k = 0; k < ROSTER; k++) portrait(k);
+  for (let k = 0; k < selectCount(); k++) portrait(k);
   Font.drawText("A = OK  S = BACK", cx, 94, RGB(110, 100, 130), 1, 1);
 }
 
@@ -275,18 +280,21 @@ function bigView(k: number, x: number, flip: boolean, clipL: number, clipR: numb
 }
 
 function portrait(k: number): void {
-  const x = boxX(k), y = boxY(k);
-  R.fillRect(x, y, BOX_W, 20, RGB(26, 22, 36));
-  if (locked(k)) Font.drawBig("?", x + Math.trunc(BOX_W / 2) + 1, y + 3, RGB(70, 64, 90), 2);
-  else if (isRandom(k)) Font.drawBig("?", x + Math.trunc(BOX_W / 2) + 1, y + 3, RGB(200, 160, 80), 2);
-  else drawPortraitAt(k, x, y, BOX_W);
+  const w = training() ? 20 : BOX_W, cols = selectCols();
+  const height = training() ? 14 : 20;
+  const x = 64 + (k % cols) * (w + 1);
+  const y = (training() ? 49 : 50) + Math.trunc(k / cols) * (training() ? 15 : 22);
+  R.fillRect(x, y, w, height, RGB(26, 22, 36));
+  if (locked(k)) Font.drawBig("?", x + Math.trunc(w / 2) + 1, y + 3, RGB(70, 64, 90), 2);
+  else if (isRandom(k)) Font.drawBig("?", x + Math.trunc(w / 2) + 1, y + 3, RGB(200, 160, 80), 2);
+  else drawPortraitAt(k, x, y, w, false, training());
   let frameC = RGB(70, 60, 90);
   if (mPhase >= 1 && k === mPick[0]) frameC = cP1;
   if (tagMode() && mPhase >= 2 && k === mPick[1]) frameC = cP1;
   if (tagMode() && mPhase >= 3 && k === mPick[2]) frameC = cP2;
   if (k === mSel[mPhase] && Math.trunc(mMenuTick / 5) % 2 === 0) frameC = playerPhase() ? cGold : cP2;
-  R.drawRectOutline(x, y, BOX_W, 20, frameC);
-  if (k === mSel[mPhase]) R.drawRectOutline(x - 1, y - 1, BOX_W + 2, 22, frameC);
+  R.drawRectOutline(x, y, w, height, frameC);
+  if (k === mSel[mPhase]) R.drawRectOutline(x - 1, y - 1, w + 2, height + 2, frameC);
 }
 
 // ---------------------------------------------------------------- level select
