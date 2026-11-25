@@ -157,6 +157,15 @@ for n, _, _ in anchors:
     edge[0, :] = edge[-1, :] = True; edge[:, 0] = edge[:, -1] = True
     magenta = op & (r_ > 190) & (b_ > 170) & (g_ < 90)
     a[(pinkish & edge) | magenta, 3] = 0                    # background fringe only: purple cloth inside the figure stays
+    # background specks left in gaps inside the figure (between arm and body): a pink pixel with at most one pink
+    # neighbour takes the darkest neighbouring colour (a purple sash is a large patch and stays)
+    pk = pinkish & ~edge & ~magenta
+    H_, W_ = pk.shape
+    for y, x in zip(*np.where(pk)):
+        nb = [(yy, xx) for yy in range(max(0, y - 1), min(H_, y + 2)) for xx in range(max(0, x - 1), min(W_, x + 2)) if (yy, xx) != (y, x)]
+        if sum(pk[q] for q in nb) > 1: continue
+        cand = [a[q] for q in nb if a[q][3] > 0 and not pinkish[q]]
+        if cand: a[y, x] = min(cand, key=lambda c: int(c[0]) + int(c[1]) + int(c[2]))
     Image.fromarray(a).save(f)
 # one skin colour: the AI sheets shade skin with several near-identical tones and borrow the shoe brown for cheek and
 # hand shadows; all skin tones become the most common one, and a brown pixel touching skin (above the feet) becomes one

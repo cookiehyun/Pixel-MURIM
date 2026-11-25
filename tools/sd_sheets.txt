@@ -72,6 +72,12 @@ heukrimsw 175.webp 6.9 roll_0,roll_1,roll_2,roll_3,throw_0,throw_1,ovh_0,ovh_1 l
 heukrimsw 176.webp 7.6 draw_0,dp_0,dp_1,rush_0,rush_1,rush_2,sp_0,sp_a,sp_1 legs
 @skin heukrimsw
 @colors heukrimsw 64
+# Hongryeon (177 model; scale = head size matched against 178 idle, 39 art px tall)
+@height hongryeon 39
+hongryeon 178.webp 8.41 idle_0,idle_1,walk_0,walk_1,walk_2,walk_3,dash,bdash
+hongryeon 179.webp 9.04 lp_0,lp_1,hp_0,hp_a,hp_1,hp_k,hp_r legs
+hongryeon 180.webp 9.67 lk_0,lk_1,hk_0,hk_t,hk_1,hk_r legs
+hongryeon 182.webp 7.49 crouch,clp,chp_0,chp_1,clk,chk,jump,jp,jk
 # frames that keep their own face (eyes shut, turned away, upside down) - every other frame gets the same pixel eye (sd_face.py)
 # one skin colour in every frame (tools/sd_build.py unify_skin)
 @skin danwoo
@@ -79,6 +85,8 @@ heukrimsw 176.webp 7.6 draw_0,dp_0,dp_1,rush_0,rush_1,rush_2,sp_0,sp_a,sp_1 legs
 @skin muyeong
 @skin heukrim
 @skin seolhwa
+@skin hongryeon
+@colors hongryeon 64
 @colors muyeong 64
 @face cheolsan hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3 --copy 4:6:-4
 @face muyeong hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3,chp_1,ovh_0,rush_2
@@ -86,3 +94,4 @@ heukrimsw 176.webp 7.6 draw_0,dp_0,dp_1,rush_0,rush_1,rush_2,sp_0,sp_a,sp_1 legs
 @face heukrim hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3 --redraw 4
 @face heukrimsw hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3 --redraw 4
 @face danwoo hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3,spin_t
+@face hongryeon hit_0,hit_1,chit,down_0,down_1,roll_0,roll_1,roll_2,roll_3,hk_t,dp_2,dp_3,dp_4
