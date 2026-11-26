@@ -37,7 +37,7 @@ const { chromium } = require('playwright');
         function requireState(ok, why) { if (!ok) throw Error(why + ' ' + pm.story.fieldDebug()); }
         let i=0;
         while(debug().step < fight-2 && i<4000) advance(1, i++%2===0);
-        requireState(debug().talk && steps[debug().step].text === '정마연합은 혈교의 본단까지 진격했다.', 'Standoff missing');
+        requireState(debug().talk && steps[debug().step].text === '그리고 정마연합은 혈교의 본단까지 진격했다.', 'Standoff missing');
         advance(19,false);
         const idle = body(); advance(180,false);
         requireState(same(idle,body()) && !skipPrompt(), 'Standoff ran into combat while reading');
@@ -70,23 +70,33 @@ const { chromium } = require('playwright');
         advance(125,true);
         requireState(debug().step===fight+1 && same(frame,body()), 'Held key advanced dialogue or changed the tableau');
         snap(skipAt===null?'normal-end':'skip-end');
-        // Advancing the death line leads to the hand, where the revised second line follows the omen.
+        // Advancing the death line leads to the hand, where the omen waits for a second, separate confirmation.
         advance(1,false); advance(1,true); advance(1,false);
-        let dry, previousTip=0, changes=0, reachedScar=false, veinFirst=0, veinLast=0, reachedWrist=false;
-        for(i=0;i<240 && debug().step!==hand+1;i++) {
+        const handLine=steps.findIndex(s=>s.text==='그렇게 사람들은 혈월의 밤이 끝났다고 생각했다.');
+        for(i=0;i<100 && debug().step!==handLine;i++) advance(1,false);
+        requireState(debug().step===handLine && debug().talk, 'Hand line missing');
+        const dry=new Uint32Array(body().buffer);
+        advance(1,true); // Reveal the complete sentence.
+        for(i=0;i<180;i++) {
+          requireState(debug().talk && !debug().props.some(p=>p.kind==='scarSeep'), 'Omen began during narration');
+          if(i%12===0) requireState(same(dry,new Uint32Array(body().buffer)), 'Hand changed while reading');
+          advance(1,false);
+        }
+        advance(1,true);
+        requireState(!debug().talk && debug().step===hand && debug().props.some(p=>p.kind==='scarSeep' && p.t===0),'Omen did not start on confirmation');
+        let previousTip=0, changes=0, reachedScar=false, veinFirst=0, veinLast=0, reachedWrist=false, quiet=0;
+        for(i=0;i<180 && debug().step===hand;i++) {
           advance(1,false);
           if(skipAt!==null || debug().step!==hand) continue;
           const age=debug().props.find(p=>p.kind==='scarSeep').t;
-          if(age===18) dry=new Uint32Array(body().buffer);
-          if(age<23) continue;
           const visible=new Uint32Array(body().buffer);
           let count=0,tip=0;
           for(let j=0;j<visible.length;j++) {
             if(visible[j]===dry[j]) continue;
             const x=j%576, y=100+Math.floor(j/576);
-            if (age>=89 && x>=272 && y<=199) {
+            if (age>=66 && x>=272 && y<=199) {
               const skin=dry[j];
-              requireState(age<116 && x<=436 && y>=151 && (skin&255)>95 && (skin>>8&255)>54 && (skin>>16&255)>56, 'Vein outside the skin');
+              requireState(age<93 && x<=436 && y>=151 && (skin&255)>95 && (skin>>8&255)>54 && (skin>>16&255)>56, 'Vein outside the skin');
               if (!veinFirst) veinFirst=age;
               veinLast=age;
               if (x>=427) reachedWrist=true;
@@ -96,18 +106,20 @@ const { chromium } = require('playwright');
             tip=Math.max(tip,x); count++;
           }
           if(count) {
-            requireState((age>=89 || tip>=previousTip) && age<109,'Flow reversed or repeated');
+            requireState((age>=66 || tip>=previousTip) && age<86,'Flow reversed or repeated');
             previousTip=tip; changes++;
             if(tip>=270) reachedScar=true;
           }
+          if(age>=93) {
+            requireState(same(dry,visible),'Omen repeated before fade');
+            quiet++;
+          }
         }
         if(skipAt===null) {
-          requireState(veinFirst>=89 && veinLast<116 && reachedWrist,'Missing one-shot vein spread');
-          requireState(changes>=70 && reachedScar && same(dry,new Uint32Array(body().buffer)),'Incomplete absorption');
-          advance(150,false);
-          requireState(same(dry,new Uint32Array(body().buffer)),'Flow restarted during dialogue');
+          requireState(veinFirst>=66 && veinLast<93 && reachedWrist,'Missing one-shot vein spread');
+          requireState(changes>=70 && reachedScar && quiet>=10,'Flow or final stillness missing');
         }
-        requireState(debug().step===hand+1 && debug().talk && steps[hand+1].text==='그렇게 사람들은 혈월의 밤이 끝났다고 생각했다.', 'Hand line misplaced');
+        requireState(steps[debug().step].map==='two_flags','Hand did not fade automatically');
         // Exercise rapid presses through the epilogue and compare the persistent story outcome.
         for(i=0;i<4000 && pm.story.debugView().view!==0;i++) advance(1,i%2===0);
         const state=JSON.parse(localStorage.getItem('pixelmurim.story'));

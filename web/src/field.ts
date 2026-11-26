@@ -2,7 +2,7 @@
 // underlings with your real normal moves, then meet the boss for a 1:1 fight in the fighting engine.
 // A chapter is a list of steps (plays.ts): staged scenes (people walk on their own, dialogue) and quests
 // (the player has control until the goal is met).
-import { TOWN_ZOOM, drawTimberCrew, drawSubmergedTips } from "./prologueEpilogue";
+import { TOWN_ZOOM, drawTimberCrew, drawSubmergedHand } from "./prologueEpilogue";
 import * as R from "./renderer";
 import { SCREEN_W, PX, SKIN_DIM } from "./renderer";
 import * as Font from "./font";
@@ -812,7 +812,7 @@ function drawProp(q: Prop): void {
           for (let d = 0; d < 360; d += 4) R.shadeRect(q.x * PX + Math.cos(d * 0.01745) * r * PX - 1, q.y * PX + Math.sin(d * 0.01745) * r * PX * 0.9 - 1, 3, 3, RGB(170, 180, 220), alpha);
         }
       }
-      drawSubmergedTips(q.t, q.x * PX - 26, q.y * PX + 9);
+      drawSubmergedHand(q.t, q.x * PX - 38, q.y * PX + 9);
       break;
     }
     case "text":                                           // writing on something in the picture (a name board)

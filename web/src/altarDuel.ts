@@ -132,7 +132,7 @@ const veins = [
   { at: 12, path: [[404,172],[411,178],[423,176],[430,181],[435,179]] },
 ];
 function drawHandVeins(t: number, img: NonNullable<FieldMap["img"]>): void {
-  const age = t - 89;
+  const age = t - 66;
   if (age < 0 || age >= 27) return;
   const opacity = Math.min(1, (27-age)/9);
   const color = age >= 15 && age < 19 ? RGB(195, 28, 36) : RGB(123, 12, 24);
@@ -152,14 +152,14 @@ function drawHandVeins(t: number, img: NonNullable<FieldMap["img"]>): void {
     }
   }
 }
-export const SCAR_SEEP_END = 127;
+export const SCAR_SEEP_END = 104;
 export function drawScarSeep(t: number, img: NonNullable<FieldMap["img"]>): void {
   drawHandVeins(t, img);
-  if (t <= 23 || t >= 109) return;
-  const flow = Math.min(1, (t - 23) / 70);
+  if (t <= 0 || t >= 86) return;
+  const flow = Math.min(1, t / 70);
   const head = flow * (seepPath.length - 1);
-  const tail = Math.max(0, (t - 43) / 65) * (seepPath.length - 1);
-  const fade = Math.min(1, (109 - t) / 14);
+  const tail = Math.max(0, (t - 20) / 65) * (seepPath.length - 1);
+  const fade = Math.min(1, (86 - t) / 14);
   for (let i = 1; i < seepPath.length; i++) {
     const [x,y] = seepPath[i-1], [ex,ey] = seepPath[i];
     const length = Math.max(ex-x, y-ey);

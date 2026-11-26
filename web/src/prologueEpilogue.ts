@@ -51,25 +51,46 @@ export function drawTimberCrew(t: number, opacity: number): void {
   R.shadeRect(beamX + 4, beamY + 2, 18, 1, RGB(109, 72, 46), opacity);
 }
 
-// Only the distal tips break the surface. Drawing through a fixed waterline
-// hides the lower phalanges even on the final frame before the cut to black.
-const fingertips = [
-  "      ss           ", "    snnns          ", "    nllnks         ", "   snllnks         ",
-  "   snnnkks     ss  ", "   skkkkks   snnns ", "  skkkkkss   nllnks", "  skssskks  snllnks",
-  "  skkkkks   sknnkks", " skkkkks    skkkkss", " sksssk   skssskks ", " skkkks   skkkkkss ",
+// Nail beds and knuckles face the viewer. The last row cuts across the back
+// of the hand at the fixed waterline, even while the pose is held.
+const wellHand = [
+  "         ...",
+  "        .sns.",
+  "        .nkns.    ...",
+  "       .sshks.   .sns.",
+  "       .sskks.  .snkns.",
+  " .n..   .skk.   .sshks.",
+  " nsns.  .kks.    .skk.",
+  ".shks.  .kks.    .kkk.   ...",
+  ".skks.  .kks.   .skk.    .ns.",
+  " .skk. .skk.    .kkk.   .nkns.",
+  " .skks..sk..   .skk.    .shks.",
+  " .sk.s..s.k.   .kkk.   .skks.",
+  " .s.ks..sskk. .s.ks.  .skkks.",
+  "  .skks.sskk. .sk..  .skkks.",
+  "  .skks..skkk..skk. .s.kk..",
+  "  .skkks.sskkksskk. .ss..",
+  "  .sskkk.s.s..s.....s..s.",
+  "   .s.k...s.ss.s.sss.sss.",
+  "   .s..ssksssskssskksss.",
+  "    ..sskkksskkksskkss.",
+  "    ..sssskkkskkkskkss.",
+  "     .ssssskkkskss....",
 ];
 const wetSkin: Record<string, number> = {
-  n: RGB(125, 137, 135), l: RGB(168, 175, 161), k: RGB(111, 127, 123), s: RGB(67, 80, 85),
+  ".": RGB(41, 47, 52), s: RGB(125, 136, 131), k: RGB(177, 185, 173),
+  n: RGB(201, 205, 194), h: RGB(222, 223, 210),
 };
-export const WELL_CUT = 116;
-export function drawSubmergedTips(t: number, cx: number, cy: number): void {
-  const age = t - (WELL_CUT - 7);
-  if (age < 0 || t >= WELL_CUT) return;
-  const visible = Math.min(fingertips.length, 1 + 2*age);
-  for (let y = 0; y < visible; y++) {
-    for (let x = 0; x < fingertips[y].length; x++) {
-      const color = wetSkin[fingertips[y][x]];
-      if (color) R.shadeRect(cx + x, cy + y - visible, 1, 1, color, y === visible-1 ? .48 : .88);
+const riseStart = 108, riseTicks = 40, holdTicks = 30;
+export const WELL_CUT = riseStart + riseTicks + holdTicks;
+export function drawSubmergedHand(t: number, x: number, waterY: number): void {
+  if (t < riseStart || t >= WELL_CUT) return;
+  const p = Math.min(1, (t - riseStart) / riseTicks);
+  const visible = Math.floor(wellHand.length * p * p * (3 - 2 * p));
+  for (let row = 0; row < visible; row++) {
+    for (let col = 0; col < wellHand[row].length; col++) {
+      const color = wetSkin[wellHand[row][col]];
+      if (color) R.shadeRect(x + col, waterY - visible + row, 1, 1, color, row === visible - 1 ? .62 : 1);
     }
   }
 }

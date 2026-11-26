@@ -26,7 +26,8 @@ const { chromium } = require('playwright');
       }
       const pixels=()=>{pm.render();return new Uint32Array(ctx.getImageData(0,0,576,300).data.buffer);};
       const shot=name=>{ pm.render(); if(save) shots[name]=ctx.canvas.toDataURL().split(',')[1]; };
-      let last=-1, stepAge=0, firstWave, extra=0, started=false, black=false, title=false;
+      let last=-1, stepAge=0, quietWater, height=0, held=0, started=false, black=false, title=false;
+      const ringFrames=[], patch=()=>new Uint32Array(ctx.getImageData(250,215,30,22).data.buffer);
       for(let tick=0;tick<5000;tick++) {
         const d=JSON.parse(pm.story.fieldDebug()), step=steps[d.step], cut=d.props.at(-1);
         if(pm.story.debugView().view!==6) break;
@@ -34,7 +35,7 @@ const { chromium } = require('playwright');
         if(step.text?.startsWith('마침내 천마')) started=true;
         if(started && d.talk && d.step!==last) lines.push(step.text);
         last=d.step;
-        if(cut?.kind==='scarSeep' && cut.t===106) shot('veins');
+        if(cut?.kind==='scarSeep' && cut.t===83) shot('veins');
         const name=steps.slice(0,d.step).findLast(s=>s.map)?.map;
         if(src[name] && !checked.includes(name) && step.t==='wait' && stepAge===Math.min(step.n-2,60) && stepAge>=40) {
           const colors=pixels(), wx=name==='luoyang_market'?268:277, wy=name==='luoyang_market'?259:258;
@@ -47,15 +48,30 @@ const { chromium } = require('playwright');
           checked.push(name);shot(name);
         }
         if(cut?.kind==='timberCrew' && cut.t===32) shot('carpenters');
-        if(cut?.kind==='ripple' && cut.t===45) firstWave=pixels();
-        if(cut?.kind==='ripple' && cut.t===115) {
-          const second=pixels();
-          for(let i=0;i<second.length;i++) if(firstWave[i]!==second[i]){
-            const x=i%576,y=Math.floor(i/576);
-            if(x<262 || x>280 || y<225 || y>236) throw Error('Extra body outside fingertip patch');
-            extra++;
+        if(cut?.kind==='ripple') {
+          const t=cut.t;
+          if(t===15) quietWater=pixels();
+          if(t>=20 && t<=80) { pm.render();ringFrames[t-20]=patch(); }
+          if(t>=90) {
+            pm.render();
+            const image=patch(), reference=ringFrames[Math.min(60,t-90)];
+            const top=image.findIndex((v,i)=>v!==reference[i]);
+            const next=top<0?0:22-Math.floor(top/30);
+            if(next<height || next>height+1 || (t<=108 && next)) throw Error('Abrupt well reveal at '+t);
+            height=next;
+            if(next===22) held++;
+            if(t===158) {
+              const full=pixels();
+              let fingers=0, previous=false;
+              for(let i=0;i<full.length;i++) {
+                const x=i%576, y=Math.floor(i/576), changed=full[i]!==quietWater[i];
+                if(changed && (x<250 || x>=280 || y<215 || y>=237)) throw Error('Extra body outside waterline');
+                if(y===224) {if(changed && !previous) fingers++;previous=changed;}
+              }
+              if(fingers!==4) throw Error('Expected four separate fingers, saw '+fingers);
+              shot('well-hand');
+            }
           }
-          shot('fingertips');
         }
         if(cut?.kind==='black' && cut.t===0) black=pixels().every(p=>(p&0xffffff)===0);
         if(step.t==='title' && stepAge===68) {
@@ -67,16 +83,16 @@ const { chromium } = require('playwright');
         const press=d.talk ? stepAge>=4 && stepAge%2===0 : step.t==='title' ? stepAge>=72 && tick%2===0 : tick%2===0;
         window.dispatchEvent(new KeyboardEvent(press?'keydown':'keyup',{keyCode:65})); pm.tick();
       }
-      return {lines,checked,extra,black,title,shots};
+      return {lines,checked,height,held,black,title,shots};
     },!!process.argv[2]);
     assert.deepEqual(result.lines,['마침내 천마와 무림맹주는 힘을 합쳐 혈마를 무찔렀다.','그렇게 사람들은 혈월의 밤이 끝났다고 생각했다.','전쟁이 끝나자 정과 마는 다시 각자의 길을 걸었고,','혈월의 밤도 하나의 전설이 되어 서서히 잊혀 갔다.']);
     assert.deepEqual(result.checked,['postwar_ruins','postwar_rebuild','luoyang_market']);
-    assert.ok(result.extra>20 && result.extra<145 && result.black && result.title,JSON.stringify({...result,shots:undefined}));
+    assert.ok(result.height===22 && result.held===30 && result.black && result.title,JSON.stringify({...result,shots:undefined}));
     if(process.argv[2]) {
       fs.mkdirSync(process.argv[2],{recursive:true});
       for(const [name,data] of Object.entries(result.shots)) fs.writeFileSync(path.join(process.argv[2],name+'.png'),Buffer.from(data,'base64'));
     }
     assert.deepEqual(errors,[]);
-    console.log('Four manual lines, three aligned panoramas,',result.extra,'fingertip pixels, immediate blackout and two-line title; no console errors.');
+    console.log('Four manual lines, three aligned panoramas,',result.height,'pixels of hand held for',result.held,'ticks before blackout and two-line title; no console errors.');
   } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
