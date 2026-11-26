@@ -12,6 +12,7 @@ import * as Fighter from "./fighter";
 import { MV_LP, MV_HP, MV_LK, MV_HK, MV_SP1, MV_JP, MV_JK } from "./fighter";
 import { D, animId, animFrame, animFrameHold, spriteId, hasSprite, moveId, MT_RUSH, MT_NORMAL, MT_SUPER_QUAKE, LV_UNBLOCK } from "./data";
 import * as FM from "./fieldmap";
+import { drawAltarDuel, drawScarSeep } from "./altarDuel";
 import { drawScrollBurn } from "./scrollBurn";
 import { drawBloodBattle, battleContacts, isBattleCut } from "./prologueBattle";
 import { RGB } from "./util";
@@ -750,19 +751,10 @@ function drawProp(q: Prop): void {
     case "mapBurn":
       if (map?.img) drawScrollBurn(q.t, map.img.pix, map.img.w);
       break;
-    case "bloodback": {                                    // one drop climbs back up the groove into the scar
-      const path = [[60, 73], [72, 74], [84, 75], [92, 68], [104, 55]];
-      const u = (q.t - 40) / 110;
-      if (u < 0) break;
-      if (u >= 1) { if (q.t < 175) R.shadeCircle(104 * PX, 55 * PX, 10, RGB(255, 60, 60), 0.6 * (1 - (q.t - 150) / 25)); break; }
-      const seg = Math.min(path.length - 2, Math.floor(u * (path.length - 1))), w = u * (path.length - 1) - seg;
-      const x = path[seg][0] + (path[seg + 1][0] - path[seg][0]) * w, y = path[seg][1] + (path[seg + 1][1] - path[seg][1]) * w;
-      R.shadeCircle(x * PX, y * PX, 12, RGB(200, 20, 30), 0.35);
-      R.physRect(Math.round(x * PX) - 4, Math.round(y * PX) - 4, 9, 9, RGB(80, 0, 10));
-      R.physRect(Math.round(x * PX) - 3, Math.round(y * PX) - 3, 7, 7, RGB(180, 12, 28));
-      R.physRect(Math.round(x * PX) - 2, Math.round(y * PX) - 3, 3, 3, RGB(255, 130, 130));
+    case "altarDuel":
+      if (map?.img) drawAltarDuel(map.img, q.t);
       break;
-    }
+    case "scarSeep": drawScarSeep(q.t); break;
     case "ripple": {                                       // round ripples on the dark water, twice, the same interval apart
       for (const st of [20, 90]) {
         const a = q.t - st;

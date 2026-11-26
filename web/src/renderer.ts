@@ -39,6 +39,25 @@ export function flush(): void {
   ctx.putImageData(img, 0, 0);
 }
 
+// Draw a transparent group at native battle resolution, then place it at a story anchor.
+// Sampling one pixel per native art texel keeps procedural skills and PNGs on the same grid.
+let artLayer: Int32Array | undefined;
+export function drawFightArt(x: number, floor: number, zoom: number, paint: (cx: number, gy: number) => void): void {
+  const cx = 96, gy = 82;
+  const scene = back;
+  artLayer ??= new Int32Array(PW * PH);
+  artLayer.fill(-1);
+  back = artLayer;
+  try { paint(cx, gy); } finally { back = scene; }
+  for (let sy = 0; sy < SCREEN_H; sy++) {
+    const top = floor + (sy - gy - 1) * zoom;
+    for (let sx = 0; sx < SCREEN_W; sx++) {
+      const color = artLayer[(sy * PW + sx) * PX];
+      if (color !== -1) physRect(x + (sx - cx) * zoom, top, zoom, zoom, color);
+    }
+  }
+}
+
 export function backPixel(x: number, y: number): number {
   return back[x * PX + y * PX * PW];
 }
@@ -289,7 +308,7 @@ export function flashScreen(color: number): void { back.fill(color); }
 // ---------------------------------------------------------------- hi-res effects (art-pixel size, blended)
 
 function blendAt(k: number, color: number, a: number): void {
-  const b = back[k];
+  const b = back[k] === -1 ? 0 : back[k]; // transparent texel on an isolated effect layer
   const r = (b & 255) + ((color & 255) - (b & 255)) * a;
   const g = ((b >> 8) & 255) + (((color >> 8) & 255) - ((b >> 8) & 255)) * a;
   const bl = ((b >> 16) & 255) + (((color >> 16) & 255) - ((b >> 16) & 255)) * a;

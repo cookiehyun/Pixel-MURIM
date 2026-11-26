@@ -1082,11 +1082,15 @@ function drainStep(i: number): void {
 
 function drawDrainOrbs(i: number): void {
   const o = 1 - i;
-  const tx = F[i].x + F[i].facing * 3, ty = F[i].footY - 22;
+  drawDrainStream(F[i].x, F[i].footY, F[i].facing, F[o].x, F[o].footY, F[i].stTick);
+}
+
+export function drawDrainStream(x: number, ground: number, face: number, victimX: number, victimY: number, tick: number): void {
+  const tx = x + face * 3, ty = ground - 22;
   for (let k = 0; k <= 7; k++) {
     const ang = k * 0.785398;
-    const sx = F[o].x + 13 * Math.cos(ang), sy = F[o].footY - 18 + 13 * Math.sin(ang);
-    const ph = ((F[i].stTick + k * 3) % 8) / 8;
+    const sx = victimX + 13 * Math.cos(ang), sy = victimY - 18 + 13 * Math.sin(ang);
+    const ph = ((tick + k * 3) % 8) / 8;
     const px = clng(sx + (tx - sx) * ph), py = clng(sy + (ty - sy) * ph);
     R.fillRect(px - 1, py, 3, 1, RGB(255, 60, 70));
     R.fillRect(px, py - 1, 1, 3, RGB(255, 60, 70));
@@ -1114,7 +1118,10 @@ const MID_PALM = (() => {
 function drawDemonPalm(i: number): void {
   const t = F[i].stTick - D.MvStartup[F[i].mv];
   if (t < 0 || t > D.MvActive[F[i].mv] + 1) return;
-  const lit = t <= D.MvActive[F[i].mv], red = F[i].kit === "hyeolma";
+  drawPalmAt(F[i].x, F[i].footY, F[i].facing, t <= D.MvActive[F[i].mv], F[i].kit === "hyeolma");
+}
+
+export function drawPalmAt(x: number, ground: number, face: number, lit: boolean, red = false): void {
   const ink = (ch: string): number => {
     switch (ch) {
       case "o": return red ? RGB(90, 8, 22) : RGB(34, 14, 56);
@@ -1126,15 +1133,19 @@ function drawDemonPalm(i: number): void {
     }
     return -1;
   };
-  drawArt(i, MID_PALM, 14, -37, ink);              // a size up from Danwoo's, its heel on the SD palm
+  drawArtAt(x, ground, face, MID_PALM, 14, -37, ink);              // a size up from Danwoo's, its heel on the SD palm
 }
 
 function drawArt(i: number, rows: string[], dx: number, dy: number, ink: (ch: string) => number): void {
-  const x0 = clng(F[i].x) + F[i].facing * dx, y0 = clng(F[i].footY) + dy;
+  drawArtAt(F[i].x, F[i].footY, F[i].facing, rows, dx, dy, ink);
+}
+
+function drawArtAt(x: number, ground: number, face: number, rows: string[], dx: number, dy: number, ink: (ch: string) => number): void {
+  const x0 = clng(x) + face * dx, y0 = clng(ground) + dy;
   for (let r = 0; r < rows.length; r++)
     for (let c = 0; c < rows[r].length; c++) {
       const col = ink(rows[r][c]);
-      if (col >= 0) R.putPixel(F[i].facing > 0 ? x0 + c : x0 - c, y0 + r, col);
+      if (col >= 0) R.putPixel(face > 0 ? x0 + c : x0 - c, y0 + r, col);
     }
 }
 
@@ -1674,32 +1685,35 @@ function drawCrash(i: number, t: number): void {
       }
     }
   } else {
-    // 삼절검: three blades fall slanting the same way (front-high to back-low) and cut three parallel brush strokes;
-    // when all three strike clean the strokes stay as smouldering afterimages, then break together
-    const ghost = (f.hitCount & GHOST) !== 0;
-    for (let k = 0; k < 3; k++) {
-      const s = t - CRASH_BLADES[k], g = scarLine(i, k), bend = [3, -3, 0][k] * f.facing;
-      if (s === -2 || s === -1) brush(g, bend, 0.5, C_RED(), C_RED(), 1, t);                 // a faint line marks the cut
-      if (s === 0) drawFallingBlade(g, 0.45);
-      if (s === 1) { drawFallingBlade(g, 1); brush(g, bend, 4.5, C_CORE(), C_HOT(), 1, t); }
-      if (s >= 2 && s < 5) {
-        for (let e = 2; e >= 1; e--) brush(g, bend, 2.5, e === 1 ? C_RED() : C_DARK(), C_DARK(), 0.5, t, e * 3);   // the sweep's trail
-        brush(g, bend, 4.5 - s * 0.5, s < 3 ? C_CORE() : C_HOT(), C_RED(), 1, t);
-      }
-      if (s >= 1) burst(g[2], g[3], s - 1, k === 2 ? 3 : 2);
-      if (ghost && s >= 5 && t < CRASH_GHOST_END) {        // the stroke left burning in the air
-        brush(g, bend, 3, C_DARK(), C_DARK(), 0.6, t, 3);
-        brush(g, bend, (t + k) % 2 ? 3 : 2.6, C_HOT(), C_RED(), 1, t);
-        embers(g, bend, t - CRASH_BLADES[k] - 5, k);
-      } else if (!ghost && s >= 5 && s < 9) brush(g, bend, 1.5, C_RED(), C_DARK(), 0.6, t);
-      if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) brush(g, bend, 5, C_CORE(), C_HOT(), 1, t);
-      if (ghost) {
-        const e = t - CRASH_GHOST_END - 1;
-        if (k === 2) burst(f.cineCX, vint(f.footY) - 22, e, 2.6);        // one burst where the strokes cross
-        if (e >= 0 && e < 8) for (let q = 0; q < 6; q++) {               // each stroke breaks into a few shards
-          const a = q * 1.7 + k, d = 3 + e * (1.5 + (q % 3) * 0.5), [x0, y0] = bez(g, bend, (q + 0.5) / 6);
-          R.fillRect(clng(x0 + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.7 + e * e * 0.12), 2, 1, q % 3 ? C_HOT() : C_CORE());
-        }
+    drawThreeCuts(f.cineCX, gy, f.facing, t, (f.hitCount & GHOST) !== 0);
+  }
+}
+
+function drawThreeCuts(cx: number, ground: number, facing: number, t: number, ghost: boolean): void {
+  // 삼절검: three blades fall slanting the same way (front-high to back-low) and cut three parallel brush strokes;
+  // when all three strike clean the strokes stay as smouldering afterimages, then break together
+  for (let k = 0; k < 3; k++) {
+    const s = t - CRASH_BLADES[k], g = scarLine(cx, ground, facing, k), bend = [3, -3, 0][k] * facing;
+    if (s === -2 || s === -1) brush(g, bend, 0.5, C_RED(), C_RED(), 1, t);                 // a faint line marks the cut
+    if (s === 0) drawFallingBlade(g, 0.45);
+    if (s === 1) { drawFallingBlade(g, 1); brush(g, bend, 4.5, C_CORE(), C_HOT(), 1, t); }
+    if (s >= 2 && s < 5) {
+      for (let e = 2; e >= 1; e--) brush(g, bend, 2.5, e === 1 ? C_RED() : C_DARK(), C_DARK(), 0.5, t, e * 3);   // the sweep's trail
+      brush(g, bend, 4.5 - s * 0.5, s < 3 ? C_CORE() : C_HOT(), C_RED(), 1, t);
+    }
+    if (s >= 1) burst(g[2], g[3], s - 1, k === 2 ? 3 : 2);
+    if (ghost && s >= 5 && t < CRASH_GHOST_END) {        // the stroke left burning in the air
+      brush(g, bend, 3, C_DARK(), C_DARK(), 0.6, t, 3);
+      brush(g, bend, (t + k) % 2 ? 3 : 2.6, C_HOT(), C_RED(), 1, t);
+      embers(g, bend, t - CRASH_BLADES[k] - 5, k);
+    } else if (!ghost && s >= 5 && s < 9) brush(g, bend, 1.5, C_RED(), C_DARK(), 0.6, t);
+    if (ghost && t >= CRASH_GHOST_END && t < CRASH_GHOST_END + 2) brush(g, bend, 5, C_CORE(), C_HOT(), 1, t);
+    if (ghost) {
+      const e = t - CRASH_GHOST_END - 1;
+      if (k === 2) burst(cx, ground - 22, e, 2.6);        // one burst where the strokes cross
+      if (e >= 0 && e < 8) for (let q = 0; q < 6; q++) {               // each stroke breaks into a few shards
+        const a = q * 1.7 + k, d = 3 + e * (1.5 + (q % 3) * 0.5), [x0, y0] = bez(g, bend, (q + 0.5) / 6);
+        R.fillRect(clng(x0 + Math.cos(a) * d), clng(y0 + Math.sin(a) * d * 0.7 + e * e * 0.12), 2, 1, q % 3 ? C_HOT() : C_CORE());
       }
     }
   }
@@ -1751,9 +1765,9 @@ function embers(g: [number, number, number, number], bend: number, a: number, k:
 
 /** Stroke k of 삼절검 as [x0, y0, x1, y1]: the first two cross in an X on the marked spot, the third falls
  *  straight down through the crossing. */
-function scarLine(i: number, k: number): [number, number, number, number] {
-  const f = F[i], cx = f.cineCX, cy = vint(f.footY) - 22;
-  const dx = [-0.7, 0.7, 0][k] * f.facing, dy = 1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, r = k === 2 ? 34 : 30;
+function scarLine(cx: number, ground: number, facing: number, k: number): [number, number, number, number] {
+  const cy = ground - 22;
+  const dx = [-0.7, 0.7, 0][k] * facing, dy = 1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, r = k === 2 ? 34 : 30;
   return [cx - ux * r, cy - uy * r, cx + ux * (k === 2 ? 22 : r), cy + uy * (k === 2 ? 22 : r)];
 }
 
@@ -1771,18 +1785,32 @@ function drawFallingBlade(g: [number, number, number, number], p: number): void 
 // ---- Cheonma with the sword: 천마참 (one unblockable cut, a crimson crescent as tall as a man)
 function drawDemonCut(i: number): void {
   const f = F[i], t = f.stTick - D.MvStartup[f.mv];
-  if (t < 0 || t > D.MvActive[f.mv] + 2) return;
-  const lit = t <= D.MvActive[f.mv], cx = f.x + f.facing * 6, cy = f.footY - 22;
+  drawDemonCutAt(f.x, f.footY, f.facing, t, D.MvActive[f.mv]);
+}
+
+function drawDemonCutAt(x: number, ground: number, facing: number, t: number, active: number): void {
+  if (t < 0 || t > active + 2) return;
+  const lit = t <= active, cx = x + facing * 6, cy = ground - 22;
   for (let a = -110; a <= 80; a += 3) {
     const c = Math.cos(a * 0.0174533), s = Math.sin(a * 0.0174533), prog = (a + 110) / 190;
-    if (prog > (t + 1) / (D.MvActive[f.mv] + 1) + 0.15) continue;
+    if (prog > (t + 1) / (active + 1) + 0.15) continue;
     for (let r = 14; r <= 26; r++) {
       const edge = r === 14 || r === 26, inner = r > 22;
       const col = edge ? C_DARK() : inner ? (lit ? C_CORE() : C_HOT()) : r > 18 ? (lit ? C_HOT() : C_RED()) : C_RED();
       if (!lit && r < 18) continue;
-      R.putPixel(clng(cx + f.facing * c * r), clng(cy + s * r), col);
+      R.putPixel(clng(cx + facing * c * r), clng(cy + s * r), col);
     }
   }
+}
+
+/** Play the armed Heavenly Demon's battle art at a story contact without changing the fight's palette. */
+export function drawAltarSwordArt(kind: "slash" | "threeCuts", x: number, ground: number, facing: number, t: number): void {
+  const previous = mCrashKit;
+  mCrashKit = "cheonma";
+  try {
+    if (kind === "threeCuts") drawThreeCuts(x, ground, facing, t, true);
+    else drawDemonCutAt(x, ground, facing, t, D.MvActive[moveId("cheonmasw.sp1")]);
+  } finally { mCrashKit = previous; }
 }
 
 // ---- Baek Mujin: 금강벽. A parry stance; a hit landing in its active window is turned aside and answered at once.
@@ -1810,8 +1838,15 @@ export function counterStrike(d: number, a: number, cx: number, cy: number): voi
  *  glowing until CRASH_GHOST_END and burst together, otherwise the third blade's burst ends it at once. */
 function drawSkySwords(i: number, t: number): void {
   const f = F[i];
-  if (t < 0) return;                                   // the gathering is in his own frames (bs_0..2)
-  const ghost = (f.hitCount & GHOST) !== 0, b = CRASH_BLADES;
+  const k = skySwordFrame(t, (f.hitCount & GHOST) !== 0);
+  if (k < 0) return;
+  const nm = "baekmujin.fall_" + k;
+  if (hasSprite(nm)) R.drawSprite(spriteId(nm), f.cineCX, vint(GROUND_Y + 0.5), f.facing < 0);
+}
+
+export function skySwordFrame(t: number, ghost: boolean): number {
+  if (t < 0) return -1;                                   // the gathering is in his own frames (bs_0..2)
+  const b = CRASH_BLADES;
   const end = ghost ? CRASH_GHOST_END : b[2] + 3;
   let k: number;
   if (t <= b[0]) k = 0;
@@ -1820,9 +1855,8 @@ function drawSkySwords(i: number, t: number): void {
   else if (t < end) k = 3;
   else if (t < end + 4) k = 4;
   else if (t < end + 8) k = 5;
-  else return;
-  const nm = "baekmujin.fall_" + k;
-  if (hasSprite(nm)) R.drawSprite(spriteId(nm), f.cineCX, vint(GROUND_Y + 0.5), f.facing < 0);
+  else return -1;
+  return k;
 }
 
 // ---- Hyeolma: the blood frenzy and its blood wave (the demon arm and the frenzy coming on are drawn in his SD frames)
@@ -1845,12 +1879,16 @@ const shoulderPixels: Record<string, [number, number]> = {
 function drawFrenzyArms(i: number, pose: number): void {
   const f = F[i];
   if (f.state === ST_ATTACK && D.MvType[f.mv] === MT_RAGE) return;   // the frenzy's own frames grow them
-  const k = Math.trunc(mDraw / 6) % 4, nm = "hyeolma.farm_" + k;
+  drawBloodArms(vint(f.x + 0.5), vint(f.footY + 0.5), f.facing, pose, mDraw);
+}
+
+export function drawBloodArms(cx: number, ground: number, face: number, pose: number, tick: number): void {
+  const k = Math.trunc(tick / 6) % 4, nm = "hyeolma.farm_" + k;
   const name = D.SprName[pose].slice("hyeolma.".length);
   const [sx, sy] = shoulderPixels[name] ?? [D.SprAX[pose], 14];
-  const x = vint(f.x + 0.5) + (sx - D.SprAX[pose]) * f.facing;
-  const y = vint(f.footY + 0.5) + sy - D.SprAY[pose];
-  if (hasSprite(nm)) R.drawSprite(spriteId(nm), x, y, f.facing < 0);
+  const x = cx + (sx - D.SprAX[pose]) * face;
+  const y = ground + sy - D.SprAY[pose];
+  if (hasSprite(nm)) R.drawSprite(spriteId(nm), x, y, face < 0);
 }
 
 /** The blood wave (frenzy sp1): rings of blood spikes run out along the ground on both sides. */

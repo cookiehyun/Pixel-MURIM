@@ -4,6 +4,7 @@
 // Design notes per chapter: docs/story/play/.
 import type { Step } from "./field";
 import { SCROLL_BURN_END } from "./scrollBurn";
+import { ALTAR_DEATH_LINE } from "./altarDuel";
 import type { BattleCut } from "./prologueBattle";
 
 function warCut(kind: BattleCut, x = 60): Step {
@@ -64,55 +65,19 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "wait", n: SCROLL_BURN_END, sinceProp: "paper" },
       { t: "wait", n: 18 },
       narration("무림맹과 마교는 혈교를 막기 위해 손을 잡았다."),
-      // the altar: the alliance lord and the Heavenly Demon of that day face the Blood Demon
+      // Historical alliance. The duel clock runs independently of dialogue and input.
       { t: "map", map: "blood_altar" },
-      { t: "cam", x: 54 },
-      { t: "spawn", id: "hm", look: ["hyeolma", 0, "HYEOLMA"], x: 150, face: -1 },
-      { t: "spawn", id: "mj", look: ["baekmujin", 0, ""], x: 90, face: 1 },
-      { t: "spawn", id: "cm", look: ["cheonma", 0, ""], x: 72, face: 1 },
-      { t: "wait", n: 40 },
-      // the fight: he seizes the lord's blade and drinks his strength; the Demon cuts his arm away; the two cover each other
-      { t: "move", id: "mj", x: 132, run: true, wait: true },
-      { t: "pose", id: "mj", pose: "hp_1" },
-      { t: "pose", id: "hm", pose: "palm_1" },
-      { t: "wait", n: 6 },
-      { t: "pose", id: "mj", pose: "hit_0" },
-      { t: "prop", id: "drain", kind: "redmist", x: 136, y: 80 },
-      { t: "shake", n: 6 },
-      { t: "wait", n: 30 },
-      { t: "move", id: "cm", x: 124, run: true, wait: true },
-      { t: "pose", id: "cm", pose: "hp_1" },
-      { t: "flash", n: 6 }, { t: "shake", n: 8 },
-      { t: "unprop", id: "drain" },
-      { t: "pose", id: "hm", pose: "hit_0" },
-      { t: "pose", id: "mj", pose: "hit_1" },
-      { t: "wait", n: 16 },
-      { t: "face", id: "hm", to: "cm" },
-      { t: "pose", id: "hm", pose: "arm_2" },
-      { t: "wait", n: 8 },
-      { t: "pose", id: "mj", pose: "hp_1" },
-      { t: "pose", id: "cm", pose: "palm_1" },
-      { t: "flash", n: 12 }, { t: "shake", n: 14 },
-      { t: "pose", id: "hm", pose: "hit_1" },
-      { t: "wait", n: 24 },
-      // he kneels and falls; the pillars start to come down; the two leave
-      { t: "pose", id: "hm", pose: "kneel" },
-      { t: "wait", n: 30 },
-      { t: "pose", id: "hm", pose: "fall" },
-      { t: "shake", n: 20 },
-      { t: "wait", n: 20 },
-      { t: "face", id: "mj", to: "left" }, { t: "face", id: "cm", to: "left" },
-      { t: "move", id: "mj", x: 20, run: true }, { t: "move", id: "cm", x: 10, run: true },
-      { t: "say", who: "해설", text: "두 세력은 마침내 혈마를 무찔렀다.\n사람들은 길었던 혈월의 밤이 끝났다고 믿었다." },
-      // SCENE 03. 죽음 뒤의 한 방울 - silence; one drop climbs back into the scar; black
-      { t: "map", map: "hyeolma_hand" },
       { t: "cam", x: 0 },
-      { t: "prop", id: "drop", kind: "bloodback", x: 0, y: 0 },
-      { t: "wait", n: 190 },
-      { t: "prop", id: "dark", kind: "black", x: 0, y: 0 },
-      { t: "wait", n: 50 },
+      { t: "prop", id: "altar", kind: "altarDuel", x: 0 },
+      { t: "wait", n: ALTAR_DEATH_LINE, sinceProp: "altar" },
+      narration("혈마는 죽었다."),
+      narration("사람들은 혈월의 밤이 끝났다고 믿었다."),
+      { t: "map", map: "hyeolma_hand", fadeTicks: 24, blackTicks: 6 },
+      { t: "cam", x: 0 },
+      { t: "prop", id: "scar", kind: "scarSeep", x: 0 },
+      { t: "wait", n: 76 },
       // SCENE 04. 흘러간 백 년
-      { t: "map", map: "two_flags" },
+      { t: "map", map: "two_flags", fadeTicks: 26, blackTicks: 8 },
       { t: "cam", x: 0 },
       { t: "wait", n: 30 },
       { t: "say", who: "해설", text: "전쟁이 끝나자 정과 마는 다시 각자의 길을 걸었다.\n그리고 세월이 흘렀다." },
