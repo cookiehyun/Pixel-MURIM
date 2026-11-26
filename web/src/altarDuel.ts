@@ -30,8 +30,8 @@ const blood: Cue[] = [
   [34, "throw_0 throw_1"], [72, "hit_0 hit_1", 190, 8, 3],
   [84, "su_0 su_1 su_2 su_3 su_4"], [101, "idle"], [124, "hit_0 hit_1"],
   [132, "sp_a"], [148, "idle"], [156, "walk_0 walk_1 walk_2 walk_3", 166, 13],
-  [169, "hp_p hp_0"], [177, "chit"], [193, "hp_p"], [201, "hit_0"],
-  [207, "hit_1"], [213, "chit"], [232, "hit_1"], [246, "kneel"], [267, "fall"],
+  [169, "hp_p hp_0"], [177, "hit_1"], [193, "hp_p"], [201, "hit_0"],
+  [207, "hit_1"], [213, "hit_0"], [232, "hit_1"], [246, "kneel"], [267, "fall"],
 ];
 
 function actor(track: Cue[], start: number, t: number, phase = 0) {
