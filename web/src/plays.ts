@@ -5,7 +5,7 @@
 import { WELL_CUT } from "./prologueEpilogue";
 import type { Step } from "./field";
 import { SCROLL_BURN_END } from "./scrollBurn";
-import { MARCH_END } from "./prologueBattle";
+import { SECOND_RISE_END } from "./prologueBattle";
 import { ALTAR_DEATH_LINE, SCAR_SEEP_END } from "./altarDuel";
 import type { BattleCut } from "./prologueBattle";
 
@@ -54,11 +54,10 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       warCut("warRout"),
       { t: "wait", n: 100 }, // Last defender falls on tick 80; hold the field for one second.
       warCut("warSecondRise"),
-      { t: "wait", n: 133 },
+      { t: "wait", n: SECOND_RISE_END },
       warCut("warMarch"),
-      { t: "wait", n: 24, sinceProp: "war" },
+      { t: "wait", n: 6, sinceProp: "war" },
       narration("혈월의 밤, 중원은 피와 공포로 뒤덮였다."),
-      { t: "wait", n: MARCH_END, sinceProp: "war" },
       // SCENE 02. 정마연합과 혈마의 최후
       { t: "map", map: "scroll_map", fadeTicks: 32, blackTicks: 3 },
       { t: "cam", x: 0 },

@@ -30,7 +30,7 @@ const { chromium } = require('playwright');
         ['sd_blood_acolyte.idle_0', 163, 96, 1.54, true],
       ];
       const standing = [...holding, ...fallen.map(([,x,y]) => ['sd_gangsi.walk_0', x, y, y === 96 ? 2.16 : 1.782, true])];
-      const stopped = standing.map(([name,x,...rest]) => [name,x-18,...rest]);
+      const stopped = standing.map(([name,x,...rest]) => [name,x-7,...rest]);
       const samples = {
         'warClash/31': [['sd_blood_acolyte.hit', 148, 96, 1.54, true]],
         'warClash/47': [['sd_blood_acolyte.atk_1', 144, 96, 1.54, true]],
@@ -50,13 +50,13 @@ const { chromium } = require('playwright');
         'warRout/80': fallen,
         'warRout/99': [...fallen, ...holding],
         'warSecondRise/1': holding,
-        'warSecondRise/82': [
+        'warSecondRise/40': [
           ...holding,
-          ['sd_gangsi.rise_2a', 98, 96, 2.16, true],
-          ['sd_gangsi.rise_3a', 126, 89, 1.782, true],
-          ['sd_gangsi.rise_4a', 150, 96, 2.16, true],
+          ['sd_gangsi.rise_2', 98, 96, 2.16, true],
+          ['sd_gangsi.rise_3', 126, 89, 1.782, true],
+          ['sd_gangsi.rise_3b', 150, 96, 2.16, true],
         ],
-        'warSecondRise/127': [
+        'warSecondRise/75': [
           ...holding,
           ['sd_gangsi.walk_0', 98, 96, 2.16, true],
           ['sd_gangsi.walk_0', 126, 89, 1.782, true],
@@ -67,10 +67,10 @@ const { chromium } = require('playwright');
           ['sd_gangsi.walk_0', 126, 89, 1.782, true],
           ['sd_gangsi.walk_0', 150, 96, 2.16, true],
         ],
-        'warMarch/24': standing.map(([name,x,y,scale,left], i) => i < 6
-          ? [name.replace('idle_0','walk_0'), x-10/3, y, scale, left]
-          : ['sd_gangsi.walk_1', x-8/3, y, scale, left]),
-        'warMarch/114': stopped,
+        'warMarch/24': standing.map(([name,x,y,scale,left]) => name.startsWith('sd_gangsi')
+          ? ['sd_gangsi.walk_1', x-8/3, y, scale, left]
+          : ['sd_blood_acolyte.walk_1', x-10/3, y, scale, left]),
+        'warMarch/51': stopped,
         'warMarch/300': stopped,
       };
       const ctx = document.querySelector('#screen').getContext('2d');
@@ -101,7 +101,7 @@ const { chromium } = require('playwright');
         // Keep the final line open for 15 seconds; rapidly confirm the other lines.
         const readFor = cut === 'warMarch' ? 301 : cut === 'warClash' ? 72 : 2;
         const confirm = d.talk && (lineAge === 0 || lineAge >= readFor);
-        const mashDuringRise = !d.talk && cut === 'warSecondRise' && age < 120 && tick % 2 === 0;
+        const mashDuringRise = !d.talk && cut === 'warSecondRise' && age < 68 && tick % 2 === 0;
         const press = confirm || mashDuringRise;
         window.dispatchEvent(new KeyboardEvent(press ? 'keydown' : 'keyup', { keyCode: 65 }));
         if (cut === 'warRout' && (d.talk || (age > 0 && d.cam !== 60))) throw Error('Final battle interrupted ' + JSON.stringify(d));
@@ -149,8 +149,8 @@ const { chromium } = require('playwright');
     assert.deepEqual(results.black, { blood_battlefield: 20, scroll_map: 3 });
     assert.deepEqual(Object.keys(results.actors), [
       'warClash/31', 'warClash/47', 'warSummon/48', 'warRise/100', 'warRout/46', 'warRout/50', 'warRout/64',
-      'warRout/80', 'warRout/99', 'warSecondRise/1', 'warSecondRise/82',
-      'warSecondRise/127', 'warMarch/0', 'warMarch/24', 'warMarch/114', 'warMarch/300',
+      'warRout/80', 'warRout/99', 'warSecondRise/1', 'warSecondRise/40',
+      'warSecondRise/75', 'warMarch/0', 'warMarch/24', 'warMarch/51', 'warMarch/300',
     ]);
     for (const [cut, actors] of Object.entries(results.actors)) {
       console.log(cut, actors);

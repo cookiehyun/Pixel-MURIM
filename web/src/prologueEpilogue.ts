@@ -1,6 +1,6 @@
 // Coordinates in this sequence are physical pixels on the 576 × 300 canvas.
 import * as R from "./renderer";
-import { spriteId } from "./data";
+import { D, spriteId } from "./data";
 import { RGB } from "./util";
 import type { FieldMap } from "./fieldmap";
 
@@ -51,46 +51,17 @@ export function drawTimberCrew(t: number, opacity: number): void {
   R.shadeRect(beamX + 4, beamY + 2, 18, 1, RGB(109, 72, 46), opacity);
 }
 
-// Nail beds and knuckles face the viewer. The last row cuts across the back
-// of the hand at the fixed waterline, even while the pose is held.
-const wellHand = [
-  "         ...",
-  "        .sns.",
-  "        .nkns.    ...",
-  "       .sshks.   .sns.",
-  "       .sskks.  .snkns.",
-  " .n..   .skk.   .sshks.",
-  " nsns.  .kks.    .skk.",
-  ".shks.  .kks.    .kkk.   ...",
-  ".skks.  .kks.   .skk.    .ns.",
-  " .skk. .skk.    .kkk.   .nkns.",
-  " .skks..sk..   .skk.    .shks.",
-  " .sk.s..s.k.   .kkk.   .skks.",
-  " .s.ks..sskk. .s.ks.  .skkks.",
-  "  .skks.sskk. .sk..  .skkks.",
-  "  .skks..skkk..skk. .s.kk..",
-  "  .skkks.sskkksskk. .ss..",
-  "  .sskkk.s.s..s.....s..s.",
-  "   .s.k...s.ss.s.sss.sss.",
-  "   .s..ssksssskssskksss.",
-  "    ..sskkksskkksskkss.",
-  "    ..sssskkkskkkskkss.",
-  "     .ssssskkkskss....",
-];
-const wetSkin: Record<string, number> = {
-  ".": RGB(41, 47, 52), s: RGB(125, 136, 131), k: RGB(177, 185, 173),
-  n: RGB(201, 205, 194), h: RGB(222, 223, 210),
-};
 const riseStart = 108, riseTicks = 40, holdTicks = 30;
 export const WELL_CUT = riseStart + riseTicks + holdTicks;
 export function drawSubmergedHand(t: number, x: number, waterY: number): void {
   if (t < riseStart || t >= WELL_CUT) return;
   const p = Math.min(1, (t - riseStart) / riseTicks);
-  const visible = Math.floor(wellHand.length * p * p * (3 - 2 * p));
+  const id = spriteId("sd_gangsi.well_hand"), width = D.SprW[id];
+  const visible = Math.floor(D.SprH[id] * p * p * (3 - 2 * p));
   for (let row = 0; row < visible; row++) {
-    for (let col = 0; col < wellHand[row].length; col++) {
-      const color = wetSkin[wellHand[row][col]];
-      if (color) R.shadeRect(x + col, waterY - visible + row, 1, 1, color, row === visible - 1 ? .62 : 1);
+    for (let col = 0; col < width; col++) {
+      const color = D.SprPix[D.SprOff[id] + row * width + col];
+      if (color >= 0) R.shadeRect(x + col, waterY - visible + row, 1, 1, color, row === visible - 1 ? .62 : 1);
     }
   }
 }

@@ -946,4 +946,5 @@ sd_gangsi.rise_3b sd/gangsi/rise_3b.png 9 35
 sd_gangsi.rise_4 sd/gangsi/rise_4.png 10 36
 sd_gangsi.rise_4a sd/gangsi/rise_4a.png 11 36
 sd_gangsi.rise_4b sd/gangsi/rise_4b.png 11 35
+sd_gangsi.well_hand sd/gangsi/well_hand.png 0 21
 sd_blood_acolyte.walk_1 sd/blood_acolyte/walk_1.png 12 41

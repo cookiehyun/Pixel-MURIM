@@ -66,7 +66,7 @@ const { chromium } = require('playwright');
               for(let i=0;i<full.length;i++) {
                 const x=i%576, y=Math.floor(i/576), changed=full[i]!==quietWater[i];
                 if(changed && (x<250 || x>=280 || y<215 || y>=237)) throw Error('Extra body outside waterline');
-                if(y===224) {if(changed && !previous) fingers++;previous=changed;}
+                if(y===230) {if(changed && !previous) fingers++;previous=changed;}
               }
               if(fingers!==4) throw Error('Expected four separate fingers, saw '+fingers);
               shot('well-hand');

@@ -45,13 +45,13 @@ const { chromium } = require('playwright');
         let i=0;
         for(;i<4000;i++) {
           const q=war();
-          if(q?.kind==='warSecondRise' && q.t===122) break;
+          if(q?.kind==='warSecondRise' && q.t===70) break;
           key(i%2===0);pm.tick();
         }
         if(i===4000) throw Error('Could not enter march');
         key(false);
         if(mode==='stall') {
-          for(i=0;i<50;i++) pm.tick();
+          for(i=0;i<30;i++) pm.tick();
           await new Promise(requestAnimationFrame);
           const start=war().t, now=performance.now();
           // Simulate one blocked browser frame, long enough for four simulation ticks.
@@ -62,16 +62,16 @@ const { chromium } = require('playwright');
           return {advanced};
         }
         const rows=[], poses=[];
-        let sawPrompt=false, fadeAge=-1;
+        let sawPrompt=false, fadeAge=-1, lastConfirm=-1;
         for(i=0;i<400;i++) {
           const d=debug(), q=war();
           if(!q) break;
           const march=q.kind==='warMarch';
-          if(d.t==='map') {
-            if(fadeAge<0) fadeAge=q.t;
-            if(fadeAge<112) throw Error('Premature fade at '+fadeAge);
+          if(d.t==='map' && fadeAge<0) {
+            fadeAge=q.t;
+            if(fadeAge!==lastConfirm+1) throw Error('Map did not start fading on confirmation');
           }
-          if(d.t!=='map' || q.t===112) {
+          if(d.t!=='map' || q.t===fadeAge) {
             pm.render();
             const colors=new Uint32Array(ctx.getImageData(0,0,576,300).data.buffer);
             const shifts=[];
@@ -91,23 +91,25 @@ const { chromium } = require('playwright');
               shifts.push(u.start-u.center);
               const row=[q.kind,q.t,u.name,u.lane,+(u.center/3).toFixed(3),best.anchor,best.name,Math.round(best.score*100)];
               rows.push(row.join(','));
-              if(!march || q.t<=112) poses.push(row.join(','));
+              if(!march || q.t<=50) poses.push(row.join(','));
             }
-            if(new Set(shifts).size!==1 || (!march && shifts[0]!==0) || (march && q.t>=112 && shifts[0]!==54))
+            if(new Set(shifts).size!==1 || (!march && shifts[0]!==0) || (march && q.t>=50 && shifts[0]!==21))
               throw Error('Formation changed: '+shifts+' at '+q.t);
             if(march && d.talk && !sawPrompt) {
-              if(q.t!==24) throw Error('Unexpected first narration tick '+q.t);
+              if(q.t!==6) throw Error('Unexpected first narration tick '+q.t);
               sawPrompt=true;
             }
           }
-          key(march && (mode==='rapid' || q.t>220) && i%2===0);
+          const press=march && (mode==='rapid' || q.t>110) && i%2===0;
+          if(press && d.talk) lastConfirm=q.t;
+          key(press);
           pm.tick();
         }
-        if(!sawPrompt || fadeAge<112 || (mode==='hold' && fadeAge<=220)) throw Error('Missing march or fade');
+        if(!sawPrompt || fadeAge<0 || (mode==='rapid' ? fadeAge>12 : fadeAge<=110)) throw Error('Missing march or fade');
         return {rows,poses,fadeAge};
       },mode);
       if(mode==='stall') { console.log('225 ms browser stall advanced',result.advanced,'tick'); continue; }
-      if(!first) first=result.poses; else assert.deepEqual(first,result.poses);
+      if(!first) first=result.poses; else assert.deepEqual(first,result.poses.slice(0,first.length));
       csv.push(...result.rows.map(row=>mode+','+row));
       console.log(mode,result.rows.length,'sprite observations, fade tick',result.fadeAge);
     }

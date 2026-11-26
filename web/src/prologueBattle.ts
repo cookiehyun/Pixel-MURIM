@@ -23,9 +23,9 @@ function draw(name: string, x: number, lane: Lane, left = false, scale = 1, tint
 }
 
 const defenders = [
-  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 83, fallenX: 98, delay: 40, down: "lie_up" },
-  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 119, fallenX: 126, delay: 28, down: "down_1" },
-  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 154, fallenX: 150, delay: 16, down: "down_1" },
+  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 83, fallenX: 98, delay: 14, down: "lie_up" },
+  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 119, fallenX: 126, delay: 8, down: "down_1" },
+  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 154, fallenX: 150, delay: 2, down: "down_1" },
 ];
 const acolytes = [
   { lane: front, opening: 43, line: 41, contact: 86, strike: 46, left: false },
@@ -140,8 +140,8 @@ function risen(x: number, lane: Lane, frame: string, marching = false): void {
 }
 
 function ritualBody(x: number, lane: Lane, body: string, scale: number, left: boolean,
-                    t: number, delay: number, waking: boolean, onset = 1): void {
-  const age = t - delay;
+                    t: number, delay: number, waking: boolean, onset = 1, poseRate = 1): void {
+  const age = (t - delay) * poseRate;
   const charge = waking ? 1 : Math.max(0, Math.min(1, (age - 14) / 14));
   const strength = onset * (waking ? Math.max(0, Math.min(1, (83 - age) / 16)) : charge);
   const height = lane.zoom * (waking ? slide(7, 30, age, 17, 60) : 7);
@@ -161,7 +161,8 @@ function ritualBody(x: number, lane: Lane, body: string, scale: number, left: bo
 }
 
 // All ranks translate together. Only the footfall phase differs between soldiers.
-export const MARCH_END = 112;
+export const SECOND_RISE_END = 80;
+export const MARCH_END = 50;
 const ramp = 12, marchSpeed = .18, travel = marchSpeed * (MARCH_END - ramp);
 function march(t: number, rank: number, start: number, ghoul: boolean, lane: Lane, origin: number): void {
   const age = Math.min(t, MARCH_END);
@@ -171,10 +172,10 @@ function march(t: number, rank: number, start: number, ghoul: boolean, lane: Lan
     : marchSpeed * (age - ramp / 2);
   // Quantize the formation once, before applying each sprite's native pose anchor.
   const x = origin + start - Math.round(distance * R.PX) / R.PX;
-  const progress = distance / travel;
-  const phase = progress * (ghoul ? 1 : 2) + .024 * rank * Math.sin(Math.PI * progress);
-  if (ghoul) risen(x, lane, "walk_" + [0, 1, 2, 1][Math.floor(phase * 4) % 4], true);
-  else acolyte(age > 0 && age < MARCH_END ? "walk_" + Math.floor(phase * 2) % 2 : "idle_0", x, lane, true, true);
+  // A shorter advance needs one slow step, with the foot planted again at rest.
+  const step = Math.sin(Math.PI * distance / travel) > .54 + .035 * rank ? "walk_1" : "walk_0";
+  if (ghoul) risen(x, lane, step, true);
+  else acolyte(age > 0 && age < MARCH_END ? step : "idle_0", x, lane, true, true);
 }
 
 function aftermathRanks(origin: number, lane: Lane, cut: BattleCut, t: number): void {
@@ -195,7 +196,7 @@ function aftermathRanks(origin: number, lane: Lane, cut: BattleCut, t: number): 
     if (marching) return march(t, 6 + i, d.fallenX, true, lane, origin);
     const age = t - d.delay;
     ritualBody(origin + d.fallenX, lane, d.sheet + "." + d.down, d.scale, false,
-      t, d.delay, true, Math.max(0, Math.min(1, age / 10)));
+      t, d.delay, true, Math.max(0, Math.min(1, age / 6)), 1.5);
   });
 }
 
@@ -251,7 +252,8 @@ export function drawBloodBattle(origin: number, cut: BattleCut, t: number): void
     }
   }
   const insert = cut === "warSummon" || cut === "warRise";
-  if (cut !== "warClash") master(origin + (insert ? insertX(castX) : castX), cut === "warRise" ? t + 60 : t, (insert && t < 110) || (cut === "warSecondRise" && t < 121));
+  if (cut === "warSecondRise") master(origin + castX, t + 8, t < SECOND_RISE_END - 10);
+  else if (cut !== "warClash") master(origin + (insert ? insertX(castX) : castX), cut === "warRise" ? t + 60 : t, insert && t < 110);
   for (const lane of [middle, front]) {
     if (cut === "warClash") clash(origin, lane, t);
     else if (insert) {
