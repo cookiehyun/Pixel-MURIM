@@ -2,6 +2,7 @@
 // Field runs. Chapters without an entry play as plain cut scenes. Lines quoted with "ev" come from the
 // script (docs/story/*.md, chapter sections pre / post); "say" adds a field-only line.
 // Design notes per chapter: docs/story/play/.
+import { WELL_CUT } from "./prologueEpilogue";
 import type { Step } from "./field";
 import { SCROLL_BURN_END } from "./scrollBurn";
 import { MARCH_END } from "./prologueBattle";
@@ -76,26 +77,28 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       narration("정마연합은 혈교의 본단까지 진격했다."),
       { t: "prop", id: "altar", kind: "altarDuel", x: 0 },
       { t: "wait", n: ALTAR_DEATH_LINE, sinceProp: "altar", skipFrom: 0 },
-      narration("마침내 천마와 무림맹주의 협공으로 혈마는 죽었다."),
+      narration("마침내 천마와 무림맹주는 힘을 합쳐 혈마를 무찔렀다."),
       { t: "map", map: "hyeolma_hand", fadeTicks: 24, blackTicks: 6 },
       { t: "cam", x: 0 },
       { t: "prop", id: "scar", kind: "scarSeep", x: 0 },
       { t: "wait", n: SCAR_SEEP_END, sinceProp: "scar" },
-      narration("사람들은 혈월의 밤이 끝났다고 생각했다."),
+      narration("그렇게 사람들은 혈월의 밤이 끝났다고 생각했다."),
       // SCENE 04. 흘러간 백 년
       { t: "map", map: "two_flags", fadeTicks: 26, blackTicks: 8 },
       { t: "cam", x: 0 },
       { t: "wait", n: 30 },
       narration("전쟁이 끝나자 정과 마는 다시 각자의 길을 걸었고,"),
       { t: "map", map: "postwar_ruins" },
-      { t: "cam", x: 54 },
+      { t: "cam", x: 0 },
       { t: "wait", n: 50 },
-      { t: "swap", map: "postwar_rebuild", dissolveTicks: 22 },
-      { t: "wait", n: 46 },
+      { t: "swap", map: "postwar_rebuild", dissolveTicks: 52 },
+      { t: "prop", id: "crew", kind: "timberCrew", x: 0 },
+      { t: "wait", n: 98 },
       narration("혈월의 밤도 하나의 전설이 되어 서서히 잊혀 갔다."),
       // SCENE 05. 다시 움직이는 것 - Luoyang, the market by the monument, evening into night
-      { t: "swap", map: "luoyang_market", dissolveTicks: 22 },
-      { t: "wait", n: 22 },
+      { t: "swap", map: "luoyang_market", dissolveTicks: 56 },
+      { t: "wait", n: 56 },
+      { t: "unprop", id: "crew" },
       { t: "caption", text: "백 년 후, 낙양." },
       { t: "spawn", id: "k1", look: ["sd_child", 0, ""], x: 60, face: 1 },
       { t: "spawn", id: "k2", look: ["sd_arong", 0, ""], x: 46, face: 1 },
@@ -117,11 +120,10 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "map", map: "well_down" },
       { t: "cam", x: 0 },
       { t: "prop", id: "rip", kind: "ripple", x: 96, y: 76 },
-      { t: "wait", n: 170 },
-      { t: "shake", n: 6 },
+      { t: "wait", n: WELL_CUT, sinceProp: "rip" },
       { t: "prop", id: "dark", kind: "black", x: 0, y: 0 },
       { t: "wait", n: 40 },
-      { t: "title", text: "혈월" },
+      { t: "title", text: "서장\n「혈월의 밤」 끝" },
       { t: "end" },
     ],
   },

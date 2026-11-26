@@ -454,12 +454,13 @@ export function blitPhys(pix: Int32Array, pw: number, ph: number, sx: number, sy
   }
 }
 
-export function blendPicture(pix: Int32Array, width: number, height: number, sx: number, opacity: number): void {
+export function blendPicture(pix: Int32Array, width: number, height: number, sx: number, opacity: number, delay?: Uint8Array): void {
   sx = Math.round(sx);
   for (let y = 0; y < Math.min(PH, height); y++) {
     for (let x = Math.max(0, -sx); x < Math.min(PW, width - sx); x++) {
-      const color = pix[y * width + sx + x];
-      if (color >= 0) blendAt(y * PW + x, color, opacity);
+      const i = y * width + sx + x, color = pix[i];
+      const alpha = delay ? Math.max(0, Math.min(1, 1 - (1 - opacity - delay[i]/255) / .52)) : opacity;
+      if (color >= 0 && alpha > 0) blendAt(y * PW + x, color, alpha);
     }
   }
 }

@@ -2,6 +2,7 @@
 // underlings with your real normal moves, then meet the boss for a 1:1 fight in the fighting engine.
 // A chapter is a list of steps (plays.ts): staged scenes (people walk on their own, dialogue) and quests
 // (the player has control until the goal is met).
+import { TOWN_ZOOM, drawTimberCrew, drawSubmergedTips } from "./prologueEpilogue";
 import * as R from "./renderer";
 import { SCREEN_W, PX, SKIN_DIM } from "./renderer";
 import * as Font from "./font";
@@ -612,7 +613,7 @@ export function render(): void {
   FM.drawBack(map, camX, mTick);
   if (dissolve) {
     const { image, start, ticks } = dissolve;
-    R.blendPicture(image.pix, image.w, image.h, camX * PX, 1 - (mTick - start) / ticks);
+    R.blendPicture(image.pix, image.w, image.h, camX * PX, 1 - (mTick - start) / ticks, map.town?.delay);
   }
   if (duel && duel.dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, 0, 0.55);   // super freeze / heavy impact: the world goes dark
   for (const q of props) if (!LATE_PROPS.includes(q.kind)) drawProp(q);
@@ -622,8 +623,10 @@ export function render(): void {
     if (e.id === "player" && e.inv > 0 && mTick % 2 === 0 && e.st !== ST_DOWN) continue;
     const id = sprite(e, mTick);
     if (id < 0) continue;
-    const x = Math.round(e.x - camX), y = Math.round(e.y);
-    R.drawSprite(id, x, y, e.face < 0, e.flash > 0 ? RGB(255, 255, 255) : -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0));
+    const town = map.town;
+    const x = town ? (e.x * PX * TOWN_ZOOM + town.dx) / PX : Math.round(e.x - camX);
+    const y = town ? Math.round(((e.y+1) * PX * TOWN_ZOOM + town.dy) / PX) - 1 : Math.round(e.y);
+    R.drawSprite(id, x, y, e.face < 0, e.flash > 0 ? RGB(255, 255, 255) : -1, e.look[1] | (e.st === ST_DEAD ? SKIN_DIM : 0), town ? R.hiScale(id) * TOWN_ZOOM : 0);
   }
   for (const a of auras) {
     const q = a.t / a.life;
@@ -781,7 +784,7 @@ function drawProp(q: Prop): void {
       }
       break;
     }
-    case "night": R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(8, 12, 36), Math.min(0.55, q.t / 160)); break;
+    case "night": R.shadeRect(0, map?.town ? 46 : 0, R.PHYS_W, map?.town ? 201 : R.PHYS_H, RGB(8, 12, 36), Math.min(0.55, q.t / 160)); break;
     case "black": R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); break;
     case "mapBurn":
       if (map?.img) drawScrollBurn(q.t, map.img.pix, map.img.w);
@@ -792,7 +795,12 @@ function drawProp(q: Prop): void {
     case "altarDuel":
       if (map?.img) drawAltarDuel(map.img, q.t);
       break;
-    case "scarSeep": drawScarSeep(q.t); break;
+    case "scarSeep": if (map?.img) drawScarSeep(q.t, map.img); break;
+    case "timberCrew": {
+      const leaving = q.t >= 98 && dissolve;
+      drawTimberCrew(q.t, leaving ? 1 - (mTick - leaving.start) / leaving.ticks : 1);
+      break;
+    }
     case "ripple": {                                       // round ripples on the dark water, twice, the same interval apart
       for (const st of [20, 90]) {
         const a = q.t - st;
@@ -804,6 +812,7 @@ function drawProp(q: Prop): void {
           for (let d = 0; d < 360; d += 4) R.shadeRect(q.x * PX + Math.cos(d * 0.01745) * r * PX - 1, q.y * PX + Math.sin(d * 0.01745) * r * PX * 0.9 - 1, 3, 3, RGB(170, 180, 220), alpha);
         }
       }
+      drawSubmergedTips(q.t, q.x * PX - 26, q.y * PX + 9);
       break;
     }
     case "text":                                           // writing on something in the picture (a name board)
@@ -840,7 +849,10 @@ function titleRender(): void {
   R.shadeCircle(R.PHYS_W / 2, 120, r + 14, RGB(120, 10, 16), 0.3);
   R.shadeCircle(R.PHYS_W / 2, 120, r, RGB(200, 30, 36), 1);
   if (r > 30) for (const [dx, dy, rr] of [[-18, -12, 12], [16, 10, 15], [-6, 24, 8]]) R.shadeCircle(R.PHYS_W / 2 + dx * r / 70, 120 + dy * r / 70, rr * r / 70, RGB(150, 18, 26), 0.55);
-  if (r >= 70 && mTitleT > 50) KF.draw(mTitleText, R.PHYS_W / 2, 222, RGB(230, 210, 180), 2, 1);
+  if (r >= 70 && mTitleT > 50) {
+    const lines = mTitleText.split("\n");
+    lines.forEach((line, i) => KF.draw(line, R.PHYS_W / 2, 222 - (lines.length - 1) * 14 + i * 28, RGB(230, 210, 180), 2, 1));
+  }
   if (mTitleT > 60 && Math.trunc(mTitleT / 8) % 2 === 0) Font.drawText("A = NEXT", SCREEN_W - 4, 92, RGB(150, 140, 170), 1, 2);
 }
 

@@ -120,8 +120,41 @@ export function drawAltarDuel(img: NonNullable<FieldMap["img"]>, t: number): voi
 const seepPath = [[112,297], [139,287], [157,277], [170,271], [185,264], [205,255],
   [221,248], [239,240], [251,233], [255,226], [258,222], [260,217],
   [263,211], [266,205], [269,200], [273,198]];
-export const SCAR_SEEP_END = 118;
-export function drawScarSeep(t: number): void {
+// These branches follow the index knuckle, tendons on the back of the hand and
+// the exposed wrist. Sample the original skin rather than drawing over the cuff.
+const veins = [
+  { at: 0, path: [[272,198],[279,191],[283,185],[288,182],[294,173],[301,170],[313,170],[325,165],[332,164],[344,158],[355,161],[368,158],[380,162],[393,159],[406,162],[416,159],[421,163]] },
+  { at: 4, path: [[313,170],[320,172],[326,168],[337,168],[344,164],[355,161]] },
+  { at: 6, path: [[332,164],[339,171],[350,168],[358,173],[371,168],[380,162]] },
+  { at: 8, path: [[358,173],[365,177],[377,175],[384,179],[391,173],[404,172],[412,166],[421,169],[429,172]] },
+  { at: 9, path: [[368,158],[374,154],[385,156],[393,153],[401,155]] },
+  { at: 10, path: [[380,162],[388,165],[391,173]] },
+  { at: 12, path: [[404,172],[411,178],[423,176],[430,181],[435,179]] },
+];
+function drawHandVeins(t: number, img: NonNullable<FieldMap["img"]>): void {
+  const age = t - 89;
+  if (age < 0 || age >= 27) return;
+  const opacity = Math.min(1, (27-age)/9);
+  const color = age >= 15 && age < 19 ? RGB(195, 28, 36) : RGB(123, 12, 24);
+  for (const {at, path} of veins) {
+    const progress = Math.min(1, (age-at) / (at === 0 ? 15 : 5));
+    for (let i=1; i<path.length && i-1 < progress*(path.length-1); i++) {
+      const [x,y] = path[i-1], [ex,ey] = path[i], n = Math.max(Math.abs(ex-x), Math.abs(ey-y));
+      const end = Math.min(1, progress*(path.length-1) - (i-1));
+      for (let j=0; j<n*end; j++) {
+        const sx=Math.round(x+(ex-x)*j/n), sy=Math.round(y+(ey-y)*j/n);
+        for (let k=0;k<(at===0 ? 2 : 1);k++) {
+          const skin = img.pix[(sy+k)*img.w+sx];
+          if ((skin&255)>95 && (skin>>8&255)>54 && (skin>>16&255)>56)
+            R.shadeRect(sx,sy+k,1,1,color,opacity*(k ? .58 : .91));
+        }
+      }
+    }
+  }
+}
+export const SCAR_SEEP_END = 127;
+export function drawScarSeep(t: number, img: NonNullable<FieldMap["img"]>): void {
+  drawHandVeins(t, img);
   if (t <= 23 || t >= 109) return;
   const flow = Math.min(1, (t - 23) / 70);
   const head = flow * (seepPath.length - 1);
@@ -137,10 +170,10 @@ export function drawScarSeep(t: number): void {
       const wet = Math.min(1, .25 + (along - tail)) * fade;
       const xx = Math.round(x + (ex-x)*u), yy = Math.round(y + (ey-y)*u);
       const width = i < 9 ? 4 : i < 11 ? 3 : 2;
-      R.shadeRect(xx, yy, 2, width, RGB(94, 13, 21), wet);
-      R.shadeRect(xx, yy, 2, width - 1, RGB(162, 36, 37), wet * (.54 + .46 * lead));
+      R.shadeRect(xx, yy, 2, width, RGB(58, 6, 14), wet);
+      R.shadeRect(xx, yy, 2, width - 1, RGB(104, 13, 24), wet * (.54 + .46 * lead));
       if (lead > .35 || (i % 3 === 1 && u < .43))
-        R.shadeRect(xx, yy, 1, 1, RGB(192, 69, 54), wet * (.45 + .45 * lead));
+        R.shadeRect(xx, yy, 1, 1, RGB(135, 24, 31), wet * (.45 + .45 * lead));
     }
   }
 }

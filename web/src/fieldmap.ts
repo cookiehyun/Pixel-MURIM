@@ -1,6 +1,7 @@
 // Side-scrolling story maps (MapleStory-like): a sky, parallax layers drawn once into pixel buffers at world
 // resolution (1 world pixel = 3 x 3 screen pixels, the same chunky size as the fighters), plus moving
 // smoke, embers and flags drawn every frame.
+import { townPanorama } from "./prologueEpilogue";
 import * as R from "./renderer";
 import { SCREEN_W, SCREEN_H, PX } from "./renderer";
 import { RGB } from "./util";
@@ -16,6 +17,7 @@ export interface FieldMap {
   flags: { x: number; y: number }[];            // pole top of a black-flame flag
   glow: number;                                 // colour of the embers
   img?: { w: number; h: number; pix: Int32Array };
+  town?: ReturnType<typeof townPanorama>;
   noAsh?: boolean;
   rain?: boolean;
   snow?: boolean;                              // indoors / no fire: no drifting ash   // a finished picture (screen pixels) instead of drawn layers
@@ -55,9 +57,10 @@ async function loadPictures(): Promise<void> {
 
 /** A map made of one picture as wide as the scene. */
 export function pictureMap(name: string): FieldMap {
-  const img = pictures.get(name);
-  const w = img ? Math.round(img.w / PX) : SCREEN_W;
-  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, noAsh: !FIRE_MAPS.includes(name), rain: RAIN_MAPS.includes(name), snow: SNOW_MAPS.includes(name) };
+  const src = pictures.get(name);
+  const town = src && townPanorama(name, src), img = town?.image ?? src;
+  const w = src ? Math.round(src.w / PX) : SCREEN_W;
+  return { w, sky: new Int32Array(SCREEN_H), layers: [], front: [], smoke: [], embers: [], flags: [], glow: RGB(255, 120, 40), img, town, noAsh: !FIRE_MAPS.includes(name), rain: RAIN_MAPS.includes(name), snow: SNOW_MAPS.includes(name) };
 }
 
 const T = -1;
