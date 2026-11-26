@@ -1,4 +1,4 @@
-// Inspect the built game's actual canvas during the timed prologue. A missing
+// Inspect the built game's actual canvas during the playable prologue. A missing
 // or occluded body must fail even if the chapter and its unlock still finish.
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
@@ -21,7 +21,20 @@ const { chromium } = require('playwright');
         ['sd_sect_sword.down_1', 37, 89, 1.65, false],
         ['sd_sect_fist.down_1', 59, 96, 2, false],
       ];
+      const stopped = [
+        ['sd_gangsi.walk_0', 9, 96, 2.16, true],
+        ['sd_gangsi.walk_0', 19, 89, 1.782, true],
+        ['sd_gangsi.walk_0', 44, 96, 2.16, true],
+        ['sd_gangsi.walk_0', 28, 96, 2.16, true],
+        ['sd_gangsi.walk_0', 67, 96, 2.16, true],
+        ['sd_gangsi.walk_0', 101, 89, 1.782, true],
+        ['sd_blood_acolyte.idle_0', 85, 96, 2.44, true],
+        ['sd_blood_acolyte.idle_0', 55, 89, 2.013, true],
+        ['sd_blood_acolyte.idle_0', 121, 96, 2.44, true],
+      ];
       const samples = {
+        'warClash/31': [['sd_blood_acolyte.hit', 148, 96, 2.44, true]],
+        'warClash/47': [['sd_blood_acolyte.atk_1', 144, 96, 2.44, true]],
         'warSummon/48': [
           ['sd_monk.lie_down', 47, 96, 2.54, false],
           ['sd_sect_sword.down_1', 94, 96, 2, true],
@@ -42,25 +55,40 @@ const { chromium } = require('playwright');
           ['sd_blood_acolyte.idle_0', 51, 89, 2.013, true],
           ['sd_blood_acolyte.idle_0', 149, 96, 2.44, true],
         ],
+        'warSecondRise/82': [
+          ['sd_gangsi.rise_2a', 23, 96, 2.16, true],
+          ['sd_gangsi.rise_3a', 37, 89, 1.782, true],
+          ['sd_gangsi.rise_4a', 59, 96, 2.16, true],
+        ],
+        'warSecondRise/127': [
+          ['sd_gangsi.walk_0', 23, 96, 2.16, true],
+          ['sd_gangsi.walk_0', 37, 89, 1.782, true],
+          ['sd_gangsi.walk_0', 59, 96, 2.16, true],
+        ],
         'warMarch/24': [
-          ['sd_gangsi.walk_2', 21, 96, 2.16, true],
-          ['sd_gangsi.walk_1', 66, 96, 2.16, true],
-          ['sd_gangsi.walk_1', 110, 89, 1.782, true],
-          ['sd_blood_acolyte.idle_0', 86, 96, 2.44, true],
-          ['sd_blood_acolyte.walk_0', 41, 89, 2.013, true],
-          ['sd_blood_acolyte.idle_0', 139, 96, 2.44, true],
+          ['sd_gangsi.walk_2', 41, 96, 2.16, true],
+          ['sd_gangsi.walk_0', 77, 96, 2.16, true],
+          ['sd_gangsi.walk_1', 114, 89, 1.782, true],
+          ['sd_gangsi.walk_2', 14, 96, 2.16, true],
+          ['sd_gangsi.walk_1', 28, 89, 1.782, true],
+          ['sd_gangsi.walk_1', 49, 96, 2.16, true],
+          ['sd_blood_acolyte.idle_0', 96, 96, 2.44, true],
+          ['sd_blood_acolyte.walk_0', 61, 89, 2.013, true],
+          ['sd_blood_acolyte.idle_0', 143, 96, 2.44, true],
         ],
-        'warMarch/74': [
-          ...fallen,
-          ['sd_gangsi.walk_1', 1, 96, 2.16, true],
-          ['sd_gangsi.walk_0', 46, 96, 2.16, true],
-          ['sd_gangsi.walk_2', 88, 89, 1.782, true],
-          ['sd_blood_acolyte.walk_0', 67, 96, 2.44, true],
-          ['sd_blood_acolyte.walk_0', 22, 89, 2.013, true],
-          ['sd_blood_acolyte.idle_0', 118, 96, 2.44, true],
-        ],
+        'warMarch/100': stopped,
+        'warMarch/300': stopped,
       };
       const ctx = document.querySelector('#screen').getContext('2d');
+      function promptVisible() {
+        pm.render();
+        const ink = ctx.getImageData(522, 65, 20, 25).data;
+        for (let i = 0; i < ink.length; i += 4) {
+          if (ink[i] === 170 && ink[i + 1] === 160 && ink[i + 2] === 190) return true;
+        }
+        return false;
+      }
+      let lineAge = 0;
       for (let tick = 0; tick < 4000; tick++) {
         const d = JSON.parse(story.fieldDebug());
         const step = steps[d.step];
@@ -69,7 +97,17 @@ const { chromium } = require('playwright');
         age = cut === activeCut ? age + 1 : 0;
         activeCut = cut;
         if (step.t === 'say' && d.step !== lastStep) lines.push(step.text);
+        lineAge = d.step === lastStep ? lineAge + 1 : 0;
         lastStep = d.step;
+        if (d.talk && lineAge <= 1 && promptVisible() !== (lineAge === 1)) {
+          throw Error('First A should reveal the current line and its prompt');
+        }
+        // Keep the final line open for 15 seconds; rapidly confirm the other lines.
+        const readFor = cut === 'warMarch' ? 301 : cut === 'warClash' ? 72 : 2;
+        const confirm = d.talk && (lineAge === 0 || lineAge >= readFor);
+        const mashDuringRise = !d.talk && cut === 'warSecondRise' && age < 120 && tick % 2 === 0;
+        const press = confirm || mashDuringRise;
+        window.dispatchEvent(new KeyboardEvent(press ? 'keydown' : 'keyup', { keyCode: 65 }));
         if (cut === 'warRout' && (d.talk || (age > 0 && d.cam !== 60))) throw Error('Final battle interrupted ' + JSON.stringify(d));
         if (cut === 'warMarch' && d.cam !== 60) throw Error('March camera moved');
         if (step.t === 'map' && step.blackTicks) {
@@ -112,12 +150,15 @@ const { chromium } = require('playwright');
       '혈월의 밤, 중원은 피와 공포로 뒤덮였다.',
     ]);
     assert.deepEqual(results.black, { blood_battlefield: 20, scroll_map: 3 });
-    assert.deepEqual(Object.keys(results.actors), ['warSummon/48', 'warRise/100', 'warRout/80', 'warRout/99', 'warMarch/24', 'warMarch/74']);
+    assert.deepEqual(Object.keys(results.actors), [
+      'warClash/31', 'warClash/47', 'warSummon/48', 'warRise/100', 'warRout/80', 'warRout/99', 'warSecondRise/82',
+      'warSecondRise/127', 'warMarch/24', 'warMarch/100', 'warMarch/300',
+    ]);
     for (const [cut, actors] of Object.entries(results.actors)) {
       console.log(cut, actors);
       for (const actor of actors) {
-        // Marching feet pass in front of the fallen sword and fist fighters.
-        const underfoot = cut.startsWith('warRout/') || cut.startsWith('warMarch/');
+        // Standing victors partly cover the two defenders on the ground.
+        const underfoot = cut.startsWith('warRout/');
         const minimum = underfoot && actor.name.endsWith('.down_1') ? 40 : 75;
         assert.ok(actor.match >= minimum, 'Missing ' + actor.name + ' at x=' + actor.x);
       }

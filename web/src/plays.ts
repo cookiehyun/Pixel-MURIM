@@ -8,8 +8,8 @@ import type { BattleCut } from "./prologueBattle";
 function warCut(kind: BattleCut, x = 60): Step {
   return { t: "prop", id: "war", kind, x };
 }
-function narration(text: string, readTicks: number): Step {
-  return { t: "say", who: "해설", text, readTicks };
+function narration(text: string): Step {
+  return { t: "say", who: "해설", text };
 }
 const 단우업음: [string, number, string] = ["sd_danwoo:carry", 0, "DANWOO"];
 const 단우: [string, number, string] = ["sd_danwoo", 0, "DANWOO"];
@@ -26,31 +26,32 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "map", map: "blood_battlefield" },
       { t: "moon" },
       { t: "wait", n: 38 },
-      narration("백 년 전, 중원의 하늘에 붉은 달이 떠올랐다.", 58),
+      narration("백 년 전, 중원의 하늘에 붉은 달이 떠올랐다."),
       { t: "map", map: "blood_battlefield", blackTicks: 20 },
       { t: "cam", x: 60 },
       warCut("warClash"),
       { t: "wait", n: 12 },
-      narration("그리고 그날 밤, 혈교가 모습을 드러냈다.", 64),
+      narration("그리고 그날 밤, 혈교가 모습을 드러냈다."),
       { t: "map", map: "hyeolma_face" },
       { t: "cam", x: 0 },
       { t: "wait", n: 24 },
-      narration("그들의 교주, 혈마.", 44),
+      narration("그들의 교주, 혈마."),
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 96 },
       warCut("warSummon", 96),
       { t: "wait", n: 52 },
       warCut("warRise", 96),
       { t: "wait", n: 12 },
-      narration("쓰러진 자들마저 그의 군세가 되었고,\n죽은 자들은 다시 일어났다.", 84),
-      { t: "wait", n: 14 },
+      narration("쓰러진 자들마저 그의 군세가 되었고,\n죽은 자들은 다시 일어났다."),
+      { t: "wait", n: 110, sinceProp: "war" },
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
       warCut("warRout"),
       { t: "wait", n: 100 }, // Last defender falls on tick 80; hold the field for one second.
+      warCut("warSecondRise"),
+      { t: "wait", n: 128 },
       warCut("warMarch"),
-      narration("혈월의 밤, 중원은 피와 공포로 뒤덮였다.", 70),
-      { t: "wait", n: 14 },
+      narration("혈월의 밤, 중원은 피와 공포로 뒤덮였다."),
       // SCENE 02. 정마연합과 혈마의 최후
       { t: "map", map: "scroll_map", fadeTicks: 32, blackTicks: 3 },
       { t: "cam", x: 0 },

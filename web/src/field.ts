@@ -131,7 +131,6 @@ interface Prop { id: string; kind: string; x: number; y: number; t: number; text
 const LATE_PROPS = ["beam", "night", "black"];   // drawn over the people (a falling beam, the night coming on, black)
 let props: Prop[] = [];
 let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0, mWaitA = false, mTitleText = "서장 「혈월의 밤」 끝";
-let autoPageTicks = 0;
 let fadeTicks = 10, blackTicks = 0;
 let mFadeOut = 0, mFadeIn = 0, mFadeFor: Step | null = null, mFadeDone: Step | null = null;
 
@@ -225,7 +224,12 @@ function exec(s: Step): boolean {
       return true;
     }
     case "cam": camTarget = String(s.follow ?? ""); camFixed = typeof s.x === "number" ? s.x : null; return true;
-    case "wait": mWait = Number(s.n); return false;
+    case "wait": {
+      // A narration can finish before or after the animation it accompanies.
+      const elapsed = s.sinceProp ? props.find(q => q.id === s.sinceProp)?.t : 0;
+      mWait = Math.max(0, Number(s.n) - (elapsed ?? 0));
+      return mWait === 0;
+    }
     case "swap": {                                 // the same place, changed (the bamboo after the cut): people and camera stay
       const name = String(s.map);
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
@@ -317,7 +321,6 @@ function nextLine(): void {
   }
 }
 function setPage(text: string): void {
-  autoPageTicks = Number(steps[mStep]?.readTicks ?? 0);
   page = KF.wrap((dir ? "(" + dir + ")\n" : "") + text, who && who !== "해설" ? 420 : 500, 2); pageAt = 0; shown = 0;
   // the speaker turns to whoever they are talking to
   const sp = ents.find((e) => e.look === host!.look(who) || (host!.look(who) && e.look[2] === host!.look(who)![2] && e.look[1] === host!.look(who)![1]));
@@ -331,16 +334,9 @@ const pageLen = () => lines().join("").length;
 const talking = () => page.length > 0;
 
 function dialogueTick(): void {
-  shown += 2;
-  if (autoPageTicks > 0) {
-    if (--autoPageTicks > 0) return;
-  } else {
-    if (!K.isPressed(K.BTN_LP)) return;
-    if (shown < pageLen()) { shown = 9999; return; }
-  }
-  if (pageAt + 3 < page.length) {
-    pageAt += 3; shown = 0; autoPageTicks = Number(steps[mStep]?.readTicks ?? 0); return;
-  }
+  if (!K.isPressed(K.BTN_LP)) { shown += 2; return; }
+  if (shown < pageLen()) { shown = 9999; return; }
+  if (pageAt + 3 < page.length) { pageAt += 3; shown = 0; return; }
   nextLine();
   if (!talking()) { mStep++; run(); }
 }
@@ -714,7 +710,7 @@ function dialogueRender(): void {
     left -= [...ls[k]].length;
     KF.draw(s, kind === "cut" ? 30 : tx, BY + 8 + k * 24, c, 2);
   }
-  if (shown >= pageLen() && !autoPageTicks) {
+  if (shown >= pageLen()) {
     KF.draw("A", R.PHYS_W - 52, BY + BH - 24, RGB(170, 160, 190), 2);
     if (Math.trunc(mTick / 6) % 2 === 0) KF.draw("▼", R.PHYS_W - 34, BY + BH - 24, RGB(240, 196, 96), 2);
   }
