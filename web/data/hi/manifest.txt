@@ -912,3 +912,8 @@ baekmujin.bs_1 sd/baekmujin_f/bs_1.png 12 62 fight
 baekmujin.bs_2 sd/baekmujin_f/bs_2.png 17 67 fight
 baekmujin.bs_3 sd/baekmujin_f/bs_3.png 14 44 fight
 baekmujin.bs_4 sd/baekmujin_f/bs_4.png 30 42 fight
+sd_gangsi.rise_0 sd/gangsi/rise_0.png 17 12
+sd_gangsi.rise_1 sd/gangsi/rise_1.png 17 15
+sd_gangsi.rise_2 sd/gangsi/rise_2.png 12 27
+sd_gangsi.rise_3 sd/gangsi/rise_3.png 14 27
+sd_gangsi.rise_4 sd/gangsi/rise_4.png 11 35

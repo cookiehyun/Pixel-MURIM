@@ -533,9 +533,14 @@ function playRender(): void {
   const ch = chapter();
   if (mTitleT < 40) {
     R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(6, 5, 10));
-    if (route().title !== ch.title) KF.draw(route().title, R.PHYS_W / 2, 92, cDim, 2, 1);
-    KF.draw(ch.title, R.PHYS_W / 2, 124, cGold, 3, 1);
-    if (ch.place) KF.wrap(ch.place, 500, 2).forEach((l, i) => KF.draw(l, R.PHYS_W / 2, 176 + i * 24, cNarr, 2, 1));
+    if (route().id === "prologue") {
+      KF.draw("서장", R.PHYS_W / 2, 96, cDim, 2, 1);
+      KF.draw("혈월의 밤", R.PHYS_W / 2, 138, cGold, 3, 1);
+    } else {
+      if (route().title !== ch.title) KF.draw(route().title, R.PHYS_W / 2, 92, cDim, 2, 1);
+      KF.draw(ch.title, R.PHYS_W / 2, 124, cGold, 3, 1);
+      if (ch.place) KF.wrap(ch.place, 500, 2).forEach((l, i) => KF.draw(l, R.PHYS_W / 2, 176 + i * 24, cNarr, 2, 1));
+    }
     if (mField && !FM.ready() && mTitleT >= 39) KF.draw("불러오는 중…", R.PHYS_W / 2, 260, cDim, 2, 1);
     return;
   }

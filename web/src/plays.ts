@@ -12,32 +12,17 @@ const 흑림SD: [string, number, string] = ["sd_heukrim", 0, "HEUKRIM"];
 
 export const PLAYS: Record<string, Record<number, Step[]>> = {
   prologue: {
-    // 서장 「백 년의 밤」 (docs/story_new/00_prologue.md): a short cut scene, narration only, no lines between people.
+    // 서장 「혈월의 밤」 (docs/story_new/00_prologue.md): a short cut scene, narration only, no lines between people.
     0: [
       // SCENE 01. 혈월의 밤 - a red moon rises out of the dark
       { t: "map", map: "blood_battlefield" },
       { t: "moon" },
       { t: "wait", n: 60 },
       { t: "say", who: "해설", text: "백 년 전, 중원의 하늘에 붉은 달이 떠올랐다.\n그날 밤, 혈교가 모습을 드러냈다." },
-      // the battlefield: warriors against the cult; the Blood Demon on the hill opens his hand and they fall
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
-      { t: "spawn", id: "w1", look: ["sd_namgungrin", 0, ""], x: 120, face: 1 },
-      { t: "spawn", id: "w2", look: ["sd_monk", 0, ""], x: 138, face: 1 },
-      { t: "spawn", id: "w3", look: ["sd_villager", 0, ""], x: 104, face: 1 },
-      { t: "spawn", id: "c1", look: ["sd_cultist", 0, ""], x: 176, face: -1, pose: "atk_0" },
-      { t: "spawn", id: "c2", look: ["sd_cultist", 0, ""], x: 194, face: -1, pose: "shout" },
-      { t: "spawn", id: "hm", look: ["hyeolma", 0, "HYEOLMA"], x: 246, y: 70, face: -1 },
-      { t: "wait", n: 30 },
-      { t: "pose", id: "c1", pose: "atk_1" },
-      { t: "pose", id: "w2", pose: "lie_down", fall: true },
-      { t: "wait", n: 16 },
-      { t: "pose", id: "hm", pose: "sp_a" },
-      { t: "prop", id: "mist", kind: "redmist", x: 240, y: 52 },
-      { t: "flash", n: 6 },
-      { t: "pose", id: "w1", pose: "rin_away" },
-      { t: "pose", id: "w3", pose: "startle" },
-      { t: "wait", n: 30 },
+      { t: "prop", id: "war", kind: "battleLines", x: 60 },
+      { t: "wait", n: 145 },
       // his face, once, clearly
       { t: "map", map: "hyeolma_face" },
       { t: "cam", x: 0 },
@@ -46,31 +31,11 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       // the fallen rise as blood corpses and join his host; the living fall back
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
-      { t: "spawn", id: "f1", look: ["sd_monk", 0, ""], x: 138, face: 1, pose: "lie_down" },
-      { t: "spawn", id: "f2", look: ["sd_monk", 0, ""], x: 156, face: -1, pose: "lie_up" },
-      { t: "spawn", id: "w1", look: ["sd_namgungrin", 0, ""], x: 112, face: 1 },
-      { t: "spawn", id: "c1", look: ["sd_cultist", 0, ""], x: 184, face: -1 },
-      { t: "spawn", id: "hm", look: ["hyeolma", 0, "HYEOLMA"], x: 246, y: 70, face: -1, pose: "sp_a" },
-      { t: "prop", id: "mist1", kind: "redmist", x: 138, y: 86 },
-      { t: "prop", id: "mist2", kind: "redmist", x: 156, y: 86 },
-      { t: "wait", n: 36 },
-      { t: "flash", n: 6 },
-      { t: "remove", id: "f1" }, { t: "remove", id: "f2" },
-      { t: "spawn", id: "g1", look: ["sd_gangsi", 0, "GANGSI"], x: 138, face: -1 },
-      { t: "spawn", id: "g2", look: ["sd_gangsi", 0, "GANGSI"], x: 156, face: -1 },
-      { t: "unprop", id: "mist1" }, { t: "unprop", id: "mist2" },
-      { t: "move", id: "g1", x: 100, speed: 0.6 }, { t: "move", id: "g2", x: 118, speed: 0.6 }, { t: "move", id: "c1", x: 150, speed: 0.6 },
-      { t: "face", id: "w1", to: "left" },
-      { t: "move", id: "w1", x: 40, run: true },
+      { t: "prop", id: "fallen", kind: "corpseRising", x: 60 },
+      { t: "wait", n: 150 },
       { t: "say", who: "해설", text: "쓰러진 자들마저 그의 군세가 되었고,\n중원의 수많은 문파가 무너졌다." },
       { t: "say", who: "해설", text: "후세는 그 시작을 혈월의 밤이라 불렀다." },
-      // SCENE 02. 정마연합과 혈마의 최후 - burning gates, then the scroll map
-      { t: "map", map: "namgung_fire" },
-      { t: "cam", x: 30 },
-      { t: "wait", n: 30 },
-      { t: "map", map: "cheongpung_fire" },
-      { t: "cam", x: 60 },
-      { t: "wait", n: 30 },
+      // SCENE 02. 정마연합과 혈마의 최후
       { t: "map", map: "scroll_map" },
       { t: "cam", x: 0 },
       { t: "prop", id: "fire", kind: "scrollfire", x: 0, y: 0 },
