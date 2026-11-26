@@ -42,6 +42,11 @@ export const G = {
   controlled: () => Fighter.controlled(),
 };
 
+export function profiledFight(): boolean {
+  return !G.Multi && !G.StoryFight && !G.WatchMode && !Lockstep.active() &&
+    [MODE_TRAINING, MODE_ARCADE, MODE_TAG, MODE_VSCPU].includes(G.GameMode);
+}
+
 let mPaused = false, mPauseSel = 0;
 
 export function gameInit(): void {

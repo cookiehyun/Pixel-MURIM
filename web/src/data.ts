@@ -1,6 +1,19 @@
 // Port of Data.bas: loads the shared text data (sprites, stages, moves) that the Excel version uses.
 import { RGB } from "./util";
 
+export type LocalBox = [number, number, number, number];
+export type Grade = "high" | "mid" | "low";
+export interface StrikeWindow {
+  from: number; until?: number; group: string; grade: Grade;
+  guard: "standing" | "crouching" | "either"; boxes: LocalBox[];
+}
+export interface CombatProfile {
+  cancelOn?: Record<string, ("guard" | "hit")[]>;
+  shapes: Record<string, Record<string,LocalBox>>; poses: Record<string, string>;
+  moves: Record<string, StrikeWindow[]>; evades: Record<string, Grade[]>;
+}
+export let profiles: Record<string, CombatProfile> = {};
+
 export const D = {
   SprCount: 0,
   SprW: [] as number[], SprH: [] as number[], SprAX: [] as number[], SprAY: [] as number[], SprOff: [] as number[],
@@ -52,7 +65,10 @@ const STAGES = ["sanmun", "MOUNTAIN GATE", "bamboo", "BAMBOO FOREST", "inn", "NI
 
 export async function loadAll(): Promise<void> {
   const names = [...SPRITE_FILES.map((f) => f + ".txt"), ...STAGES.filter((_, i) => i % 2 === 0).map((s) => "stage_" + s + ".txt"), "moves.txt"];
-  const texts = await Promise.all(names.map(fetchLines));
+  const [texts, profileData] = await Promise.all([
+    Promise.all(names.map(fetchLines)), fetchLines("combat-profiles.json")
+  ]);
+  profiles = JSON.parse(profileData.join(" "));
   names.forEach((n, i) => files.set(n, texts[i]));
   for (const f of SPRITE_FILES) loadSpriteFile(f);
   D.StageCount = STAGES.length / 2;

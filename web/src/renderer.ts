@@ -145,6 +145,9 @@ function pixels(id: number, alt: boolean | number): ArrayLike<number> {
 let mHiS = 0;                                          // 0: each sprite's own scale
 export function setHiScale(n: number): void { mHiS = n; }
 
+/** Offset of the first occupied cell when mirroring a span around the foot pixel. */
+export const cellOffset = (x: number, flip: boolean, width = 1) => flip ? 1 - x - width : x;
+
 /** Draw sprite with its anchor (ground point under the hip) on world point (x, y). flip mirrors; tint >= 0 paints it one color. */
 export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt: boolean | number = false, artScale = 0): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
@@ -179,7 +182,7 @@ export function drawSprite(id: number, x: number, y: number, flip: boolean, tint
       for (let sx = 0; sx < w; sx++) {
         const c = pix[off + sy * w + sx];
         if (c < 0) continue;
-        const px = flip ? X + (ax - sx) * S : X + (sx - ax) * S;
+        const px = X + cellOffset(sx - ax, flip) * S;
         if (px > -S && px < PW) block(px, py, tint >= 0 ? tint : c, S);
       }
     }

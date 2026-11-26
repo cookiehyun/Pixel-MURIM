@@ -4,7 +4,11 @@ import * as K from "./input";
 import * as R from "./renderer";
 import { gameInit, gameTick, gameRender, G, startMatch, MODE_TRAINING } from "./game";
 import * as Fighter from "./fighter";
-import { C } from "./combat";
+import * as combat from "./combat";
+import * as tag from "./tag";
+import * as arcade from "./arcade";
+import * as lockstep from "./lockstep";
+import * as projectile from "./projectile";
 import { setupTouch } from "./touch";
 import * as KF from "./kfont";
 import * as Story from "./story";
@@ -21,7 +25,7 @@ async function main(): Promise<void> {
   R.init(canvas);
   gameInit();
   setupTouch();
-  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy, story: Story, D, moveId };
+  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C: combat.C, fighter: Fighter, combat, tag, arcade, lockstep, projectile, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy, story: Story, D, moveId };
   document.getElementById("loading")?.remove();
   let acc = 0, last = performance.now();
   const frame = (now: number) => {

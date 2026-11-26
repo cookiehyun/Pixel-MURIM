@@ -1,0 +1,293 @@
+{
+  "danwoo": {
+    "shapes": {
+      "stand": {
+        "head": [-4, -36, 10, 11],
+        "torso": [-5, -25, 10, 12],
+        "rearLeg": [-7, -13, 6, 13],
+        "frontLeg": [1, -13, 6, 13],
+        "hand": [5, -24, 5, 4],
+        "forearm": [3, -21, 5, 4]
+      },
+      "guard": {
+        "head": [-5, -32, 10, 10],
+        "torso": [-5, -23, 10, 11],
+        "rearLeg": [-8, -12, 7, 12],
+        "frontLeg": [1, -12, 6, 12],
+        "hand": [3, -26, 5, 7]
+      },
+      "crouch": {
+        "head": [-4, -27, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5]
+      },
+      "cguard": {
+        "head": [-5, -27, 9, 10],
+        "torso": [-6, -18, 10, 10],
+        "legs": [-6, -9, 14, 9],
+        "arm": [4, -19, 5, 9]
+      },
+      "short": {
+        "head": [-6, -28, 10, 11],
+        "torso": [-5, -18, 8, 9],
+        "rearLeg": [-8, -9, 6, 9],
+        "frontLeg": [0, -9, 5, 9]
+      },
+      "kick": {
+        "head": [-5, -36, 10, 11],
+        "torso": [-5, -25, 10, 12],
+        "legs": [-6, -13, 8, 13]
+      },
+      "air": {
+        "head": [-4, -32, 10, 10],
+        "torso": [-5, -22, 11, 10],
+        "legs": [-5, -12, 12, 5]
+      },
+      "lp": {
+        "head": [-6, -28, 10, 11],
+        "torso": [-5, -18, 8, 9],
+        "rearLeg": [-8, -9, 6, 9],
+        "frontLeg": [0, -9, 5, 9],
+        "strikingLimb": [4, -19, 5, 5]
+      },
+      "hp": {
+        "head": [-6, -28, 10, 11],
+        "torso": [-5, -18, 8, 9],
+        "rearLeg": [-8, -9, 6, 9],
+        "frontLeg": [0, -9, 5, 9],
+        "strikingLimb": [6, -18, 6, 5]
+      },
+      "lk": {
+        "head": [-5, -36, 10, 11],
+        "torso": [-5, -25, 10, 12],
+        "legs": [-6, -13, 8, 13],
+        "strikingLimb": [9, -18, 6, 6]
+      },
+      "hk": {
+        "head": [-5, -36, 10, 11],
+        "torso": [-5, -25, 10, 12],
+        "legs": [-6, -13, 8, 13],
+        "strikingLimb": [8, -29, 8, 6]
+      },
+      "clp": {
+        "head": [-4, -27, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "strikingLimb": [6, -18, 5, 5]
+      },
+      "chp": {
+        "head": [-4, -27, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "strikingLimb": [-1, -33, 5, 7]
+      },
+      "clk": {
+        "head": [-4, -27, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "strikingLimb": [6, -6, 6, 5]
+      },
+      "chk": {
+        "head": [-4, -27, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "strikingLimb": [6, -7, 6, 6]
+      },
+      "jp": {
+        "head": [-4, -32, 10, 10],
+        "torso": [-5, -22, 11, 10],
+        "legs": [-5, -12, 12, 5],
+        "strikingLimb": [8, -20, 7, 5]
+      },
+      "jk": {
+        "head": [-4, -32, 10, 10],
+        "torso": [-5, -22, 11, 10],
+        "legs": [-5, -12, 12, 5],
+        "strikingLimb": [8, -13, 7, 5]
+      },
+      "ovh": {
+        "head": [-6, -28, 10, 11],
+        "torso": [-5, -18, 8, 9],
+        "rearLeg": [-8, -9, 6, 9],
+        "frontLeg": [0, -9, 5, 9],
+        "strikingLimb": [4, -10, 5, 5]
+      },
+      "empty": {}
+    },
+    "poses": {
+      "idle": "stand",
+      "walk": "stand",
+      "guard": "guard",
+      "cguard": "cguard",
+      "crouch": "crouch",
+      "jump": "air",
+      "land": "crouch",
+      "down": "empty",
+      "lp.active": "lp",
+      "lp.ready": "short",
+      "hp.active": "hp",
+      "hp.ready": "short",
+      "lk.active": "lk",
+      "lk.ready": "kick",
+      "hk.active": "hk",
+      "hk.ready": "kick",
+      "clp.active": "clp",
+      "clp.ready": "crouch",
+      "chp.active": "chp",
+      "chp.ready": "crouch",
+      "clk.active": "clk",
+      "clk.ready": "crouch",
+      "chk.active": "chk",
+      "chk.ready": "crouch",
+      "jp.active": "jp",
+      "jp.ready": "air",
+      "jk.active": "jk",
+      "jk.ready": "air",
+      "ovh.active": "ovh",
+      "ovh.ready": "short",
+      "crouchIn": "crouch"
+    },
+    "evades": {
+      "crouch": [
+        "high"
+      ],
+      "cguard": [
+        "high"
+      ]
+    },
+    "moves": {
+      "lp": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "high",
+          "guard": "either",
+          "boxes": [
+            [4, -19, 5, 5]
+          ]
+        }
+      ],
+      "hp": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "either",
+          "boxes": [
+            [6, -18, 6, 5]
+          ]
+        }
+      ],
+      "lk": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "standing",
+          "boxes": [
+            [9, -18, 6, 6]
+          ]
+        }
+      ],
+      "hk": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "high",
+          "guard": "either",
+          "boxes": [
+            [8, -29, 8, 6]
+          ]
+        }
+      ],
+      "clp": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "either",
+          "boxes": [
+            [6, -18, 5, 5]
+          ]
+        }
+      ],
+      "chp": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "either",
+          "boxes": [
+            [-1, -33, 5, 7]
+          ]
+        }
+      ],
+      "clk": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "low",
+          "guard": "crouching",
+          "boxes": [
+            [6, -6, 6, 5]
+          ]
+        }
+      ],
+      "chk": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "low",
+          "guard": "crouching",
+          "boxes": [
+            [6, -7, 6, 6]
+          ]
+        }
+      ],
+      "jp": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "standing",
+          "boxes": [
+            [8, -20, 7, 5]
+          ]
+        }
+      ],
+      "jk": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "standing",
+          "boxes": [
+            [8, -13, 7, 5]
+          ]
+        }
+      ],
+      "ovh": [
+        {
+          "from": 0,
+          "group": "strike",
+          "grade": "mid",
+          "guard": "standing",
+          "boxes": [
+            [4, -10, 5, 5]
+          ]
+        }
+      ]
+    },
+    "cancelOn": {
+      "lp": [
+        "hit",
+        "guard"
+      ]
+    }
+  }
+}

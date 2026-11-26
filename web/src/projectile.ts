@@ -3,7 +3,7 @@ import { D, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_PROJ, animId, hasAnim, animFra
 import * as R from "./renderer";
 import { GROUND_Y, SCREEN_W } from "./renderer";
 import * as FX from "./fx";
-import { F, hurtRect, hashMix } from "./fighter";
+import { F, boxesShown, hurtRects, intersection, hashMix } from "./fighter";
 import { applyAttack } from "./combat";
 import { RGB, clng, vint } from "./util";
 
@@ -86,15 +86,17 @@ export function update(): void {
 
 const halfW = (k: number) => D.MvHbW[mMv[k]] / 2;
 
+function attackBox(k: number) {
+  const w = D.MvHbW[mMv[k]], h = D.MvHbH[mMv[k]];
+  return {x: vint(mX[k]) - Math.trunc(w/2), y: vint(mY[k]) - Math.trunc(h/2), w, h};
+}
+
 function checkHit(k: number): void {
   if (mCD[k] > 0) return;
   if (mType[k] === MT_SUPER_FIRE && mAge[k] < FIRE_DELAY) return;
   const d = 1 - k;
-  const u = hurtRect(d);
-  if (!u) return;
-  const pw = D.MvHbW[mMv[k]], ph = D.MvHbH[mMv[k]];
-  const px0 = vint(mX[k]) - Math.trunc(pw / 2), py0 = vint(mY[k]) - Math.trunc(ph / 2);
-  if (px0 + pw <= u.x || u.x + u.w <= px0 || py0 + ph <= u.y || u.y + u.h <= py0) return;
+  const box = attackBox(k);
+  if (!hurtRects(d).some(u => intersection(box, u))) return;
   mHits[k]--;
   const lastHit = mHits[k] <= 0;
   applyAttack(k, d, mMv[k], vint(mX[k]), vint(mY[k]), true, lastHit);
@@ -119,6 +121,10 @@ export function draw(): void {
     else if (mAnimOwn[k] >= 0) a = mAnimOwn[k];
     else a = mAnimSmall;
     if (a >= 0) R.drawSprite(animFrame(a, mAge[k]), vint(mX[k]), vint(mY[k]), mVX[k] < 0);
+    if (boxesShown() && !mCD[k] && (mType[k] !== MT_SUPER_FIRE || mAge[k] >= FIRE_DELAY)) {
+      const b = attackBox(k);
+      R.drawRectOutline(b.x,b.y,b.w,b.h,RGB(255,40,40));
+    }
   }
 }
 

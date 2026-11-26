@@ -1,7 +1,8 @@
 // Port of Combat.bas: hit resolution, guard, combo scaling, meter, hit stop, KO.
 import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE, MT_SUPER_RIFT } from "./data";
+import { profiledFight } from "./game";
 import * as FX from "./fx";
-import { F, hitRect, hurtRect, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
+import { F, strikes, hurtRects, intersection, evades, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
 
 export const C = { HitStop: 0, SuperFreeze: 0, SuperOwner: 0, SlowMo: 0, ImpactDark: 0, WhiteFlash: 0, KoFinished: false };
 const KO_TICKS = 80;
@@ -56,30 +57,49 @@ export function resolve(): void {
     const d = 1 - a, st = F[d].state;
     if (!(st === ST_HIT || st === ST_THROWN || (st === ST_DOWN && F[d].downPhase === 0))) mCombo[a] = 0;
   }
-  checkMelee(0, 1);
-  checkMelee(1, 0);
+  const first = meleeContact(0);
+  // Cinematic moves and parries take control of the opponent. Only ordinary strikes trade.
+  const ordinary = (i: number) => F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_NORMAL;
+  const simultaneous = profiledFight() && ordinary(0) && ordinary(1);
+  const second = simultaneous ? meleeContact(1) : undefined;
+  if (first) land(first, simultaneous);
+  const other = simultaneous ? second : meleeContact(1);
+  if (other) land(other, simultaneous);
 }
 
-function checkMelee(a: number, d: number): void {
-  if (F[a].hasHit) return;
-  const h = hitRect(a);
-  if (!h) return;
-  const u = hurtRect(d);
-  if (!u) return;
-  const ix0 = Math.max(h.x, u.x), iy0 = Math.max(h.y, u.y);
-  const ix1 = Math.min(h.x + h.w, u.x + u.w), iy1 = Math.min(h.y + h.h, u.y + u.h);
-  if (ix1 <= ix0 || iy1 <= iy0) return;
-  F[a].hasHit = true;
-  F[a].hitCount++;
-  const cx = Math.trunc((ix0 + ix1) / 2), cy = Math.trunc((iy0 + iy1) / 2), mv = F[a].mv;
-  if (D.MvType[mv] === MT_RUSH && D.MvP2[mv] > 1) applyAttack(a, d, mv, cx, cy, false, F[a].hitCount >= D.MvP2[mv]);
-  else applyAttack(a, d, mv, cx, cy, false, true);
+function meleeContact(a: number) {
+  const d = 1-a, f = F[a], defender = F[d];
+  const windows = strikes(a);
+  if (!windows.length) return;
+  const hurts = hurtRects(d);
+  for (const {window, boxes} of windows) {
+    if (window ? f.struckGroups.includes(window.group) : f.hasHit) continue;
+    if (evades(d, window)) continue;
+    for (const box of boxes) for (const hurt of hurts) {
+      const overlap = intersection(box,hurt);
+      if (!overlap) continue;
+      const blocked = window ? defender.state === ST_GUARD &&
+        (window.guard === "either" || (window.guard === "crouching") === defender.crouch) : undefined;
+      return {a, d, mv: f.mv, group: window?.group, blocked, overlap, awake: demonAwake(a)};
+    }
+  }
+  if (windows.length && !f.hasHit) f.contact = "whiff";
+}
+
+function land(hit: NonNullable<ReturnType<typeof meleeContact>>, simultaneous: boolean): void {
+  const {a,d,mv,group,blocked,overlap} = hit, f = F[a];
+  if (group !== undefined) f.struckGroups.push(group);
+  f.hasHit = true;
+  f.hitCount++;
+  const cx = Math.trunc(overlap.x + overlap.w/2), cy = Math.trunc(overlap.y + overlap.h/2);
+  const last = D.MvType[mv] !== MT_RUSH || f.hitCount >= D.MvP2[mv];
+  applyAttack(a,d,mv,cx,cy,false,last,blocked,simultaneous,hit.awake);
 }
 
 /** One hit of move mv from attacker a on defender d at (cx, cy). */
-export function applyAttack(a: number, d: number, mv: number, cx: number, cy: number, isProj: boolean, lastHit: boolean): void {
-  if (mKoTimer > 0) return;
-  if (parrying(d) && D.MvLevel[mv] !== LV_UNBLOCK) { counterStrike(d, a, cx, cy); return; }
+export function applyAttack(a: number, d: number, mv: number, cx: number, cy: number, isProj: boolean, lastHit: boolean, blocked?: boolean, simultaneous = false, awake = demonAwake(a)): void {
+  if (mKoTimer > 0 && !simultaneous) return;
+  if (parrying(d) && D.MvLevel[mv] !== LV_UNBLOCK) { if (!isProj) F[a].contact = "parried"; counterStrike(d, a, cx, cy); return; }
   const mt = D.MvType[mv];
   const special = mt !== MT_NORMAL;
   let hits = isProj || mt === MT_RUSH ? D.MvP2[mv] : 1;
@@ -97,7 +117,8 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     startSuperSlash(a, d);
     return;
   }
-  if (blocks(d, level)) {
+  if (blocked ?? blocks(d, level)) {
+    if (!isProj) F[a].contact = "guard";
     applyBlock(d, D.MvBlockstun[mv], push * 0.8);
     if (special) dealDamage(d, Math.trunc(D.MvDamage[mv] / (4 * hits)));
     addMeter(a, 15); addMeter(d, 10);
@@ -106,12 +127,13 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
   } else {
     const fd = F[d];
     const counter = !isProj && fd.state === ST_ATTACK && fd.stTick < D.MvStartup[fd.mv];
+    if (!isProj) F[a].contact = counter ? "counter" : !fd.onGround ? "air" : "hit";
     mCombo[a]++;
     let dmg = D.MvDamage[mv] / hits;
     // combo scaling: from the 3rd hit each hit is worth 12% less, down to 30%
     if (mCombo[a] >= 3) dmg *= Math.max(0.3, 1 - 0.12 * (mCombo[a] - 2));
     if (counter) dmg *= 1.25;
-    if (demonAwake(a)) dmg *= 1.15;
+    if (awake) dmg *= 1.15;
     if (raging(a)) dmg *= 1.25;
     dealDamage(d, Math.floor(dmg + 0.5));
     const ko = F[d].health <= 0;

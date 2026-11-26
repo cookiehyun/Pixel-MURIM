@@ -1,18 +1,19 @@
 // Port of Fighter.bas: the fighter state machine, input decoding, boxes and drawing.
 import {
-  D, animId, spriteId, moveId, mvKeyOf, hasSprite, hasAnim, animFrame, animFrameHold,
+  D, profiles, type LocalBox, type StrikeWindow, animId, spriteId, moveId, mvKeyOf, hasSprite, hasAnim, animFrame, animFrameHold,
   MT_NORMAL, MT_THROW, MT_PROJ, MT_RISE, MT_RUSH, MT_GRAB, MT_SUPER_PROJ, MT_SUPER_GRAB, MT_SUPER_RUSH,
   MT_TELEPORT, MT_SUPER_TELE, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_QUAKE, MT_STANCE, MT_RAGE, MT_SUPER_RIFT, MT_SUPER_CRASH, MT_COUNTER,
 } from "./data";
 import * as R from "./renderer";
 import { GROUND_Y, SCREEN_W } from "./renderer";
+import * as Font from "./font";
 import * as FX from "./fx";
 import * as Proj from "./projectile";
 import * as Combat from "./combat";
 import * as Tag from "./tag";
 import * as Match from "./match";
 import * as K from "./input";
-import { G, MODE_ARCADE, MODE_TRAINING } from "./game";
+import { profiledFight, G, MODE_ARCADE, MODE_TRAINING } from "./game";
 import * as Arcade from "./arcade";
 import { RGB, clng, vint } from "./util";
 
@@ -35,6 +36,9 @@ export class TFighter {
   prefix = ""; kit = ""; armed = false;
   state = 0; stTick = 0; x = 0; footY = 0; vx = 0; vy = 0; slide = 0;
   onGround = true; crouch = false; backward = false; facing = 1;
+  contact: "pending" | "whiff" | "guard" | "hit" | "counter" | "air" | "parried" = "pending";
+  struckGroups: string[] = [];
+  specialBoxes: Box[] = [];
   mv = 0; hasHit = false; chain = 0; airAttacked = false; stun = 0; stunTotal = 0;
   downPhase = 0; rollDir = 0; wakeInv = 0; flash = 0; bufAtk = -1; bufAge = 0; bufDash = 0;
   health = 0; maxHealth = 0; healthShown = 0; redCap = 0; trailDelay = 0; meter = 0; naegong = 0; ngFlash = 0;
@@ -75,6 +79,7 @@ export const controlled = () => mControl;
 export const dummyMode = () => mDummy;
 export function setControl(i: number): void { mControl = i; }
 export function setDummy(mode: number): void { mDummy = mode; mDummyTick = 0; }
+export const boxesShown = () => mShowBoxes;
 export function toggleBoxes(): void { mShowBoxes = !mShowBoxes; }
 
 function setupCharacter(i: number, prefix: string, x: number): void {
@@ -152,7 +157,9 @@ function loadKit(i: number, kit: string): void {
 
 export function copyFighter(dst: TFighter, src: TFighter): void {
   Object.assign(dst, src);
+  dst.specialBoxes = src.specialBoxes.slice();
   dst.hist = src.hist.slice();
+  dst.struckGroups = src.struckGroups.slice();
   dst.moves = src.moves.slice();
   dst.spOrder = src.spOrder.slice();
 }
@@ -168,6 +175,7 @@ function resetOne(i: number): void {
   if (F[i].armed) { F[i].armed = false; loadKit(i, F[i].prefix); }
   mGN[i] = 0; mPose[i] = -1; mAwakeShown[i] = false;
   const f = F[i];
+  f.specialBoxes = []; f.contact = "pending"; f.struckGroups = []; f.hasHit = false; f.hitCount = 0;
   f.x = f.startX; f.footY = GROUND_Y; f.vx = 0; f.vy = 0; f.slide = 0; f.onGround = true; f.crouch = false;
   f.facing = i === 0 ? 1 : -1;
   f.health = f.maxHealth; f.healthShown = f.maxHealth; f.redCap = f.maxHealth; f.trailDelay = 0;
@@ -351,7 +359,7 @@ export function update(): void {
     if (K.isPressed(K.BTN_DBG_HIT)) applyHit(1 - mControl, 10, 1.5, false);
     if (K.isPressed(K.BTN_DBG_DOWN)) applyHit(1 - mControl, 0, 1.5, true);
   }
-  for (let i = 0; i <= 1; i++) updateFighter(i);
+  for (let i = 0; i <= 1; i++) { F[i].specialBoxes = []; updateFighter(i); }
   resolvePush();
   for (let i = 0; i <= 1; i++) { updateFacing(i); updateGhosts(i); }
 }
@@ -402,7 +410,7 @@ function updateFighter(i: number): void {
       if (atk >= 0 && !f.airAttacked) {
         f.airAttacked = true;
         f.mv = atk === MV_LK || atk === MV_HK ? f.moves[MV_JK] : f.moves[MV_JP];
-        f.hasHit = false;
+        f.contact = "pending"; f.struckGroups = []; f.hitCount = 0; f.hasHit = false;
         setState(i, ST_ATTACK);
       }
       if (airStep(i)) { setState(i, ST_IDLE); mLandShow[i] = 3; }
@@ -524,7 +532,10 @@ function updateAttack(i: number, d: boolean): void {
     }
     return;
   }
-  if (f.hasHit && f.bufAtk >= 0 && f.bufAtk !== MV_THROW) {
+  const cancelOn = profile(i)?.cancelOn?.[moveKey(i)];
+  const confirmed = f.contact === "hit" || f.contact === "air" || f.contact === "counter";
+  const canChain = !cancelOn || (f.contact === "guard" && cancelOn.includes("guard")) || (confirmed && cancelOn.includes("hit"));
+  if (f.hasHit && canChain && f.bufAtk >= 0 && f.bufAtk !== MV_THROW) {
     if (f.bufAtk >= MV_SP1 && f.bufAtk <= MV_SUPER && canCancelIntoSpecial(i, f.bufAtk)) {
       startAttack(i, takeAttack(i), d, true);
       return;
@@ -594,6 +605,7 @@ function startAttack(i: number, atk: number, crouching: boolean, chained: boolea
     crouching = false;
   } else if (crouching) mv = f.moves[atk + 4];
   else mv = f.moves[atk];
+  f.contact = "pending"; f.struckGroups = [];
   f.mv = mv; f.crouch = crouching; f.vx = 0; f.hasHit = false; f.hitCount = 0;
   if (!chained) f.chain = 0;
   setState(i, ST_ATTACK);
@@ -844,7 +856,7 @@ export function inRecovery(i: number): boolean {
 
 export interface Box { x: number; y: number; w: number; h: number }
 
-export function hitRect(i: number): Box | null {
+function legacyHitRect(i: number): Box | null {
   if (!inActive(i)) return null;
   const f = F[i], mv = f.mv, mt = D.MvType[mv];
   if (mt === MT_PROJ || mt === MT_SUPER_PROJ || mt === MT_GRAB || mt === MT_SUPER_GRAB || mt === MT_THROW) return null;
@@ -855,7 +867,7 @@ export function hitRect(i: number): Box | null {
   return { x, y: vint(f.footY + 0.5) + D.MvHbY[mv], w, h };
 }
 
-export function hurtRect(i: number): Box | null {
+function legacyHurtRect(i: number): Box | null {
   const f = F[i];
   if (f.state === ST_DOWN || f.state === ST_THROWN) return null;
   if (vanished(i)) return null;
@@ -863,6 +875,53 @@ export function hurtRect(i: number): Box | null {
   const h = f.crouch ? f.hurtHC : f.hurtH;
   const w = vint(f.halfW * 2 + 4);
   return { x: vint(f.x + 0.5) - Math.trunc(w / 2), y: vint(f.footY + 0.5) - h, w, h };
+}
+
+const profile = (i: number) => profiledFight() ? profiles[F[i].kit] : undefined;
+const moveKey = (i: number) => mvKeyOf(F[i].mv).split(".").pop()!;
+export function poseKey(i: number): string {
+  const f = F[i];
+  switch (f.state) {
+    case ST_ATTACK: return moveKey(i) + (inActive(i) ? ".active" : ".ready");
+    case ST_GUARD: return f.crouch ? "cguard" : "guard";
+    case ST_CROUCH: return f.stTick < 2 ? "crouchIn" : "crouch";
+    case ST_JUMP: return "jump";
+    case ST_LAND: return "land";
+    case ST_IDLE: return "idle";
+    case ST_WALK: return "walk";
+    case ST_DOWN: return "down";
+    default: return "state" + f.state;
+  }
+}
+export function worldBox(i: number, [x,y,w,h]: LocalBox): Box {
+  const f = F[i];
+  return {x: vint(f.x + 0.5) + R.cellOffset(x, f.facing < 0, w), y: vint(f.footY + 0.5) + y, w, h};
+}
+export function strikes(i: number): {window?: StrikeWindow, boxes: Box[]}[] {
+  if (!inActive(i)) return [];
+  const windows = profile(i)?.moves[moveKey(i)];
+  if (windows === undefined) {
+    const box = legacyHitRect(i);
+    return box ? [{boxes: [box]}] : [];
+  }
+  const f = F[i], tick = f.stTick - D.MvStartup[f.mv];
+  return windows.filter(s => tick >= s.from && tick < (s.until ?? D.MvActive[f.mv]))
+    .map(window => ({window, boxes: window.boxes.map(b => worldBox(i,b))}));
+}
+export const hitRects = (i: number) => strikes(i).flatMap(s => s.boxes);
+export function evades(i: number, strike?: StrikeWindow): boolean {
+  return !!strike && !!profile(i)?.evades[poseKey(i)]?.includes(strike.grade);
+}
+export function hurtRects(i: number): Box[] {
+  const fallback = legacyHurtRect(i);
+  if (!fallback) return [];
+  const kit = profile(i), shape = kit?.poses[poseKey(i)];
+  return kit && shape !== undefined ? Object.values(kit.shapes[shape]).map(b => worldBox(i,b)) : [fallback];
+}
+export function intersection(a: Box, b: Box): Box | null {
+  const x = Math.max(a.x,b.x), y = Math.max(a.y,b.y);
+  const w = Math.min(a.x+a.w,b.x+b.w)-x, h = Math.min(a.y+a.h,b.y+b.h)-y;
+  return w > 0 && h > 0 ? {x,y,w,h} : null;
 }
 
 // ---------------------------------------------------------------- draw
@@ -1236,10 +1295,13 @@ export function demonAwake(i: number): boolean {
 }
 
 function drawBoxes(i: number): void {
-  const u = hurtRect(i);
-  if (u) R.drawRectOutline(u.x, u.y, u.w, u.h, RGB(60, 255, 120));
-  const h = hitRect(i);
-  if (h) R.drawRectOutline(h.x, h.y, h.w, h.h, RGB(255, 40, 40));
+  const f = F[i], x = vint(f.x+0.5), y = vint(f.footY+0.5);
+  R.drawRectOutline(x-f.halfW,y-14,2*f.halfW,15,RGB(80,160,255));
+  Font.drawText((poseKey(i)+" "+f.stTick+" "+f.contact).toUpperCase(), i ? 190 : 2, 27, RGB(255,245,210), 1, i ? 2 : 0);
+  for (const u of hurtRects(i)) R.drawRectOutline(u.x, u.y, u.w, u.h, RGB(60, 255, 120));
+  for (const h of [...hitRects(i), ...f.specialBoxes]) R.drawRectOutline(h.x, h.y, h.w, h.h, RGB(255, 40, 40));
+  R.fillRect(x-1,y,3,1,RGB(255,240,80)); R.fillRect(x,y-1,1,3,RGB(255,240,80));
+
 }
 
 // ---------------------------------------------------------------- new supers (web version)
@@ -1309,7 +1371,10 @@ function riftDash(i: number): void {
   const o = 1 - i, f = F[i], mv = f.mv;
   const dist = (F[o].x - f.x) * f.facing;
   f.cineX0 = f.x;
-  if (dist > 0 && dist <= D.MvP1[mv] && hurtRect(o)) {
+  const sweep = worldBox(i, [0, D.MvHbY[mv], D.MvP1[mv]+1, D.MvHbH[mv]]);
+  f.specialBoxes.push(sweep);
+  const target = hurtRects(o).some(body => !profile(o) || intersection(sweep,body));
+  if (dist > 0 && dist <= D.MvP1[mv] && target) {
     const cx = vint(F[o].x + 0.5), cy = vint(F[o].footY) - 18;
     if (Combat.blocks(o, D.MvLevel[mv])) {
       f.x = F[o].x - f.facing * (f.halfW + F[o].halfW);
@@ -1491,8 +1556,11 @@ const SW = (n: string) => mCrashKit === "baekmujin" ? spriteId("baekmujin." + (S
 
 /** One strike of the art: hits when the foe's body overlaps the box; blocked strikes chip. 0 miss, 1 blocked, 2 hit. */
 function crashHit(i: number, x: number, y: number, w: number, h: number, dmg: number, final: boolean): number {
-  const o = 1 - i, hr = hurtRect(o);
-  if (!hr || hr.x > x + w || hr.x + hr.w < x || hr.y > y + h || hr.y + hr.h < y) return 0;
+  const o = 1 - i;
+  F[i].specialBoxes.push({x,y,w,h});
+  const touches = hurtRects(o).some(hr => profiledFight() ? intersection({x,y,w,h}, hr) :
+    !(hr.x > x + w || hr.x + hr.w < x || hr.y > y + h || hr.y + hr.h < y));
+  if (!touches) return 0;
   const cx = vint(F[o].x + 0.5), cy = vint(F[o].footY) - 18;
   if (Combat.blocks(o, D.MvLevel[F[i].mv])) {
     applyBlock(o, 10, final ? 2 : 0.4);
@@ -1538,7 +1606,10 @@ function crashStep(i: number, t: number): void {
     }
   } else if (form === 2) {
     if (t === 0) {
-      const dist = (fo.x - f.x) * f.facing, hr = hurtRect(o);
+      const dist = (fo.x - f.x) * f.facing;
+      const sweep = worldBox(i,[0,-36,85,36]);
+      f.specialBoxes.push(sweep);
+      const hr = hurtRects(o).find(body => !profile(o) || intersection(sweep,body));
       if (dist > 0 && dist <= 84 && hr) {
         f.x = fo.x - f.facing * (f.halfW + fo.halfW + 2);
         clampX(i);
