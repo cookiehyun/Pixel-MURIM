@@ -7,37 +7,43 @@ import { RGB } from "./util";
 import type { FieldMap } from "./fieldmap";
 
 const SCALE = 2, FLOOR = 237, ROOM_ZOOM = .74;
-export const ALTAR_DEATH_LINE = 529;
+export const ALTAR_DEATH_LINE = 408;
 // tick, poses (one frame every three ticks), optional travel endpoint, duration and arc height
 type Cue = [number, string, number?, number?, number?];
 const lord: Cue[] = [
-  [0, "idle"], [43, "walk_0 walk_1 dash", 150, 13], [56, "thrust_0", 164, 4], [60, "thrust_1", 179, 4],
-  [69, "thrust_0", 187, 5], [75, "hit_0"], [83, "hit_1"], [99, "hit_0"], [112, "hit_1 down_0", 141, 12, 16],
-  [124, "crouch"], [132, "idle"], [141, "walk_0 walk_1 dash", 171, 10], [151, "gw_0 gw_1"],
-  [160, "gw_hit"], [165, "gc_0 gc_1 gc_2", 178, 4], [177, "guard"], [195, "cguard"],
-  [213, "thrust_0 thrust_1", 182, 5], [223, "guard"], [239, "hp_0 hp_a hp_1 hp_2 hp_3"],
-  [257, "idle"], [280, "guard"], [306, "thrust_0 thrust_1", 184, 5], [317, "guard"],
-  [331, "hp_0 hp_a hp_1 hp_2 hp_3"], [349, "gw_0"], [361, "hit_0 hit_1 down_0", 126, 15, 12],
-  [376, "crouch"], [387, "gw_0"], [400, "idle"], [410, "bs_0 bs_1 bs_2"], [424, "bs_3"],
-  [435, "bs_4"], [466, "bs_3 bs_2 bs_1 bs_0"], [482, "intro"],
+  [0, "idle"], [3, "walk_0 walk_1 dash", 150, 13], [16, "thrust_0", 164, 4],
+  [20, "thrust_1", 179, 4], [29, "thrust_0", 187, 5], [35, "hit_0"],
+  [43, "hit_1"], [59, "hit_0"], [72, "hit_1 down_0", 141, 12, 16],
+  [84, "crouch"], [92, "idle"], [101, "walk_0 walk_1 dash", 171, 10],
+  [111, "gw_0 gw_1"], [120, "gw_hit"], [125, "gc_0 gc_1 gc_2", 178, 4],
+  [137, "guard"], [155, "cguard"], [173, "thrust_0 thrust_1", 182, 5],
+  [182, "guard"], [188, "thrust_0 thrust_1", 184, 5], [199, "guard"],
+  [224, "gw_0"], [242, "hit_0 hit_1 down_0", 126, 15, 12], [257, "crouch"],
+  [268, "gw_0"], [281, "idle"], [291, "bs_0 bs_1 bs_2"],
+  [305, "bs_3"], [316, "bs_4"], [350, "guard"],
+  [380, "hp_3"], [388, "intro"],
 ];
 const demon: Cue[] = [
-  [0, "idle"], [83, "walk_0 walk_1 dash", 111, 16], [99, "palm_0", 128, 7], [106, "palm_1", 144, 6],
-  [117, "palm_0"], [126, "bdash", 130, 10, 4], [136, "guard"], [165, "idle"], [175, "draw_0"],
-  [182, "idle"], [185, "dash", 161, 6], [191, "jump jp", 226, 13, 41], [204, "palm_0"], [211, "palm_1", 225, 3],
-  [219, "guard"], [229, "hp_0 hp_a hp_1 hp_2 hp_3"], [248, "bdash", 246, 9, 3], [258, "guard"], [268, "idle"], [285, "dash", 229, 9],
-  [295, "sp_a"], [303, "ovh_1"], [310, "sp_1"], [343, "guard"], [361, "hit_0 hit_1 down_0", 252, 15, 20],
-  [376, "down_0 down_1"],
+  [0, "idle"], [43, "walk_0 walk_1 dash", 111, 16], [59, "palm_0", 128, 7],
+  [66, "palm_1", 144, 6], [77, "palm_0"], [86, "bdash", 130, 10, 4],
+  [96, "guard"], [125, "idle"], [135, "draw_0"],
+  [142, "idle"], [145, "dash", 161, 6], [151, "jump jp", 226, 13, 41],
+  [164, "palm_0"], [171, "palm_1", 225, 3], [179, "guard"],
+  [192, "bdash", 238, 8, 3], [203, "guard"],
+  [215, "dash", 229, 6], [221, "hp_0 hp_a hp_1 hp_2 hp_3"], [237, "guard"],
+  [242, "hit_0 hit_1 down_0", 252, 15, 20], [257, "down_0 down_1"],
 ];
 const blood: Cue[] = [
-  [0, "idle"], [60, "guard"], [66, "dash", 167, 8], [74, "throw_0 throw_1"],
-  [112, "hit_0 hit_1", 210, 7, 3], [124, "guard"], [141, "arm_0 arm_1"], [155, "arm_2 arm_3 arm_4 arm_5"],
-  [168, "hit_0 hit_1", 206, 5], [178, "guard"], [210, "hit_1"], [218, "hit_0"], [224, "hp_p hp_0"],
-  [235, "hit_1"], [241, "guard"], [245, "hit_0 hit_1"], [258, "idle_0"],
-  [273, "su_0 su_1 su_2 su_3 su_4"], [290, "idle"], [305, "guard"], [310, "hit_0"], [316, "guard"],
-  [322, "hit_1"], [329, "guard"], [339, "hit_0"], [345, "idle_0"], [351, "sp_a"], [368, "idle"],
-  [388, "walk_0 walk_1 walk_2 walk_3", 183, 12], [400, "hp_p hp_0"], [411, "chit"],
-  [420, "hp_p"], [429, "hit_0"], [435, "hit_1"], [441, "chit"], [460, "hit_1"], [475, "kneel"], [497, "fall"],
+  [0, "idle"], [20, "guard"], [26, "dash", 167, 8],
+  [34, "throw_0 throw_1"], [72, "hit_0 hit_1", 210, 7, 3], [84, "guard"],
+  [101, "arm_0 arm_1"], [115, "arm_2 arm_3 arm_4 arm_5"], [128, "hit_0 hit_1", 206, 5],
+  [138, "guard"], [170, "hit_1"], [178, "hit_0"],
+  [182, "hp_p hp_0"], [191, "hit_0 hit_1"], [198, "su_0 su_1 su_2 su_3 su_4"],
+  [215, "idle"], [225, "hit_0 hit_1"], [232, "sp_a"],
+  [249, "idle"], [269, "walk_0 walk_1 walk_2 walk_3", 183, 12], [281, "hp_p hp_0"],
+  [292, "chit"], [301, "hp_p"], [310, "hit_0"],
+  [316, "hit_1"], [322, "chit"], [341, "hit_1"],
+  [356, "kneel"], [378, "fall"],
 ];
 
 function actor(track: Cue[], start: number, t: number, phase = 0) {
@@ -76,7 +82,7 @@ function sprite(name: string, x: number, up: number, left: boolean) {
 
 function debris(t: number) {
   for (let i = 0; i < 18; i++) {
-    const age = t - 482 - i % 7 * 3;
+    const age = t - 363 - i % 7 * 3;
     if (age < 0 || age > 26) continue;
     const x = [126, 289, 441][i % 3] + i * 17 % 41;
     const y = Math.min(FLOOR - 2, 50 + i % 3 * 15 + age * age * .46);
@@ -85,17 +91,25 @@ function debris(t: number) {
   }
 }
 
+export function drawAltarStandoff(img: NonNullable<FieldMap["img"]>, t: number): void {
+  drawRoom(img);
+  const idle = (phase: number) => ".idle_" + Math.floor((t + phase) / 9) % 2;
+  sprite("cheonma" + idle(6), 41, 0, false);
+  sprite("baekmujin" + idle(0), 95, 0, false);
+  sprite("hyeolma" + idle(3), 205, 0, true);
+}
+
 export function drawAltarDuel(img: NonNullable<FieldMap["img"]>, t: number): void {
   drawRoom(img);
   const leader = actor(lord, 95, t), swordsman = actor(demon, 41, t, 6), boss = actor(blood, 205, t, 3);
-  const armed = t >= 182, fromRight = t >= 204;
-  const bloodLeft = !(t >= 74 && t < 112 || t >= 204 && t < 216 || t >= 225 && t < 239);
+  const armed = t >= 142, fromRight = t >= 164;
+  const bloodLeft = !(t >= 34 && t < 72 || t >= 164 && t < 176 || t >= 221 && t < 231);
   sprite((armed ? "cheonmasw." : "cheonma.") + swordsman.pose, swordsman.x, swordsman.up, fromRight);
   // The golden wall and its answering blade intercept the blood claw in the foreground.
-  const parry = t >= 151 && t < 177;
-  if (!parry) sprite("baekmujin." + leader.pose, leader.x, leader.up, t >= 75 && t < 119);
+  const parry = t >= 111 && t < 137;
+  if (!parry) sprite("baekmujin." + leader.pose, leader.x, leader.up, t >= 35 && t < 79);
   const pose = spriteId("hyeolma." + boss.pose);
-  if (t >= 290 && t < 475) {
+  if (t >= 215 && t < 360) {
     R.drawFightArt(px(boss), FLOOR, SCALE, (x, y) => {
       drawBloodArms(x, y, bloodLeft ? -1 : 1, pose, t);
       R.drawRageHi(pose, x, y, bloodLeft, t, true);
@@ -104,13 +118,12 @@ export function drawAltarDuel(img: NonNullable<FieldMap["img"]>, t: number): voi
     });
   } else sprite("hyeolma." + boss.pose, boss.x, boss.up, bloodLeft);
   if (parry) sprite("baekmujin." + leader.pose, leader.x, leader.up, false);
-  if (t >= 78 && t < 112) R.drawFightArt(px(boss), FLOOR, SCALE, (x, y) =>
-    drawDrainStream(x, y, 1, x + leader.x - boss.x, y - leader.up, t - 78));
-  if (t >= 107 && t <= 115) R.drawFightArt(px(swordsman), FLOOR, SCALE, (x, y) => drawPalmAt(x, y, 1, t < 115));
-  if (t >= 211 && t < 217) R.drawFightArt(px(swordsman), FLOOR, SCALE, (x, y) => drawAltarSwordArt("slash", x, y, -1, t - 211));
-  if (t >= 302 && t < 345) R.drawFightArt(px(boss), FLOOR, SCALE, (x, y) => drawAltarSwordArt("threeCuts", x, y, -1, t - 302));
-  if (t >= 354 && t < 366) sprite("hyeolma.wave_" + Math.floor((t - 354) / 2), boss.x, 0, true);
-  const blade = skySwordFrame(t - 424, true);
+  if (t >= 38 && t < 72) R.drawFightArt(px(boss), FLOOR, SCALE, (x, y) =>
+    drawDrainStream(x, y, 1, x + leader.x - boss.x, y - leader.up, t - 38));
+  if (t >= 67 && t <= 75) R.drawFightArt(px(swordsman), FLOOR, SCALE, (x, y) => drawPalmAt(x, y, 1, t < 75));
+  if (t >= 171 && t < 177) R.drawFightArt(px(swordsman), FLOOR, SCALE, (x, y) => drawAltarSwordArt("slash", x, y, -1, t - 171));
+  if (t >= 235 && t < 247) sprite("hyeolma.wave_" + Math.floor((t - 235) / 2), boss.x, 0, true);
+  const blade = skySwordFrame(t - 305, true);
   if (blade >= 0) sprite("baekmujin.fall_" + blade, boss.x, 0, false);
   debris(t);
   // A descending blade enters through the top of the aperture.

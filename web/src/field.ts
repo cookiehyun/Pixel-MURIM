@@ -12,7 +12,7 @@ import * as Fighter from "./fighter";
 import { MV_LP, MV_HP, MV_LK, MV_HK, MV_SP1, MV_JP, MV_JK } from "./fighter";
 import { D, animId, animFrame, animFrameHold, spriteId, hasSprite, moveId, MT_RUSH, MT_NORMAL, MT_SUPER_QUAKE, LV_UNBLOCK } from "./data";
 import * as FM from "./fieldmap";
-import { drawAltarDuel, drawScarSeep } from "./altarDuel";
+import { drawAltarDuel, drawAltarStandoff, drawScarSeep } from "./altarDuel";
 import { drawScrollBurn } from "./scrollBurn";
 import { drawBloodBattle, battleContacts, isBattleCut } from "./prologueBattle";
 import { RGB } from "./util";
@@ -129,10 +129,11 @@ let queue: string[][] = [], page: string[] = [], pageAt = 0, shown = 0, who = ""
 let mActive = false, mSnap = false, mFlash = 0, mShake = 0;
 // scene dressing drawn in code: props (things on the ground, a falling beam, writing on a board), a place caption,
 // the opening moon and the closing title
-interface Prop { id: string; kind: string; x: number; y: number; t: number; text?: string }
+interface Prop { id: string; kind: string; x: number; y: number; t: number; text?: string; endTick?: number }
 const LATE_PROPS = ["beam", "night", "black"];   // drawn over the people (a falling beam, the night coming on, black)
 let props: Prop[] = [];
 let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0, mWaitA = false, mTitleText = "서장 「혈월의 밤」 끝";
+let dissolve: { image: NonNullable<FM.FieldMap["img"]>; start: number; ticks: number } | null = null;
 let fadeTicks = 10, blackTicks = 0;
 let mFadeOut = 0, mFadeIn = 0, mFadeFor: Step | null = null, mFadeDone: Step | null = null;
 
@@ -141,7 +142,7 @@ export const active = () => mActive;
 export function begin(h: Host, play: Step[]): void {
   host = h; steps = play; mStep = 0; mWait = 0; mTick = 0; ents = []; quest = null; control = false; queue = []; page = [];
   camTarget = "player"; camFixed = null; mFallen = 0; mCheck = null; mActive = true;
-  map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0; mCarryG = 0; auras.length = 0;
+  dissolve = null; map = null; props = []; duel = null; mMoon = -1; mTitle = false; mWaitA = false; mFadeOut = 0; mFadeIn = 0; mFadeDone = null; mFlash = 0; mShake = 0; mCapT = 0; mCarryG = 0; auras.length = 0;
   run();
 }
 export function stop(): void { mActive = false; }
@@ -173,7 +174,7 @@ function exec(s: Step): boolean {
         blackTicks = Number(s.blackTicks ?? 0);
         mFadeOut = fadeTicks + blackTicks; mFadeFor = s; return false;
       }
-      mFadeDone = null; mFadeIn = 12;
+      dissolve = null; mFadeDone = null; mFadeIn = 12;
       const name = String(s.map);
       mMapName = name;
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
@@ -228,13 +229,19 @@ function exec(s: Step): boolean {
     case "cam": camTarget = String(s.follow ?? ""); camFixed = typeof s.x === "number" ? s.x : null; return true;
     case "wait": {
       // A narration can finish before or after the animation it accompanies.
-      const elapsed = s.sinceProp ? props.find(q => q.id === s.sinceProp)?.t : 0;
-      mWait = Math.max(0, Number(s.n) - (elapsed ?? 0));
+      const prop = s.sinceProp ? props.find(q => q.id === s.sinceProp) : undefined;
+      if (prop && typeof s.skipFrom === "number") {
+        prop.endTick = Number(s.n);
+        prop.t = Math.min(prop.t, prop.endTick);
+      }
+      mWait = Math.max(0, Number(s.n) - (prop?.t ?? 0));
       return mWait === 0;
     }
     case "swap": {                                 // the same place, changed (the bamboo after the cut): people and camera stay
       const name = String(s.map);
       if (!mapCache.has(name)) mapCache.set(name, MAPS[name]());
+      const ticks = Number(s.dissolveTicks ?? 0);
+      dissolve = ticks > 0 && map?.img ? { image: map.img, start: mTick, ticks } : null;
       map = mapCache.get(name)!;
       return true;
     }
@@ -343,16 +350,27 @@ function dialogueTick(): void {
   if (!talking()) { mStep++; run(); }
 }
 
+// A skippable prop wait has one common continuation. Mandatory story effects belong in
+// that continuation, so natural completion and skipping apply them exactly once.
+function skippableProp(): Prop | undefined {
+  const s = steps[mStep];
+  if (!mWait || s?.t !== "wait" || typeof s.skipFrom !== "number" || talking() || control || duel || quest) return;
+  const prop = props.find(q => q.id === s.sinceProp);
+  if (prop && prop.t >= s.skipFrom) return prop;
+}
+
 // ---------------------------------------------------------------- tick
 
 const puffs: { x: number; y: number; t: number }[] = [];
 
 export function tick(): void {
   mTick++;
+  if (dissolve && mTick - dissolve.start >= dissolve.ticks) dissolve = null;
   if (mCapT > 0) mCapT--;
   if (mShake > 0) mShake--;
   if (mMoon >= 0) mMoon++;
   for (const q of props) {
+    if (q.endTick !== undefined && q.t >= q.endTick) continue;
     q.t++;
     if (isBattleCut(q.kind)) battleContacts(q.x - camX, q.kind, q.t);
   }
@@ -367,8 +385,19 @@ export function tick(): void {
   }
   if (mNoticeT > 0) mNoticeT--;
   if (mHitStop > 0) { mHitStop--; if (duel && duel.dark > 0) duel.dark--; FX.update(); return; }   // freeze: the darkness runs out with it
-  if (talking()) dialogueTick();
-  else if (mWait > 0) { mWait--; if (mWait === 0) { mStep++; run(); } }
+  if (talking()) {
+    const usedA = K.isPressed(K.BTN_LP);
+    dialogueTick();
+    if (usedA && !talking() && (control || duel)) { camera(); return; }
+  } else if (mWait > 0) {
+    const skip = K.isPressed(K.BTN_LP) && skippableProp();
+    if (skip) {
+      skip.t = Number(steps[mStep].n);
+      mWait = 0; mStep++; run(); camera();
+      return; // This edge belongs to the cut, even if the continuation opens a dialogue or quest.
+    }
+    if (--mWait === 0) { mStep++; run(); }
+  }
 
   const p = player();
   for (const e of ents) if (e.flash > 0) e.flash--;
@@ -580,6 +609,10 @@ export function render(): void {
   if (!map) { R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); return; }
   if (mTitle) { titleRender(); return; }
   FM.drawBack(map, camX, mTick);
+  if (dissolve) {
+    const { image, start, ticks } = dissolve;
+    R.blendPicture(image.pix, image.w, image.h, camX * PX, 1 - (mTick - start) / ticks);
+  }
   if (duel && duel.dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, 0, 0.55);   // super freeze / heavy impact: the world goes dark
   for (const q of props) if (!LATE_PROPS.includes(q.kind)) drawProp(q);
   const order = ents.slice().sort((a, b) => (a.small ? 1 : 0) - (b.small ? 1 : 0) || (a.id === "player" ? 1 : 0) - (b.id === "player" ? 1 : 0));
@@ -636,6 +669,7 @@ export function render(): void {
   }
   if (mFlash > 0) { R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(250, 248, 255), Math.min(1, mFlash / 6)); }
   if (mWaitA && Math.trunc(mTick / 6) % 2 === 0) KF.draw("A ▼", R.PHYS_W - 20, R.PHYS_H - 34, RGB(240, 196, 96), 2, 2);
+  if (skippableProp()) KF.draw("A SKIP", R.PHYS_W - 14, R.PHYS_H - 24, RGB(232, 215, 178), 1, 2);
   hud();
   if (talking()) dialogueRender();
   const dark = mFadeOut > 0 ? 1 - Math.max(0, mFadeOut - blackTicks) / fadeTicks : mFadeIn / 12;
@@ -750,6 +784,9 @@ function drawProp(q: Prop): void {
     case "black": R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); break;
     case "mapBurn":
       if (map?.img) drawScrollBurn(q.t, map.img.pix, map.img.w);
+      break;
+    case "altarStandoff":
+      if (map?.img) drawAltarStandoff(map.img, q.t);
       break;
     case "altarDuel":
       if (map?.img) drawAltarDuel(map.img, q.t);

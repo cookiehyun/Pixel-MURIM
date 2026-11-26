@@ -39,8 +39,8 @@ const corpses = [
 ];
 // The standing swordsman body is 40 art pixels tall. Hyeolma is 41 × 1.65
 // on screen; these two scales keep the hooded troops within 88–92% of him.
-function acolyte(pose: string, x: number, lane: Lane, left: boolean): void {
-  R.drawSprite(spriteId("sd_blood_acolyte." + pose), Math.round(x), lane.y, left, -1, 0, lane === front ? 1.54 : 1.50);
+function acolyte(pose: string, x: number, lane: Lane, left: boolean, smooth = false): void {
+  R.drawSprite(spriteId("sd_blood_acolyte." + pose), smooth ? x : Math.round(x), lane.y, left, -1, 0, lane === front ? 1.54 : 1.50);
 }
 const castX = 180;
 const insertX = (worldX: number) => 22 + (worldX - 86) * 1.46;
@@ -126,13 +126,15 @@ function master(x: number, t: number, casting: boolean): void {
   }
 }
 
-function risen(x: number, lane: Lane, frame: string): void {
+function risen(x: number, lane: Lane, frame: string, marching = false): void {
   const key = "sd_gangsi." + frame;
-  draw(key, x, lane, true, 1.08);
+  const id = spriteId(key), z = lane.zoom * 1.08;
+  // The heads of walk_1/2 sit one art texel ahead of walk_0 relative to the foot anchor.
+  const center = marching ? x + (frame === "walk_0" ? 0 : z / R.PX) : Math.round(x);
+  R.drawSprite(id, center, lane.y, true, -1, 0, z);
   if (frame.startsWith("walk")) {
-    const id = spriteId(key), z = lane.zoom * 1.08;
     const dx = D.SprAX[id] - (frame === "walk_0" ? 16 : 15);
-    R.physRect(Math.round(x) * R.PX + Math.round(dx * z),
+    R.physRect(Math.round(center * R.PX) + Math.round(dx * z),
       (lane.y + 1) * R.PX + Math.round((10 - D.SprAY[id]) * z), 3, 2, ember);
   }
 }
@@ -160,16 +162,16 @@ function ritualBody(x: number, lane: Lane, body: string, scale: number, left: bo
 
 // Measured in world pixels. The same distance drives footfalls until each rank stops.
 function march(t: number, rank: number, start: number, end: number, ghoul: boolean, lane: Lane, origin: number): void {
-  const distance = Math.min(start - end, t * .4 * (.94 + .025 * (rank % 6)));
-  const moving = distance < start - end;
+  const age = Math.max(0, t - rank % 5);
+  const ramp = 12, speed = .4 * (.94 + .025 * (rank % 6));
+  const travel = start - end;
+  const distance = Math.min(travel, speed * (age < ramp ? age * age / (2 * ramp) : age - ramp / 2));
   const x = origin + start - distance;
-  if (ghoul) {
-    const frame = moving ? [0, 1, 2, 1][Math.floor(distance / 4 + rank * .67) % 4] : 0;
-    risen(x, lane, "walk_" + frame);
-  } else {
-    const pose = moving ? "walk_" + (Math.floor(distance / 3.5 + rank * .36) % 2) : "idle_0";
-    acolyte(pose, x, lane, true);
-  }
+  // Complete whole strides so both endpoints share the standing frame.
+  const cycles = Math.max(1, Math.round(travel / (ghoul ? 16 : 8)));
+  const phase = distance / travel * cycles;
+  if (ghoul) risen(x, lane, "walk_" + [0, 1, 2, 1][Math.floor(phase * 4) % 4], true);
+  else acolyte(distance > 0 && distance < travel ? "walk_" + Math.floor(phase * 2) % 2 : "idle_0", x, lane, true, true);
 }
 
 function aftermathRanks(origin: number, lane: Lane, cut: BattleCut, t: number): void {

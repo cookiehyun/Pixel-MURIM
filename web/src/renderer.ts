@@ -149,12 +149,13 @@ export function setHiScale(n: number): void { mHiS = n; }
 export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt: boolean | number = false, artScale = 0): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
+  const screenX = Math.round(x * PX);
   x = Math.trunc(x); y = Math.trunc(y);
   if (D.SprHi[id]) {                                  // hi-res art: S x S screen pixels per art pixel (S = HI, or 3 for SD fighters in a fight)
     // Story lanes can fall between integer zoom levels. Snap both edges of each texel
     // to screen pixels, relative to the ground anchor, so adjacent texels tile exactly.
     if (artScale && !Number.isInteger(artScale)) {
-      const ground = (y + 1) * PX, center = x * PX;
+      const ground = (y + 1) * PX, center = screenX;
       for (let sy = 0; sy < h; sy++) {
         const top = ground + Math.round((sy - ay - 1) * artScale);
         const bottom = ground + Math.round((sy - ay) * artScale);
@@ -450,6 +451,16 @@ export function blitPhys(pix: Int32Array, pw: number, ph: number, sx: number, sy
     if (ty < 0 || ty >= PH) continue;
     const so = y * pw + sx, to = ty * PW;
     for (let x = x0; x < x1; x++) { const c = pix[so + x]; if (c !== -1) back[to + x] = c; }
+  }
+}
+
+export function blendPicture(pix: Int32Array, width: number, height: number, sx: number, opacity: number): void {
+  sx = Math.round(sx);
+  for (let y = 0; y < Math.min(PH, height); y++) {
+    for (let x = Math.max(0, -sx); x < Math.min(PW, width - sx); x++) {
+      const color = pix[y * width + sx + x];
+      if (color >= 0) blendAt(y * PW + x, color, opacity);
+    }
   }
 }
 
