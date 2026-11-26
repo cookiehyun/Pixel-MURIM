@@ -92,10 +92,12 @@ const { chromium } = require('playwright');
       for (let tick = 0; tick < 4000; tick++) {
         const d = JSON.parse(story.fieldDebug());
         const step = steps[d.step];
-        if (steps[d.step - 1]?.kind === 'scrollfire') break;
+        if (steps[d.step - 1]?.t === 'cam' && steps[d.step - 2]?.map === 'scroll_map') break;
         const cut = steps.slice(0, d.step).findLast(s => s.id === 'war')?.kind;
         age = cut === activeCut ? age + 1 : 0;
         activeCut = cut;
+        if (step.text === '후세는 그날을 혈월의 밤이라 불렀다.' && (cut !== 'warRise' || age < 110))
+          throw Error('Naming line appeared before the first three ghouls stood up');
         if (step.t === 'say' && d.step !== lastStep) lines.push(step.text);
         lineAge = d.step === lastStep ? lineAge + 1 : 0;
         lastStep = d.step;
@@ -147,6 +149,7 @@ const { chromium } = require('playwright');
       '그리고 그날 밤, 혈교가 모습을 드러냈다.',
       '그들의 교주, 혈마.',
       '쓰러진 자들마저 그의 군세가 되었고,\n죽은 자들은 다시 일어났다.',
+      '후세는 그날을 혈월의 밤이라 불렀다.',
       '혈월의 밤, 중원은 피와 공포로 뒤덮였다.',
     ]);
     assert.deepEqual(results.black, { blood_battlefield: 20, scroll_map: 3 });

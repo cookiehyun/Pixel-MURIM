@@ -3,6 +3,7 @@
 // script (docs/story/*.md, chapter sections pre / post); "say" adds a field-only line.
 // Design notes per chapter: docs/story/play/.
 import type { Step } from "./field";
+import { SCROLL_BURN_END } from "./scrollBurn";
 import type { BattleCut } from "./prologueBattle";
 
 function warCut(kind: BattleCut, x = 60): Step {
@@ -44,6 +45,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "wait", n: 12 },
       narration("쓰러진 자들마저 그의 군세가 되었고,\n죽은 자들은 다시 일어났다."),
       { t: "wait", n: 110, sinceProp: "war" },
+      narration("후세는 그날을 혈월의 밤이라 불렀다."),
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
       warCut("warRout"),
@@ -55,10 +57,13 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       // SCENE 02. 정마연합과 혈마의 최후
       { t: "map", map: "scroll_map", fadeTicks: 32, blackTicks: 3 },
       { t: "cam", x: 0 },
-      { t: "prop", id: "fire", kind: "scrollfire", x: 0, y: 0 },
-      { t: "wait", n: 80 },
-      { t: "say", who: "해설", text: "여러 문파가 무너지고 온 강호가 위기에 빠지자,\n무림맹과 마교는 마침내 힘을 합쳤다." },
-      { t: "wait", n: 90 },
+      { t: "wait", n: 32 }, // twelve-tick fade-in, then one full second of undisturbed map
+      { t: "prop", id: "paper", kind: "mapBurn", x: 0 },
+      { t: "wait", n: 66 },
+      narration("중원의 수많은 문파가 무너졌고,"),
+      { t: "wait", n: SCROLL_BURN_END, sinceProp: "paper" },
+      { t: "wait", n: 18 },
+      narration("무림맹과 마교는 혈교를 막기 위해 손을 잡았다."),
       // the altar: the alliance lord and the Heavenly Demon of that day face the Blood Demon
       { t: "map", map: "blood_altar" },
       { t: "cam", x: 54 },

@@ -12,6 +12,7 @@ import * as Fighter from "./fighter";
 import { MV_LP, MV_HP, MV_LK, MV_HK, MV_SP1, MV_JP, MV_JK } from "./fighter";
 import { D, animId, animFrame, animFrameHold, spriteId, hasSprite, moveId, MT_RUSH, MT_NORMAL, MT_SUPER_QUAKE, LV_UNBLOCK } from "./data";
 import * as FM from "./fieldmap";
+import { drawScrollBurn } from "./scrollBurn";
 import { drawBloodBattle, battleContacts, isBattleCut } from "./prologueBattle";
 import { RGB } from "./util";
 
@@ -746,31 +747,9 @@ function drawProp(q: Prop): void {
     }
     case "night": R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(8, 12, 36), Math.min(0.55, q.t / 160)); break;
     case "black": R.physRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0)); break;
-    case "scrollfire": {                                   // the scroll map: towns catch fire one by one, then the two flags close in
-      const towns = [[46, 38], [53, 79], [146, 28], [156, 64], [55, 55], [126, 49]];
-      towns.forEach(([x, y], k) => {
-        const age = q.t - k * 14;
-        if (age < 0 || k === 5) return;
-        const fx = x * PX, fy = y * PX, g = Math.min(1, age / 20);
-        R.shadeCircle(fx, fy, 22 * g, RGB(160, 20, 20), 0.35);
-        for (let f = 0; f < 5; f++) {
-          const h = (8 + ((q.t * 3 + f * 7 + k * 5) % 10)) * g;
-          R.shadeRect(fx - 12 + f * 5, fy - h * 1.5, 5, h * 1.5, f % 2 ? RGB(255, 140, 30) : RGB(220, 40, 20), 0.85);
-        }
-      });
-      const ft = q.t - 100;
-      if (ft > 0) {                                        // the alliance's white flag from the left, the cult's black flag from the right
-        const u = Math.min(1, ft / 70), tx = 126 * PX, ty = 49 * PX;
-        for (const [x0, c, c2] of [[-10, RGB(240, 236, 220), RGB(214, 180, 90)], [202, RGB(30, 20, 36), RGB(150, 90, 210)]] as [number, number, number][]) {
-          const x = (x0 * PX) + (tx + (x0 < 0 ? -24 : 24) - x0 * PX) * u, y = 64 * PX + (ty - 64 * PX) * u;
-          R.physRect(x, y - 42, 3, 48, RGB(70, 44, 24));
-          R.physRect(x + (x0 < 0 ? 3 : -27), y - 42, 27, 18, c2);
-          R.physRect(x + (x0 < 0 ? 5 : -25), y - 40, 23, 14, c);
-        }
-        if (u >= 1) R.shadeCircle(tx, ty, 26 + Math.sin(q.t * 0.3) * 3, RGB(200, 10, 20), 0.45);   // the cult's seat, where they meet
-      }
+    case "mapBurn":
+      if (map?.img) drawScrollBurn(q.t, map.img.pix, map.img.w);
       break;
-    }
     case "bloodback": {                                    // one drop climbs back up the groove into the scar
       const path = [[60, 73], [72, 74], [84, 75], [92, 68], [104, 55]];
       const u = (q.t - 40) / 110;

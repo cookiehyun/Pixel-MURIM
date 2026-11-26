@@ -239,7 +239,7 @@ export function drawBloodBattle(origin: number, cut: BattleCut, t: number): void
         origin + group + i * 5, rear, !!(i % 2), .65, RGB(53, 27, 31));
   }
   const insert = cut === "warSummon" || cut === "warRise";
-  if (cut !== "warClash") master(origin + (insert ? insertX(castX) : castX), cut === "warRise" ? t + 60 : t, insert || (cut === "warSecondRise" && t < 121));
+  if (cut !== "warClash") master(origin + (insert ? insertX(castX) : castX), cut === "warRise" ? t + 60 : t, (insert && t < 110) || (cut === "warSecondRise" && t < 121));
   for (const lane of [middle, front]) {
     if (cut === "warClash") clash(origin, lane, t);
     else if (insert) {
