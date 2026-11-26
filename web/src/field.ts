@@ -131,6 +131,8 @@ interface Prop { id: string; kind: string; x: number; y: number; t: number; text
 const LATE_PROPS = ["beam", "night", "black"];   // drawn over the people (a falling beam, the night coming on, black)
 let props: Prop[] = [];
 let mCap = "", mCapT = 0, mMoon = -1, mTitle = false, mTitleT = 0, mWaitA = false, mTitleText = "서장 「혈월의 밤」 끝";
+let autoPageTicks = 0;
+let fadeTicks = 10, blackTicks = 0;
 let mFadeOut = 0, mFadeIn = 0, mFadeFor: Step | null = null, mFadeDone: Step | null = null;
 
 export const active = () => mActive;
@@ -165,7 +167,11 @@ function lookOf(v: unknown): Look {
 function exec(s: Step): boolean {
   switch (s.t) {
     case "map": {
-      if (mFadeDone !== s && map) { mFadeOut = 10; mFadeFor = s; return false; }   // go dark first (nothing to hide at the start)
+      if (mFadeDone !== s && map) {
+        fadeTicks = Number(s.fadeTicks ?? 10);
+        blackTicks = Number(s.blackTicks ?? 0);
+        mFadeOut = fadeTicks + blackTicks; mFadeFor = s; return false;
+      }
       mFadeDone = null; mFadeIn = 12;
       const name = String(s.map);
       mMapName = name;
@@ -311,6 +317,7 @@ function nextLine(): void {
   }
 }
 function setPage(text: string): void {
+  autoPageTicks = Number(steps[mStep]?.readTicks ?? 0);
   page = KF.wrap((dir ? "(" + dir + ")\n" : "") + text, who && who !== "해설" ? 420 : 500, 2); pageAt = 0; shown = 0;
   // the speaker turns to whoever they are talking to
   const sp = ents.find((e) => e.look === host!.look(who) || (host!.look(who) && e.look[2] === host!.look(who)![2] && e.look[1] === host!.look(who)![1]));
@@ -325,9 +332,15 @@ const talking = () => page.length > 0;
 
 function dialogueTick(): void {
   shown += 2;
-  if (!K.isPressed(K.BTN_LP)) return;
-  if (shown < pageLen()) { shown = 9999; return; }
-  if (pageAt + 3 < page.length) { pageAt += 3; shown = 0; return; }
+  if (autoPageTicks > 0) {
+    if (--autoPageTicks > 0) return;
+  } else {
+    if (!K.isPressed(K.BTN_LP)) return;
+    if (shown < pageLen()) { shown = 9999; return; }
+  }
+  if (pageAt + 3 < page.length) {
+    pageAt += 3; shown = 0; autoPageTicks = Number(steps[mStep]?.readTicks ?? 0); return;
+  }
   nextLine();
   if (!talking()) { mStep++; run(); }
 }
@@ -627,7 +640,7 @@ export function render(): void {
   if (mWaitA && Math.trunc(mTick / 6) % 2 === 0) KF.draw("A ▼", R.PHYS_W - 20, R.PHYS_H - 34, RGB(240, 196, 96), 2, 2);
   hud();
   if (talking()) dialogueRender();
-  const dark = mFadeOut > 0 ? 1 - mFadeOut / 10 : mFadeIn / 12;
+  const dark = mFadeOut > 0 ? 1 - Math.max(0, mFadeOut - blackTicks) / fadeTicks : mFadeIn / 12;
   if (dark > 0) R.shadeRect(0, 0, R.PHYS_W, R.PHYS_H, RGB(0, 0, 0), Math.min(1, dark));
   if (mNoticeT > 0) { R.shadeRect(0, 132, R.PHYS_W, 36, RGB(14, 11, 22), 0.9); KF.draw(mNotice, R.PHYS_W / 2, 140, RGB(240, 196, 96), 2, 1); }
 }
@@ -701,7 +714,7 @@ function dialogueRender(): void {
     left -= [...ls[k]].length;
     KF.draw(s, kind === "cut" ? 30 : tx, BY + 8 + k * 24, c, 2);
   }
-  if (shown >= pageLen()) {
+  if (shown >= pageLen() && !autoPageTicks) {
     KF.draw("A", R.PHYS_W - 52, BY + BH - 24, RGB(170, 160, 190), 2);
     if (Math.trunc(mTick / 6) % 2 === 0) KF.draw("▼", R.PHYS_W - 34, BY + BH - 24, RGB(240, 196, 96), 2);
   }

@@ -1,5 +1,5 @@
 // The three living defenders, the three acolytes and the three bodies are
-// separate casts. A narrated cut can be held indefinitely at its last tableau.
+// separate casts. Their final positions carry into the march.
 import * as R from "./renderer";
 import * as FX from "./fx";
 import { D, spriteId } from "./data";
@@ -9,9 +9,9 @@ const rear = { y: 83, zoom: 1 };
 const middle = { y: 89, zoom: 1.65 };
 const front = { y: 96, zoom: 2 };
 type Lane = typeof front;
-export type BattleCut = "warClash" | "warSummon" | "warRise" | "warRout" | "warHold";
+export type BattleCut = "warClash" | "warSummon" | "warRise" | "warRout" | "warMarch";
 export function isBattleCut(kind: string): kind is BattleCut {
-  return ["warClash", "warSummon", "warRise", "warRout", "warHold"].includes(kind);
+  return ["warClash", "warSummon", "warRise", "warRout", "warMarch"].includes(kind);
 }
 const stride = (t: number, period: number) => Math.floor(t / period) % 2;
 function slide(from: number, to: number, t: number, start: number, end: number): number {
@@ -154,9 +154,15 @@ function ritual(origin: number, lane: Lane, cut: BattleCut, t: number): void {
   });
 }
 
+// One fourth of the field NPC walk speed (1.6 world pixels per tick).
+// Advance the gait by distance on the ground so slower ranks also step less often.
+function marchDistance(t: number, rank: number): number {
+  return t * .4 * (.94 + .025 * rank);
+}
+
 function reversal(origin: number, lane: Lane, cut: BattleCut, t: number): void {
-  const hold = cut === "warHold";
-  const attack = hold ? 87 : Math.min(t, 87);
+  const marching = cut === "warMarch";
+  const attack = marching ? 80 : Math.min(t, 80);
   defenders.forEach((d, i) => {
     if (d.lane !== lane) return;
     let x = d.line, pose: string;
@@ -168,39 +174,40 @@ function reversal(origin: number, lane: Lane, cut: BattleCut, t: number): void {
       pose = attack < 50 ? "guard" : attack < 60 ? "hit_0" : d.down;
       x = slide(x, 37, attack, 50, 62);
     } else {
-      pose = attack < 62 ? "guard" : "hit_0";
-      x = slide(x, 59, attack, 62, 84);
-      if (hold) {
-        x = slide(x, -18, t, 0, 49);
-        pose = "walk_" + 2 * stride(t, 4);
-      }
+      pose = attack < 62 ? "guard" : attack < 80 ? "hit_0" : d.down;
+      x = slide(x, 59, attack, 62, 79);
     }
-    draw(d.sheet + "." + pose, origin + x, lane, i === 2 && hold, d.scale);
+    draw(d.sheet + "." + pose, origin + x, lane, false, d.scale);
   });
   acolytes.forEach((c, i) => {
     if (lane !== c.lane) return;
     const start = 8 + i * 3, stop = i === 1 ? 49 : 58;
-    const x = slide(c.line, c.contact, attack, start, stop);
+    const distance = marching ? marchDistance(t, i * 2) : 0;
+    const x = slide(c.line, c.contact, attack, start, stop) - distance;
     let pose = attack > start && attack < stop ? "walk_0" : "idle_0";
     if (i === 1 && attack >= 42 && attack < 60) pose = attack < 50 ? "atk_0" : "atk_1";
+    if (marching) pose = Math.floor(distance / 3.5 + i * .72) % 2 ? "walk_0" : "idle_0";
     draw("sd_blood_acolyte." + pose, origin + x, lane, true, 1.22);
   });
   corpses.forEach((c, i) => {
     if (lane !== c.lane) return;
     const stop = [40, 60, 64][i];
     const drag = i === 0 ? slide(0, 5, attack, 40, 59) : 0;
-    const x = slide(c.x, c.contact, attack, 6 + i * 4, stop) + drag;
+    const distance = marching ? marchDistance(t, i * 2 + 1) : 0;
+    const x = slide(c.x, c.contact, attack, 6 + i * 4, stop) + drag - distance;
     let pose = attack < stop ? "walk_" + [0, 1, 2, 1][Math.floor(t / 6) % 4] : "walk_0";
-    if (!hold && attack >= stop && attack < stop + 20) pose = i === 0 ? "stab" : i === 1 ? "atk_1" : "guard";
+    if (attack < 80 && attack >= stop && attack < stop + 20) pose = i === 0 ? "stab" : i === 1 ? "atk_1" : "guard";
+    if (marching) pose = "walk_" + [0, 1, 2, 1][Math.floor(distance / 4 + i * 1.35) % 4];
     risen(origin + x, lane, pose);
   });
 }
 
 export function drawBloodBattle(origin: number, cut: BattleCut, t: number): void {
   // Tiny figures stay on the distant rock/sand boundary, behind every speaking cut.
+  const rearTick = cut === "warMarch" ? 80 : cut === "warRout" ? Math.min(t, 80) : t;
   for (const group of [13, 65, 117]) {
     for (let i = 0; i < 5; i++)
-      draw(i % 2 ? "sd_blood_acolyte.atk_0" : "sd_monk.run_" + stride(t + i, 8),
+      draw(i % 2 ? "sd_blood_acolyte.atk_0" : "sd_monk.run_" + stride(rearTick + i, 8),
         origin + group + i * 5, rear, !!(i % 2), .65, RGB(53, 27, 31));
   }
   const insert = cut === "warSummon" || cut === "warRise";
