@@ -32,7 +32,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
       { t: "prop", id: "fallen", kind: "corpseRising", x: 60 },
-      { t: "wait", n: 150 },
+      { t: "wait", n: 168 },
       { t: "say", who: "해설", text: "쓰러진 자들마저 그의 군세가 되었고,\n중원의 수많은 문파가 무너졌다." },
       { t: "say", who: "해설", text: "후세는 그 시작을 혈월의 밤이라 불렀다." },
       // SCENE 02. 정마연합과 혈마의 최후

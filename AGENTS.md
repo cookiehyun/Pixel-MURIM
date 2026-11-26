@@ -163,7 +163,7 @@ python3 tools/sd_build.py <char> /tmp/out --install                        # 시
 
 - **새 각본은 `docs/story_new/`** (설정 `bible.md`, 연속성 `continuity.md`). `docs/story/`는 옛 각본이고, 아직 서장만 새 각본으로 옮겼다.
 - 서장 「혈월의 밤」: **대사 없이 해설과 화면으로 흐르는 짧은 컷신**. 붉은 달 → 혈월 전장·혈마 → 혈강시 네 구의 기상·추격 → 두루마리 지도 → 혈교 제단의 맹주·천마 대 혈마 → 혈마의 손과 핏방울 → 두 깃발 → 백 년 (같은 자리 3장) → 낙양 장터 → 우물가 개 → 우물 물결 → 암전, 제목 「혈월」.
-  - 첫 표제는 ‘서장’과 ‘혈월의 밤’ 두 줄. 전장은 전경에 양측 일곱 명씩, 후경에 두 겹의 군세를 둔다. 오른쪽 후방 혈마도 필드 배율 2를 쓴다. 혈강시 기상은 전용 5자세(원본 243)에서 기존 보행으로 잇는다. 기준 그림과 프롬프트는 docs/art/prologue_gangsi/에 있다.
+  - 첫 표제는 ‘서장’과 ‘혈월의 밤’ 두 줄. 혈월 전장은 바닥선 세 개(월드 Y 83·89·96)를 쓴다. 교도와 수도승은 필드 실물, 검객은 스토리 ‘무사’ 외형, 오른쪽 혈마는 대전 실물이다. 전경·중경에 3조씩 배치한다. 혈강시는 게임 보행 프레임의 픽셀로 기상 5자세와 사이 동작을 만든다. 배율과 시전·전파 시점은 `prologueBattle.ts`에 있다.
   - 글꼴에 月이 없어서 제목은 「혈월」 한글로 쓴다. 새 글자는 `web/data/kfont.txt`에 있어야 한다.
   - 옛 서장에 있던 주인공 소개 장면은 빠졌다 → 각 주인공 편 1장으로 옮겨야 한다.
 - 컷신 코드: `web/src/plays.ts`의 `PLAYS[route][chapter]` 단계 목록. 단계: `map, spawn, pose, face, move, follow, remove, vanish, cam, wait, swap, flash, shake, caption, moon, prop, unprop, title(text), waitA, narr, duel, ev, say(who "해설" = 해설), clue, hostile, quest, fight, end, cutscene`.

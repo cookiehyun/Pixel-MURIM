@@ -127,12 +127,32 @@ let mHiS = 0;                                          // 0: each sprite's own s
 export function setHiScale(n: number): void { mHiS = n; }
 
 /** Draw sprite with its anchor (ground point under the hip) on world point (x, y). flip mirrors; tint >= 0 paints it one color. */
-export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt: boolean | number = false): void {
+export function drawSprite(id: number, x: number, y: number, flip: boolean, tint = -1, alt: boolean | number = false, artScale = 0): void {
   const w = D.SprW[id], h = D.SprH[id], ax = D.SprAX[id], ay = D.SprAY[id], off = D.SprOff[id];
   const pix = pixels(id, alt);
   x = Math.trunc(x); y = Math.trunc(y);
   if (D.SprHi[id]) {                                  // hi-res art: S x S screen pixels per art pixel (S = HI, or 3 for SD fighters in a fight)
-    const S = mHiS || D.SprHiS[id] || HI, X = x * PX + (PX - S >> 1), Y = y * PX + PX - S;   // anchor pixel sits on the world pixel
+    // Story lanes can fall between integer zoom levels. Snap both edges of each texel
+    // to screen pixels, relative to the ground anchor, so adjacent texels tile exactly.
+    if (artScale && !Number.isInteger(artScale)) {
+      const ground = (y + 1) * PX, center = x * PX;
+      for (let sy = 0; sy < h; sy++) {
+        const top = ground + Math.round((sy - ay - 1) * artScale);
+        const bottom = ground + Math.round((sy - ay) * artScale);
+        if (bottom <= 0 || top >= PH) continue;
+        for (let sx = 0; sx < w; sx++) {
+          const color = pix[off + sy * w + sx];
+          if (color < 0) continue;
+          const dx = flip ? ax - sx : sx - ax;
+          const left = Math.round(dx * artScale);
+          const right = Math.round((dx + 1) * artScale);
+          if (center + right > 0 && center + left < PW)
+            physRect(center + left, top, right - left, bottom - top, tint >= 0 ? tint : color);
+        }
+      }
+      return;
+    }
+    const S = artScale || mHiS || D.SprHiS[id] || HI, X = x * PX + (PX - S >> 1), Y = y * PX + PX - S;   // anchor pixel sits on the world pixel
     for (let sy = 0; sy < h; sy++) {
       const py = Y + (sy - ay) * S;
       if (py <= -S || py >= PH) continue;

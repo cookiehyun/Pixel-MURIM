@@ -717,7 +717,7 @@ function drawProp(q: Prop): void {
   const sx = Math.round((q.x - camX) * PX), sy = Math.round(q.y * PX);
   switch (q.kind) {
     case "battleLines": case "corpseRising":
-      drawBloodBattle(q.x - camX, q.t, q.kind === "corpseRising");
+      drawBloodBattle(q.x - camX, q.t, q.kind === "corpseRising", host!.look("무사")!);
       break;
     case "beads":                                          // a broken string of wooden prayer beads, scattered
       for (const [dx, dy] of [[-14, 0], [-9, -1], [-4, 1], [2, 0], [7, -1], [12, 1], [17, 0], [22, 1]])
