@@ -1,0 +1,898 @@
+[
+  {
+    "move": "chp",
+    "face": 1,
+    "inputDistance": 12,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 12,
+        "centerPixels": 12,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 80,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 4,
+        "distance": 14.200000000000003,
+        "centerPixels": 14,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 100,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 15.740000000000009,
+        "centerPixels": 16,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 98,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 80
+  },
+  {
+    "move": "chp",
+    "face": 1,
+    "inputDistance": 18,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 18,
+        "centerPixels": 18,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 4,
+        "distance": 18,
+        "centerPixels": 18,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 100,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 80,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 20.200000000000003,
+        "centerPixels": 20,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 98,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 80,
+    "boundary": "last hit"
+  },
+  {
+    "move": "chp",
+    "face": 1,
+    "inputDistance": 19,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 19,
+        "centerPixels": 19,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 4,
+        "distance": 19,
+        "centerPixels": 19,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 100,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 5,
+        "distance": 19,
+        "centerPixels": 19,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 98,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      }
+    ],
+    "damage": 0,
+    "boundary": "first miss"
+  },
+  {
+    "move": "chp",
+    "face": 1,
+    "inputDistance": 6,
+    "target": "air",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 6,
+        "centerPixels": 6,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 80,
+        "result": "air",
+        "hits": 1
+      },
+      {
+        "tick": 4,
+        "distance": 8.200000000000003,
+        "centerPixels": 8,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 100,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "air",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 10.400000000000006,
+        "centerPixels": 10,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 98,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "air",
+        "hits": 1
+      }
+    ],
+    "damage": 80
+  },
+  {
+    "move": "lp",
+    "face": 1,
+    "inputDistance": 15,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 2,
+        "distance": 15,
+        "centerPixels": 15,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 30,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 3,
+        "distance": 15.799999999999997,
+        "centerPixels": 16,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 30
+  },
+  {
+    "move": "lp",
+    "face": 1,
+    "inputDistance": 16,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 2,
+        "distance": 16,
+        "centerPixels": 16,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 3,
+        "distance": 16,
+        "centerPixels": 16,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 94,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      }
+    ],
+    "damage": 0
+  },
+  {
+    "move": "hk",
+    "face": 1,
+    "inputDistance": 28,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 4,
+        "distance": 24.39999999999999,
+        "centerPixels": 24,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 102,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 100,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 26.599999999999994,
+        "centerPixels": 26,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 102,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 6,
+        "distance": 28.14,
+        "centerPixels": 28,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 102,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 100
+  },
+  {
+    "move": "hk",
+    "face": 1,
+    "inputDistance": 29,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 4,
+        "distance": 25.39999999999999,
+        "centerPixels": 25,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 102,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 5,
+        "distance": 25.39999999999999,
+        "centerPixels": 25,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 102,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 6,
+        "distance": 25.39999999999999,
+        "centerPixels": 25,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 102,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      }
+    ],
+    "damage": 0
+  },
+  {
+    "move": "chp",
+    "face": -1,
+    "inputDistance": 12,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 12,
+        "centerPixels": 12,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 83,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 80,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 4,
+        "distance": 14.200000000000003,
+        "centerPixels": 14,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 77,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 15.740000000000009,
+        "centerPixels": 16,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 79,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 80
+  },
+  {
+    "move": "chp",
+    "face": -1,
+    "inputDistance": 18,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 18,
+        "centerPixels": 18,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 83,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 4,
+        "distance": 18,
+        "centerPixels": 18,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 77,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 80,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 20.200000000000003,
+        "centerPixels": 20,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 79,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 80,
+    "boundary": "last hit"
+  },
+  {
+    "move": "chp",
+    "face": -1,
+    "inputDistance": 19,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 19,
+        "centerPixels": 19,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 83,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 4,
+        "distance": 19,
+        "centerPixels": 19,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 77,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 5,
+        "distance": 19,
+        "centerPixels": 19,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 79,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      }
+    ],
+    "damage": 0,
+    "boundary": "first miss"
+  },
+  {
+    "move": "chp",
+    "face": -1,
+    "inputDistance": 6,
+    "target": "air",
+    "frames": [
+      {
+        "tick": 3,
+        "distance": 6,
+        "centerPixels": 6,
+        "sprite": "danwoo_chp.drive",
+        "boxes": [
+          {
+            "x": 83,
+            "y": 61,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 80,
+        "result": "air",
+        "hits": 1
+      },
+      {
+        "tick": 4,
+        "distance": 8.200000000000003,
+        "centerPixels": 8,
+        "sprite": "danwoo_chp.rise",
+        "boxes": [
+          {
+            "x": 77,
+            "y": 57,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "air",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 10.400000000000006,
+        "centerPixels": 10,
+        "sprite": "danwoo_chp.peak",
+        "boxes": [
+          {
+            "x": 79,
+            "y": 53,
+            "w": 4,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "air",
+        "hits": 1
+      }
+    ],
+    "damage": 80
+  },
+  {
+    "move": "lp",
+    "face": -1,
+    "inputDistance": 15,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 2,
+        "distance": 15,
+        "centerPixels": 15,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 82,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 30,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 3,
+        "distance": 15.799999999999997,
+        "centerPixels": 16,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 82,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 30
+  },
+  {
+    "move": "lp",
+    "face": -1,
+    "inputDistance": 16,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 2,
+        "distance": 16,
+        "centerPixels": 16,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 82,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 3,
+        "distance": 16,
+        "centerPixels": 16,
+        "sprite": "danwoo.lp_1",
+        "boxes": [
+          {
+            "x": 82,
+            "y": 69,
+            "w": 5,
+            "h": 5
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      }
+    ],
+    "damage": 0
+  },
+  {
+    "move": "hk",
+    "face": -1,
+    "inputDistance": 28,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 4,
+        "distance": 24.39999999999999,
+        "centerPixels": 24,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 71,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 100,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 5,
+        "distance": 26.599999999999994,
+        "centerPixels": 26,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 71,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      },
+      {
+        "tick": 6,
+        "distance": 28.139999999999993,
+        "centerPixels": 28,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 71,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "hit",
+        "hits": 1
+      }
+    ],
+    "damage": 100
+  },
+  {
+    "move": "hk",
+    "face": -1,
+    "inputDistance": 29,
+    "target": "standing",
+    "frames": [
+      {
+        "tick": 4,
+        "distance": 25.39999999999999,
+        "centerPixels": 25,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 71,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 5,
+        "distance": 25.39999999999999,
+        "centerPixels": 25,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 71,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      },
+      {
+        "tick": 6,
+        "distance": 25.39999999999999,
+        "centerPixels": 25,
+        "sprite": "danwoo.hk_1",
+        "boxes": [
+          {
+            "x": 71,
+            "y": 59,
+            "w": 8,
+            "h": 6
+          }
+        ],
+        "damage": 0,
+        "result": "whiff",
+        "hits": 0
+      }
+    ],
+    "damage": 0
+  }
+]

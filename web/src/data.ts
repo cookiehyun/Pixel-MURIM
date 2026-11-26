@@ -4,7 +4,7 @@ import { RGB } from "./util";
 export type LocalBox = [number, number, number, number];
 export type Grade = "high" | "mid" | "low";
 export interface StrikeWindow {
-  from: number; until?: number; group: string; grade: Grade;
+  from: number; until?: number; pose?: string; group: string; grade: Grade;
   guard: "standing" | "crouching" | "either"; boxes: LocalBox[];
 }
 export interface CombatProfile {
@@ -60,7 +60,7 @@ function hexColor(hx: string): number {
   return RGB(parseInt(hx.slice(0, 2), 16), parseInt(hx.slice(2, 4), 16), parseInt(hx.slice(4, 6), 16));
 }
 
-const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "cheonmasw", "hyeolma", "baekmujin", "fx", "npc"];
+const SPRITE_FILES = ["danwoo", "cheolsan", "muyeong", "seolhwa", "heukrim", "heukrimsw", "cheolsanrg", "hongryeon", "cheonma", "cheonmasw", "hyeolma", "baekmujin", "fx", "npc", "danwoo_chp"];
 const STAGES = ["sanmun", "MOUNTAIN GATE", "bamboo", "BAMBOO FOREST", "inn", "NIGHT INN", "snow", "SNOW PEAK", "waterfall", "WATERFALL"];
 
 export async function loadAll(): Promise<void> {

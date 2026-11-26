@@ -77,13 +77,6 @@
         "arm": [3, -15, 5, 5],
         "strikingLimb": [6, -18, 5, 5]
       },
-      "chp": {
-        "head": [-4, -27, 10, 11],
-        "torso": [-6, -17, 11, 9],
-        "legs": [-7, -8, 13, 8],
-        "arm": [3, -15, 5, 5],
-        "strikingLimb": [-1, -33, 5, 7]
-      },
       "clk": {
         "head": [-4, -27, 10, 11],
         "torso": [-6, -17, 11, 9],
@@ -117,7 +110,31 @@
         "frontLeg": [0, -9, 5, 9],
         "strikingLimb": [4, -10, 5, 5]
       },
-      "empty": {}
+      "empty": {},
+      "chp_drive": {
+        "head": [-4, -27, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "forearm": [0, -23, 5, 6],
+        "strikingLimb": [4, -27, 4, 5]
+      },
+      "chp_rise": {
+        "head": [-4, -28, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "forearm": [4, -26, 6, 6],
+        "strikingLimb": [10, -31, 4, 5]
+      },
+      "chp_peak": {
+        "head": [-4, -29, 10, 11],
+        "torso": [-6, -17, 11, 9],
+        "legs": [-7, -8, 13, 8],
+        "arm": [3, -15, 5, 5],
+        "forearm": [4, -30, 5, 8],
+        "strikingLimb": [8, -35, 4, 5]
+      }
     },
     "poses": {
       "idle": "stand",
@@ -138,7 +155,6 @@
       "hk.ready": "kick",
       "clp.active": "clp",
       "clp.ready": "crouch",
-      "chp.active": "chp",
       "chp.ready": "crouch",
       "clk.active": "clk",
       "clk.ready": "crouch",
@@ -150,7 +166,10 @@
       "jk.ready": "air",
       "ovh.active": "ovh",
       "ovh.ready": "short",
-      "crouchIn": "crouch"
+      "crouchIn": "crouch",
+      "danwoo_chp.drive": "chp_drive",
+      "danwoo_chp.rise": "chp_rise",
+      "danwoo_chp.peak": "chp_peak"
     },
     "evades": {
       "crouch": [
@@ -219,11 +238,35 @@
       "chp": [
         {
           "from": 0,
+          "until": 1,
+          "pose": "danwoo_chp.drive",
           "group": "strike",
           "grade": "mid",
           "guard": "either",
           "boxes": [
-            [-1, -33, 5, 7]
+            [4, -27, 4, 5]
+          ]
+        },
+        {
+          "from": 1,
+          "until": 2,
+          "pose": "danwoo_chp.rise",
+          "group": "strike",
+          "grade": "mid",
+          "guard": "either",
+          "boxes": [
+            [10, -31, 4, 5]
+          ]
+        },
+        {
+          "from": 2,
+          "until": 3,
+          "pose": "danwoo_chp.peak",
+          "group": "strike",
+          "grade": "mid",
+          "guard": "either",
+          "boxes": [
+            [8, -35, 4, 5]
           ]
         }
       ],

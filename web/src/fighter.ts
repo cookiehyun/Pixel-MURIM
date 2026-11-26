@@ -879,10 +879,16 @@ function legacyHurtRect(i: number): Box | null {
 
 const profile = (i: number) => profiledFight() ? profiles[F[i].kit] : undefined;
 const moveKey = (i: number) => mvKeyOf(F[i].mv).split(".").pop()!;
+// A profiled move can give an active window its own sprite and hurt pose.
+function activeWindows(i: number) {
+  const f = F[i], elapsed = f.stTick - D.MvStartup[f.mv];
+  return profile(i)?.moves[moveKey(i)]?.filter(w => elapsed >= w.from && elapsed < (w.until ?? D.MvActive[f.mv]));
+}
+const activePose = (i: number) => activeWindows(i)?.find(w => w.pose)?.pose;
 export function poseKey(i: number): string {
   const f = F[i];
   switch (f.state) {
-    case ST_ATTACK: return moveKey(i) + (inActive(i) ? ".active" : ".ready");
+    case ST_ATTACK: return inActive(i) ? activePose(i) ?? moveKey(i) + ".active" : moveKey(i) + ".ready";
     case ST_GUARD: return f.crouch ? "cguard" : "guard";
     case ST_CROUCH: return f.stTick < 2 ? "crouchIn" : "crouch";
     case ST_JUMP: return "jump";
@@ -899,14 +905,12 @@ export function worldBox(i: number, [x,y,w,h]: LocalBox): Box {
 }
 export function strikes(i: number): {window?: StrikeWindow, boxes: Box[]}[] {
   if (!inActive(i)) return [];
-  const windows = profile(i)?.moves[moveKey(i)];
+  const windows = activeWindows(i);
   if (windows === undefined) {
     const box = legacyHitRect(i);
     return box ? [{boxes: [box]}] : [];
   }
-  const f = F[i], tick = f.stTick - D.MvStartup[f.mv];
-  return windows.filter(s => tick >= s.from && tick < (s.until ?? D.MvActive[f.mv]))
-    .map(window => ({window, boxes: window.boxes.map(b => worldBox(i,b))}));
+  return windows.map(window => ({window, boxes: window.boxes.map(b => worldBox(i,b))}));
 }
 export const hitRects = (i: number) => strikes(i).flatMap(s => s.boxes);
 export function evades(i: number, strike?: StrikeWindow): boolean {
@@ -1034,6 +1038,10 @@ export function currentSprite(i: number): number {
       if (f.state === ST_THROW) {
         if (t >= D.MvStartup[mv] && D.MvSeqAct[mv] >= 0) return animFrameHold(D.MvSeqAct[mv], t - D.MvStartup[mv]);
         return t >= D.MvStartup[mv] ? D.MvSprA[mv] : D.MvSprS[mv];
+      }
+      if (inActive(i)) {
+        const pose = activePose(i);
+        if (pose) return spriteId(pose);
       }
       if (t < D.MvStartup[mv] && D.MvSeqPre[mv] >= 0) return animFrameHold(D.MvSeqPre[mv], t);
       if (t >= D.MvStartup[mv] && D.MvSeqAct[mv] >= 0 && (inActive(i) || !f.onGround)) return animFrameHold(D.MvSeqAct[mv], t - D.MvStartup[mv]);
