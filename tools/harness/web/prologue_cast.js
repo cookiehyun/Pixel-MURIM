@@ -29,17 +29,8 @@ const { chromium } = require('playwright');
         ['sd_blood_acolyte.idle_0', 113, 89, 1.50, true],
         ['sd_blood_acolyte.idle_0', 163, 96, 1.54, true],
       ];
-      const stopped = [
-        ['sd_gangsi.walk_0', 82, 96, 2.16, true],
-        ['sd_gangsi.walk_0', 102, 89, 1.782, true],
-        ['sd_gangsi.walk_0', 116, 96, 2.16, true],
-        ['sd_gangsi.walk_0', 24, 96, 2.16, true],
-        ['sd_gangsi.walk_0', 45, 96, 2.16, true],
-        ['sd_gangsi.walk_0', 126, 89, 1.782, true],
-        ['sd_blood_acolyte.idle_0', 62, 96, 1.54, true],
-        ['sd_blood_acolyte.idle_0', 94, 89, 1.50, true],
-        ['sd_blood_acolyte.idle_0', 140, 96, 1.54, true],
-      ];
+      const standing = [...holding, ...fallen.map(([,x,y]) => ['sd_gangsi.walk_0', x, y, y === 96 ? 2.16 : 1.782, true])];
+      const stopped = standing.map(([name,x,...rest]) => [name,x-18,...rest]);
       const samples = {
         'warClash/31': [['sd_blood_acolyte.hit', 148, 96, 1.54, true]],
         'warClash/47': [['sd_blood_acolyte.atk_1', 144, 96, 1.54, true]],
@@ -76,18 +67,10 @@ const { chromium } = require('playwright');
           ['sd_gangsi.walk_0', 126, 89, 1.782, true],
           ['sd_gangsi.walk_0', 150, 96, 2.16, true],
         ],
-        'warMarch/24': [
-          ['sd_gangsi.walk_1', 141/3, 96, 2.16, true],
-          ['sd_gangsi.walk_1', 200/3, 96, 2.16, true],
-          ['sd_gangsi.walk_2', 396/3, 89, 1.782, true],
-          ['sd_gangsi.walk_1', 277/3, 96, 2.16, true],
-          ['sd_gangsi.walk_2', 361/3, 89, 1.782, true],
-          ['sd_gangsi.walk_1', 434/3, 96, 2.16, true],
-          ['sd_blood_acolyte.walk_1', 238/3, 96, 1.54, true],
-          ['sd_blood_acolyte.walk_1', 320/3, 89, 1.5, true],
-          ['sd_blood_acolyte.walk_1', 472/3, 96, 1.54, true],
-        ],
-        'warMarch/100': stopped,
+        'warMarch/24': standing.map(([name,x,y,scale,left], i) => i < 6
+          ? [name.replace('idle_0','walk_0'), x-10/3, y, scale, left]
+          : ['sd_gangsi.walk_1', x-8/3, y, scale, left]),
+        'warMarch/114': stopped,
         'warMarch/300': stopped,
       };
       const ctx = document.querySelector('#screen').getContext('2d');
@@ -159,7 +142,7 @@ const { chromium } = require('playwright');
       '백 년 전, 중원의 하늘에 붉은 달이 떠올랐다.',
       '그리고 그날 밤, 혈교가 모습을 드러냈다.',
       '그들의 교주, 혈마.',
-      '쓰러진 자들마저 그의 군세가 되었고,\n죽은 자들은 다시 일어났다.',
+      '혈마의 손짓에 죽은 자들이 일어섰다.\n그들은 더 이상 인간이 아니었다.',
       '후세는 그날을 혈월의 밤이라 불렀다.',
       '혈월의 밤, 중원은 피와 공포로 뒤덮였다.',
     ]);
@@ -167,7 +150,7 @@ const { chromium } = require('playwright');
     assert.deepEqual(Object.keys(results.actors), [
       'warClash/31', 'warClash/47', 'warSummon/48', 'warRise/100', 'warRout/46', 'warRout/50', 'warRout/64',
       'warRout/80', 'warRout/99', 'warSecondRise/1', 'warSecondRise/82',
-      'warSecondRise/127', 'warMarch/0', 'warMarch/24', 'warMarch/100', 'warMarch/300',
+      'warSecondRise/127', 'warMarch/0', 'warMarch/24', 'warMarch/114', 'warMarch/300',
     ]);
     for (const [cut, actors] of Object.entries(results.actors)) {
       console.log(cut, actors);

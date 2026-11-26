@@ -23,19 +23,19 @@ function draw(name: string, x: number, lane: Lane, left = false, scale = 1, tint
 }
 
 const defenders = [
-  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 83, fallenX: 98, delay: 40, marchEnd: 82, down: "lie_up" },
-  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 119, fallenX: 126, delay: 28, marchEnd: 102, down: "down_1" },
-  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 154, fallenX: 150, delay: 16, marchEnd: 116, down: "down_1" },
+  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 83, fallenX: 98, delay: 40, down: "lie_up" },
+  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 119, fallenX: 126, delay: 28, down: "down_1" },
+  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 154, fallenX: 150, delay: 16, down: "down_1" },
 ];
 const acolytes = [
-  { lane: front, opening: 43, line: 41, contact: 86, strike: 46, left: false, marchEnd: 62 },
-  { lane: middle, opening: 96, line: 69, contact: 113, strike: 50, left: false, marchEnd: 94 },
-  { lane: front, opening: 148, line: 175, contact: 163, strike: 64, left: true, marchEnd: 140 },
+  { lane: front, opening: 43, line: 41, contact: 86, strike: 46, left: false },
+  { lane: middle, opening: 96, line: 69, contact: 113, strike: 50, left: false },
+  { lane: front, opening: 148, line: 175, contact: 163, strike: 64, left: true },
 ];
 const corpses = [
-  { lane: front, x: 103, contact: 102, stand: 53, marchEnd: 24, delay: 17, body: "sd_monk.lie_down", scale: 1.27, left: false },
-  { lane: front, x: 135, contact: 131, stand: 72, marchEnd: 45, delay: 8, body: "sd_sect_sword.down_1", scale: 1, left: true },
-  { lane: middle, x: 164, contact: 161, stand: 139, marchEnd: 126, delay: 0, body: "sd_sect_fist.down_1", scale: 1, left: true },
+  { lane: front, x: 103, contact: 102, stand: 53, delay: 17, body: "sd_monk.lie_down", scale: 1.27, left: false },
+  { lane: front, x: 135, contact: 131, stand: 72, delay: 8, body: "sd_sect_sword.down_1", scale: 1, left: true },
+  { lane: middle, x: 164, contact: 161, stand: 139, delay: 0, body: "sd_sect_fist.down_1", scale: 1, left: true },
 ];
 // The standing swordsman body is 40 art pixels tall. Hyeolma is 41 × 1.65
 // on screen; these two scales keep the hooded troops within 88–92% of him.
@@ -160,18 +160,21 @@ function ritualBody(x: number, lane: Lane, body: string, scale: number, left: bo
   }
 }
 
-// Measured in world pixels. The same distance drives footfalls until each rank stops.
-function march(t: number, rank: number, start: number, end: number, ghoul: boolean, lane: Lane, origin: number): void {
-  const age = Math.max(0, t - rank % 5);
-  const ramp = 12, speed = .4 * (.94 + .025 * (rank % 6));
-  const travel = start - end;
-  const distance = Math.min(travel, speed * (age < ramp ? age * age / (2 * ramp) : age - ramp / 2));
-  const x = origin + start - distance;
-  // Complete whole strides so both endpoints share the standing frame.
-  const cycles = Math.max(1, Math.round(travel / (ghoul ? 16 : 8)));
-  const phase = distance / travel * cycles;
+// All ranks translate together. Only the footfall phase differs between soldiers.
+export const MARCH_END = 112;
+const ramp = 12, marchSpeed = .18, travel = marchSpeed * (MARCH_END - ramp);
+function march(t: number, rank: number, start: number, ghoul: boolean, lane: Lane, origin: number): void {
+  const age = Math.min(t, MARCH_END);
+  const remaining = MARCH_END - age;
+  const distance = age < ramp ? marchSpeed * age * age / (2 * ramp)
+    : remaining < ramp ? travel - marchSpeed * remaining * remaining / (2 * ramp)
+    : marchSpeed * (age - ramp / 2);
+  // Quantize the formation once, before applying each sprite's native pose anchor.
+  const x = origin + start - Math.round(distance * R.PX) / R.PX;
+  const progress = distance / travel;
+  const phase = progress * (ghoul ? 1 : 2) + .024 * rank * Math.sin(Math.PI * progress);
   if (ghoul) risen(x, lane, "walk_" + [0, 1, 2, 1][Math.floor(phase * 4) % 4], true);
-  else acolyte(distance > 0 && distance < travel ? "walk_" + Math.floor(phase * 2) % 2 : "idle_0", x, lane, true, true);
+  else acolyte(age > 0 && age < MARCH_END ? "walk_" + Math.floor(phase * 2) % 2 : "idle_0", x, lane, true, true);
 }
 
 function aftermathRanks(origin: number, lane: Lane, cut: BattleCut, t: number): void {
@@ -179,17 +182,17 @@ function aftermathRanks(origin: number, lane: Lane, cut: BattleCut, t: number): 
   // The two ranks hold the exact places where the attack ended.
   acolytes.forEach((c, i) => {
     if (lane !== c.lane) return;
-    if (marching) march(t, i * 2, c.contact, c.marchEnd, false, lane, origin);
+    if (marching) march(t, i * 2, c.contact, false, lane, origin);
     else acolyte("idle_0", origin + c.contact, lane, true);
   });
   corpses.forEach((c, i) => {
     if (lane !== c.lane) return;
-    if (marching) march(t, i * 2 + 1, c.stand, c.marchEnd, true, lane, origin);
+    if (marching) march(t, i * 2 + 1, c.stand, true, lane, origin);
     else risen(origin + c.stand, lane, "walk_0");
   });
   defenders.forEach((d, i) => {
     if (lane !== d.lane) return;
-    if (marching) return march(t, 6 + i, d.fallenX, d.marchEnd, true, lane, origin);
+    if (marching) return march(t, 6 + i, d.fallenX, true, lane, origin);
     const age = t - d.delay;
     ritualBody(origin + d.fallenX, lane, d.sheet + "." + d.down, d.scale, false,
       t, d.delay, true, Math.max(0, Math.min(1, age / 10)));

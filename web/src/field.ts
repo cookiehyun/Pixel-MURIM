@@ -14,7 +14,7 @@ import { D, animId, animFrame, animFrameHold, spriteId, hasSprite, moveId, MT_RU
 import * as FM from "./fieldmap";
 import { drawAltarDuel, drawAltarStandoff, drawScarSeep } from "./altarDuel";
 import { drawScrollBurn } from "./scrollBurn";
-import { drawBloodBattle, battleContacts, isBattleCut } from "./prologueBattle";
+import { drawBloodBattle, battleContacts, isBattleCut, MARCH_END } from "./prologueBattle";
 import { RGB } from "./util";
 
 export type Look = [string, number, string];
@@ -137,6 +137,7 @@ let dissolve: { image: NonNullable<FM.FieldMap["img"]>; start: number; ticks: nu
 let fadeTicks = 10, blackTicks = 0;
 let mFadeOut = 0, mFadeIn = 0, mFadeFor: Step | null = null, mFadeDone: Step | null = null;
 
+export const presentingMarch = () => mActive && props.some(q => q.kind === "warMarch" && q.t <= MARCH_END);
 export const active = () => mActive;
 
 export function begin(h: Host, play: Step[]): void {
@@ -752,7 +753,7 @@ function dialogueRender(): void {
   }
 }
 
-export const debug = () => JSON.stringify({ dv: duel ? { emv: duel.emv, pAtk: duel.pAtk, pHit: duel.pHit, pG: Math.round(duel.pG), pNg: duel.pNg, dark: duel.dark, slow: duel.slow } : null, cam: Math.round(camX), step: mStep, t: steps[mStep]?.t, quest: questText, talk: talking(), page: page[0] ?? "", ents: ents.map((e) => e.id + ":" + Math.round(e.x) + ":" + e.st + ":" + e.hp) });
+export const debug = () => JSON.stringify({ props: props.map(({kind,t}) => ({kind,t})), dv: duel ? { emv: duel.emv, pAtk: duel.pAtk, pHit: duel.pHit, pG: Math.round(duel.pG), pNg: duel.pNg, dark: duel.dark, slow: duel.slow } : null, cam: Math.round(camX), step: mStep, t: steps[mStep]?.t, quest: questText, talk: talking(), page: page[0] ?? "", ents: ents.map((e) => e.id + ":" + Math.round(e.x) + ":" + e.st + ":" + e.hp) });
 export function debugKill(): void { for (const e of ents) if (e.hostile) { e.hp = 0; setSt(e, ST_DEAD); e.t = 99; } }
 export function debugWarp(x: number): void { const p = player(); if (p) p.x = x; }
 

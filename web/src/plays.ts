@@ -4,7 +4,8 @@
 // Design notes per chapter: docs/story/play/.
 import type { Step } from "./field";
 import { SCROLL_BURN_END } from "./scrollBurn";
-import { ALTAR_DEATH_LINE } from "./altarDuel";
+import { MARCH_END } from "./prologueBattle";
+import { ALTAR_DEATH_LINE, SCAR_SEEP_END } from "./altarDuel";
 import type { BattleCut } from "./prologueBattle";
 
 function warCut(kind: BattleCut, x = 60): Step {
@@ -44,7 +45,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "wait", n: 52 },
       warCut("warRise", 96),
       { t: "wait", n: 12 },
-      narration("쓰러진 자들마저 그의 군세가 되었고,\n죽은 자들은 다시 일어났다."),
+      narration("혈마의 손짓에 죽은 자들이 일어섰다.\n그들은 더 이상 인간이 아니었다."),
       { t: "wait", n: 110, sinceProp: "war" },
       narration("후세는 그날을 혈월의 밤이라 불렀다."),
       { t: "map", map: "blood_battlefield" },
@@ -54,8 +55,9 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       warCut("warSecondRise"),
       { t: "wait", n: 133 },
       warCut("warMarch"),
+      { t: "wait", n: 24, sinceProp: "war" },
       narration("혈월의 밤, 중원은 피와 공포로 뒤덮였다."),
-      { t: "wait", n: 38, sinceProp: "war" },
+      { t: "wait", n: MARCH_END, sinceProp: "war" },
       // SCENE 02. 정마연합과 혈마의 최후
       { t: "map", map: "scroll_map", fadeTicks: 32, blackTicks: 3 },
       { t: "cam", x: 0 },
@@ -78,7 +80,7 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "map", map: "hyeolma_hand", fadeTicks: 24, blackTicks: 6 },
       { t: "cam", x: 0 },
       { t: "prop", id: "scar", kind: "scarSeep", x: 0 },
-      { t: "wait", n: 76 },
+      { t: "wait", n: SCAR_SEEP_END, sinceProp: "scar" },
       narration("사람들은 혈월의 밤이 끝났다고 생각했다."),
       // SCENE 04. 흘러간 백 년
       { t: "map", map: "two_flags", fadeTicks: 26, blackTicks: 8 },

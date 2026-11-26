@@ -28,7 +28,11 @@ async function main(): Promise<void> {
     acc += Math.min(250, now - last);
     last = now;
     let ran = false;
-    while (acc >= TICK_MS) { gameTick(); acc -= TICK_MS; ran = true; }
+    while (acc >= TICK_MS) {
+      gameTick(); acc -= TICK_MS; ran = true;
+      // After a browser stall, present this footstep before advancing the formation again.
+      if (acc >= TICK_MS && Story.presentingMarch()) { acc %= TICK_MS; break; }
+    }
     if (ran) gameRender();
     requestAnimationFrame(frame);
   };

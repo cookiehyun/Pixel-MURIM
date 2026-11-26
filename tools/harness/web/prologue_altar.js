@@ -9,7 +9,7 @@ const { chromium } = require('playwright');
   try {
     const errors = [], out = process.argv[2];
     let ending;
-    for (const skipAt of [null, 1, 55, 225, 321]) {
+    for (const skipAt of [null, 1, 55, 113, 210]) {
       const page = await browser.newPage();
       page.on('pageerror', e => errors.push(String(e)));
       page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -44,7 +44,7 @@ const { chromium } = require('playwright');
         snap('standoff');
         advance(1,true);
         requireState(debug().step === fight && skipPrompt(), 'Dialogue edge skipped the fight');
-        const frames = {25:'thrust',55:'drain',72:'rescue',120:'wall',129:'counter',173:'sword',221:'frenzy',227:'wound',242:'wave',257:'down',317:'blades',342:'burst',364:'kneel',401:'fallen'};
+        const frames = {25:'thrust',55:'drain',72:'rescue',102:'frenzy',108:'draw',124:'wound',139:'wave',157:'cguard',177:'stagger',208:'blades',233:'burst',249:'kneel',285:'fallen'};
         let age=0;
         while(debug().step===fight && age<450) {
           if(frames[age] && skipAt===null) snap(frames[age]);
@@ -54,13 +54,50 @@ const { chromium } = require('playwright');
           age++;
         }
         requireState(debug().step===fight+1 && debug().talk && !skipPrompt(), 'Missing separate death dialogue');
-        const frame=body();
+        // Match the armed crouching guard itself, including mirrored orientation errors.
+        const frame=body(), data=pm.D, guard=data.SprName.indexOf('cheonmasw.cguard');
+        let matched=0, opaque=0;
+        for(let y=0;y<data.SprH[guard];y++) for(let x=0;x<data.SprW[guard];x++) {
+          const color=data.SprPix[data.SprOff[guard]+y*data.SprW[guard]+x];
+          if(color<0) continue;
+          const sx=195+(x-data.SprAX[guard])*2, sy=237+(y-data.SprAY[guard]-1)*2;
+          const offset=((sy-100)*576+sx)*4;
+          const actual=frame[offset]|frame[offset+1]<<8|frame[offset+2]<<16;
+          if(actual===color) matched++;
+          opaque++;
+        }
+        requireState(matched/opaque>.98,'Missing sword crouch guard at the landing');
         advance(125,true);
         requireState(debug().step===fight+1 && same(frame,body()), 'Held key advanced dialogue or changed the tableau');
         snap(skipAt===null?'normal-end':'skip-end');
         // Advancing the death line leads to the hand, where the revised second line follows the omen.
         advance(1,false); advance(1,true); advance(1,false);
-        for(i=0;i<200 && debug().step!==hand+1;i++) advance(1,false);
+        let dry, previousTip=0, changes=0, reachedScar=false;
+        for(i=0;i<240 && debug().step!==hand+1;i++) {
+          advance(1,false);
+          if(skipAt!==null || debug().step!==hand) continue;
+          const age=debug().props.find(p=>p.kind==='scarSeep').t;
+          if(age===18) dry=new Uint32Array(body().buffer);
+          if(age<23) continue;
+          const visible=new Uint32Array(body().buffer);
+          let count=0,tip=0;
+          for(let j=0;j<visible.length;j++) {
+            if(visible[j]===dry[j]) continue;
+            const x=j%576, y=100+Math.floor(j/576);
+            requireState(x>=112 && x<=275 && y>=197 && y<300,'Hand moved outside the blood channel');
+            tip=Math.max(tip,x); count++;
+          }
+          if(count) {
+            requireState(tip>=previousTip && age<109,'Flow reversed or repeated');
+            previousTip=tip; changes++;
+            if(tip>=271) reachedScar=true;
+          }
+        }
+        if(skipAt===null) {
+          requireState(changes>=75 && reachedScar && same(dry,new Uint32Array(body().buffer)),'Incomplete absorption');
+          advance(150,false);
+          requireState(same(dry,new Uint32Array(body().buffer)),'Flow restarted during dialogue');
+        }
         requireState(debug().step===hand+1 && debug().talk && steps[hand+1].text==='사람들은 혈월의 밤이 끝났다고 생각했다.', 'Hand line misplaced');
         // Exercise rapid presses through the epilogue and compare the persistent story outcome.
         for(i=0;i<4000 && pm.story.debugView().view!==0;i++) advance(1,i%2===0);
@@ -72,7 +109,7 @@ const { chromium } = require('playwright');
         for(let pos=0;pos<bytes.length;pos+=8192) encoded+=String.fromCharCode(...bytes.subarray(pos,pos+8192));
         return {age, ending:btoa(encoded), state, shots};
       },{skipAt,save:!!out && (skipAt===null || skipAt===55)});
-      assert.equal(r.age,skipAt===null?408:skipAt+1);
+      assert.equal(r.age,skipAt===null?294:skipAt+1);
       if (!ending) ending = [r.ending,r.state];
       else assert.ok(ending[0]===r.ending && JSON.stringify(ending[1])===JSON.stringify(r.state),'Skipped ending differs from natural completion');
       if (out) {

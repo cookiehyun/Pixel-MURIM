@@ -688,6 +688,7 @@ export function debugPlay(routeId: string, k: number): void {
   beginChapter(k);
 }
 export const debugView = () => ({ view: mView, sec: mSec, ev: mEv, who: mWho, kind: mKind, page: mPage.join("/"), cast: mCast.map((a) => a.name + a.side), fight: mFight });
+export const presentingMarch = () => G.GameState === GS_STORY && mView === V_FIELD && Field.presentingMarch();
 export const fieldDebug = () => Field.debug();
 export const fieldKill = () => Field.debugKill();
 export const fieldWarp = (x: number) => Field.debugWarp(x);
