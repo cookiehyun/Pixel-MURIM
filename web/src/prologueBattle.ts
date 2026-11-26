@@ -1,66 +1,70 @@
-// The rock/sand boundary in blood_battlefield is at y=82. Every actor shares
-// one of the three horizontal ground lines below it, including both duelists.
+// The three living defenders, the three acolytes and the three bodies are
+// separate casts. A narrated cut can be held indefinitely at its last tableau.
 import * as R from "./renderer";
 import * as FX from "./fx";
 import { D, spriteId } from "./data";
-import type { Look } from "./field";
 import { RGB } from "./util";
 
 const rear = { y: 83, zoom: 1 };
 const middle = { y: 89, zoom: 1.65 };
 const front = { y: 96, zoom: 2 };
 type Lane = typeof front;
-const bossX = 177;
-const strikeAt = 88;
-const commandAt = 12;
-const releaseAt = commandAt + 10;
-const stride = (tick: number, period: number) => Math.floor(tick / period) % 2;
-const travel = (x: number) => Math.round((bossX - x) / 6);
-const phase = (t: number, i: number) => (t + 11 * i) % (35 + i % 4 * 4);
-
-// A monk's shipped run has his knees bent and fists up. Let monks advance and
-// evade while armed guards use the game's sword strikes, guards and knockdowns.
-const bouts = [
-  { x: 51,  lane: middle, monk: true,  delay: 7, dir: -1 },
-  { x: 108, lane: middle, monk: false, delay: 4, dir: -1 },
-  { x: 153, lane: middle, monk: false, delay: -1, dir: 1 },
-  { x: 11,  lane: front,  monk: true,  delay: -1, dir: 1 },
-  { x: 68,  lane: front,  monk: false, delay: 8, dir: 1 },
-  { x: 129, lane: front,  monk: true,  delay: 0, dir: 1 },
-];
-type Bout = typeof bouts[number];
-
-// One scale per body, across all poses. Compare uncovered head, shoulder-to-hip
-// and shin against the guard's 40 px neutral body; swords and hoods extend above it.
-const cultistScale = 1.22, monkScale = 1.27, gangsiScale = 1.08;
-function draw(name: string, x: number, lane: Lane, left: boolean, bodyScale = 1, skin = 0, tint = -1): void {
-  R.drawSprite(spriteId(name), Math.round(x), lane.y, left, tint, skin, bodyScale * lane.zoom);
+export type BattleCut = "warClash" | "warSummon" | "warRise" | "warRout" | "warHold";
+export function isBattleCut(kind: string): kind is BattleCut {
+  return ["warClash", "warSummon", "warRise", "warRout", "warHold"].includes(kind);
+}
+const stride = (t: number, period: number) => Math.floor(t / period) % 2;
+function slide(from: number, to: number, t: number, start: number, end: number): number {
+  const u = Math.max(0, Math.min(1, (t - start) / (end - start)));
+  return from + (to - from) * u;
+}
+function draw(name: string, x: number, lane: Lane, left = false, scale = 1, tint = -1): void {
+  R.drawSprite(spriteId(name), Math.round(x), lane.y, left, tint, 0, scale * lane.zoom);
 }
 
-function ranks(origin: number, t: number, guard: Look): void {
-  for (const start of [-4, 44, 91, 139]) {
-    for (let i = 0; i < 7; i++) {
-      const b = phase(t + start + 20, i);
-      const enemy = i % 2 === 1;
-      const name = enemy ? "sd_cultist." + (b < 13 ? "atk_0" : "idle_0") :
-        i % 4 ? "sd_monk.run_" + stride(t + i, 7) : guard[0] + (b < 16 ? ".guard" : ".idle_0");
-      draw(name, origin + start + i * 4.7 + Math.sin((i * 11 + t) / 13), rear, enemy,
-        enemy ? cultistScale : i % 4 ? monkScale : 1, 0, enemy ? RGB(46, 25, 30) : RGB(57, 37, 42));
-    }
+const defenders = [
+  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 18, down: "lie_up" },
+  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 46, down: "down_1" },
+  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 68, down: "down_1" },
+];
+const acolytes = [
+  { lane: front, opening: 43, line: 91, contact: 95 },
+  { lane: middle, opening: 96, line: 122, contact: 51 },
+  { lane: front, opening: 148, line: 154, contact: 149 },
+];
+const corpses = [
+  { lane: front, x: 103, contact: 25, delay: 17, body: "sd_monk.lie_down", scale: 1.27, left: false },
+  { lane: front, x: 135, contact: 76, delay: 8, body: "sd_sect_sword.down_1", scale: 1, left: true },
+  { lane: middle, x: 164, contact: 120, delay: 0, body: "sd_sect_fist.down_1", scale: 1, left: true },
+];
+const castX = 180;
+const insertX = (worldX: number) => 22 + (worldX - 86) * 1.46;
+const beat = (t: number, i: number) => (t + i * 11) % (37 + i * 3);
+
+export function battleContacts(origin: number, cut: BattleCut, t: number): void {
+  if (cut === "warClash") {
+    defenders.forEach((d, i) => {
+      const b = beat(t, i);
+      if (b === 9 || b === 25) FX.spawn(origin + d.opening + 9, d.lane.y - 13, b === 9 ? FX.FX_HIT : FX.FX_BLOCK);
+    });
+  }
+  if (cut === "warRout") {
+    if (t === 50) FX.spawn(origin + 44, middle.y - 13, FX.FX_SLASH);
+    if (t === 62) FX.spawn(origin + 65, front.y - 12, FX.FX_HIT);
   }
 }
 
-function gap(lane: Lane): number { return lane === front ? 17 : 14; }
-export function battleContacts(origin: number, t: number): void {
-  bouts.forEach(({x, lane, dir, monk}, i) => {
-    if (t >= strikeAt + travel(x)) return;
-    const beat = phase(t, i);
-    if ((!monk && beat === 9) || beat === 23)
-      FX.spawn(origin + x + dir * gap(lane) / 2, lane.y - Math.round(6.5 * lane.zoom),
-        beat === 23 && !monk ? FX.FX_BLOCK : FX.FX_HIT);
+function clash(origin: number, lane: Lane, t: number): void {
+  defenders.forEach((d, i) => {
+    if (lane !== d.lane) return;
+    const b = beat(t, i);
+    const pose = i === 0 ? "run_" + stride(t, 5) :
+      b < 6 ? "lp_0" : b < 13 ? "lp_1" : b < 29 ? "guard" : "idle_0";
+    draw(d.sheet + "." + pose, origin + d.opening + (b < 13 ? 3 : b < 29 ? -2 : 0), lane, false, d.scale);
+    const enemy = b < 13 ? "hit" : b < 21 ? "atk_0" : b < 28 ? "atk_1" : "idle_0";
+    draw("sd_blood_acolyte." + enemy, origin + acolytes[i].opening - (enemy === "atk_1" ? 4 : 0), lane, true, 1.22);
   });
 }
-
 const garnet = RGB(105, 18, 33), red = RGB(163, 35, 43), ember = RGB(202, 58, 47);
 // Draw broken coils behind and in front separately. The far arc stays visible
 // as the chest rises, while the near arc only crosses the lower body.
@@ -88,112 +92,128 @@ function groundWave(x: number, lane: Lane, age: number, size: number): void {
   draw("hyeolma.wave_" + Math.floor(age / 5), x, lane, false, size);
 }
 
-function drawMaster(origin: number, t: number, revival: boolean): void {
-  if (!revival && t < 32) return;
-  const entering = revival ? 0 : Math.max(0, 58 - t);
-  const x = origin + bossX + entering, age = t - (revival ? commandAt : strikeAt);
-  const pose = age >= 0 ? "sp_a" : entering ? "walk_" + (1 + stride(t, 6) * 2) : "idle_" + stride(t, 10);
-  const strength = Math.max(0, Math.min(1, (age + 1) / 6, (88 - age) / 24));
-  if (strength) {
-    groundWave(x, middle, age % 32, .84 * strength);
-    coils(x, middle, age, 62, 35, strength, false);
-  }
-  draw("hyeolma." + pose, x, middle, true);
-  if (strength) coils(x, middle, age, 62, 35, strength, true);
-}
-
-// Moving crest joins the master's planted feet to each group before it reacts.
-function groundPulse(origin: number, lane: Lane, age: number): void {
-  if (age < 0 || age > 32) return;
-  const x = origin + bossX - age * 6;
-  for (let i = 0; i < 25; i++) {
-    const lift = Math.sin(i / 24 * Math.PI) * (lane === front ? 3 : 2);
-    R.fillRect(x + i * .7, lane.y - 1 - lift, 2, 1, i < 6 ? ember : i < 14 ? red : garnet);
-  }
-}
-
-function ally(actor: Bout, guard: Look, pose: string, x: number, left: boolean): void {
-  const name = actor.monk ? "sd_monk" : guard[0];
-  draw(name + "." + pose, x, actor.lane, left, actor.monk ? monkScale : 1, actor.monk ? 0 : guard[1]);
-}
-
-function fallen(actor: Bout, guard: Look, x: number): void {
-  ally(actor, guard, actor.monk ? "lie_down" : "down_1", x, actor.monk ? actor.dir < 0 : actor.dir > 0);
-}
-
-// Holds at ground contact and on the planted knee are longer than each
-// transfer of weight. The intermediate frames articulate the same game pixels.
 const riseTiming: [number, string][] = [
   [20, "0"], [23, "0a"], [25, "0b"], [30, "1"], [33, "1a"], [36, "1b"],
   [42, "2"], [45, "2a"], [48, "2b"], [54, "3"], [57, "3a"], [60, "3b"],
   [65, "4"], [68, "4a"], [72, "4b"],
 ];
 
-function resurrection(actor: Bout, guard: Look, x: number, age: number): void {
-  const lane = actor.lane;
-  // Bodies facing either direction rise into the same facing used for their pursuit.
-  const left = actor.dir > 0;
-  const stage = age < 21 ? 0 : age < 31 ? 1 : age < 45 ? 2 : age < 58 ? 3 : 4;
-  const walking = age >= 72, progress = Math.max(0, age - 72);
-  const foot = x + (left ? -1 : 1) * progress * .49;
-  const strength = Math.max(0, Math.min(1, (age + 1) / 10, (80 - age) / 16));
-  const height = (age < 9 ? 5 : [7, 10, 16, 23, 29][stage]) * lane.zoom;
-  if (strength) {
-    groundWave(x, lane, age, .59);
-    coils(x, lane, age, height, 19 * lane.zoom, strength, false);
+function motes(x: number, lane: Lane, t: number, width: number): void {
+  for (let k = 0; k < 8; k++) {
+    const p = (t + k * 7) % 29;
+    const dx = Math.sin(k * 2.8 + p * .14) * width * (1 - p / 42);
+    R.fillRect(x + dx, lane.y - 1 - p * .65, k % 3 ? 1 : 2, 1, k % 3 ? red : ember);
   }
-  if (age < 13) {
-    fallen(actor, guard, x);
-  } else {
-    const step = [0, 1, 2, 1][Math.floor(progress / 6) % 4];
-    const frame = walking ? "walk_" + step : "rise_" + riseTiming.find(([until]) => age < until)![1];
-    draw("sd_gangsi." + frame, foot, lane, left, gangsiScale);
-    if (walking) {
-      const id = spriteId("sd_gangsi." + frame), scale = lane.zoom * gangsiScale;
-      const dx = (step ? 15 : 16) - D.SprAX[id];
-      R.physRect(Math.round(foot) * R.PX + Math.round((left ? -dx : dx) * scale),
-        (lane.y + 1) * R.PX + Math.round((11 - D.SprAY[id] - 1) * scale), 3, 2, ember);
+}
+
+function master(x: number, t: number, casting: boolean): void {
+  const active = casting && t >= 9;
+  if (active) {
+    groundWave(x, middle, (t - 9) % 32, .92);
+    coils(x, middle, t, 61, 37, 1, false);
+  }
+  draw("hyeolma." + (active ? "sp_a" : "idle_" + stride(t, 10)), x, middle, true);
+  if (active) {
+    coils(x, middle, t, 61, 37, 1, true);
+    motes(x, middle, t, 14);
+  }
+}
+
+function risen(x: number, lane: Lane, frame: string): void {
+  const key = "sd_gangsi." + frame;
+  draw(key, x, lane, true, 1.08);
+  if (frame.startsWith("walk")) {
+    const id = spriteId(key), z = lane.zoom * 1.08;
+    const dx = D.SprAX[id] - (frame === "walk_0" ? 16 : 15);
+    R.physRect(Math.round(x) * R.PX + Math.round(dx * z),
+      (lane.y + 1) * R.PX + Math.round((10 - D.SprAY[id]) * z), 3, 2, ember);
+  }
+}
+
+function ritual(origin: number, lane: Lane, cut: BattleCut, t: number): void {
+  const waking = cut === "warRise";
+  corpses.forEach(c => {
+    if (lane !== c.lane) return;
+    const x = origin + insertX(c.x), age = t - c.delay;
+    const charge = waking ? 1 : Math.max(0, Math.min(1, (age - 14) / 14));
+    const strength = waking ? Math.max(0, Math.min(1, (83 - age) / 16)) : charge;
+    const height = lane.zoom * (waking ? slide(7, 30, age, 17, 60) : 7);
+    if (strength) {
+      groundWave(x, lane, waking ? age : age - 13, .7);
+      coils(x, lane, t, height, 18 * lane.zoom, strength, false);
     }
-  }
-  if (strength) coils(x, lane, age, height, 19 * lane.zoom, strength, true);
+    if (!waking || age < 12) draw(c.body, x, lane, c.left, c.scale);
+    else if (age < 72) {
+      const [, pose] = riseTiming.find(([until]) => age < until)!;
+      risen(x, lane, "rise_" + pose);
+    } else risen(x, lane, "walk_0");
+    if (strength) {
+      coils(x, lane, t, height, 18 * lane.zoom, strength, true);
+      motes(x, lane, t + c.delay, 10 * strength);
+    }
+  });
 }
 
-function skirmish(actor: Bout, i: number, origin: number, t: number, revival: boolean, guard: Look): void {
-  const {x, lane, monk, dir, delay} = actor, wx = origin + x;
-  const beat = phase(t, i), recoil = t - strikeAt - travel(x);
-  const enemyFrame = revival || recoil >= 0 ? "idle_0" :
-    beat >= 15 && beat < 22 ? "atk_0" : beat >= 22 && beat < 28 ? "atk_1" : beat >= 9 && beat < 13 && !monk ? "hit" : "idle_0";
-  const enemyX = wx + dir * (gap(lane) - (enemyFrame === "atk_1" ? 3 : 0));
-  draw("sd_cultist." + enemyFrame, enemyX, lane, dir > 0, cultistScale);
-  if (revival && delay >= 0) {
-    resurrection(actor, guard, wx - dir * 4, t - releaseAt - travel(x) - delay);
-  } else if (revival) {
-    const flee = Math.max(0, t - 104 - i * 2), escape = x > 140 ? 1 : -1;
-    ally(actor, guard, monk ? "run_" + stride(t + i, 5) : flee ? "walk_" + stride(t, 4) * 2 : "guard",
-      wx - dir * 4 + escape * flee * .88, flee ? escape < 0 : dir < 0);
-  } else if (recoil >= 7 && delay >= 0) {
-    fallen(actor, guard, wx - dir * 4);
-  } else {
-    const pose = monk ? "run_" + stride(t + i, 5) : recoil >= 0 ? "hit_0" :
-      beat < 6 ? "lp_0" : beat < 13 ? "lp_1" : beat < 27 ? "guard" : "idle_0";
-    const shift = recoil >= 0 ? -Math.min(4, recoil) : beat < 13 ? 2 : beat < 27 ? -2 : 0;
-    ally(actor, guard, pose, wx + dir * shift, dir < 0);
-  }
+function reversal(origin: number, lane: Lane, cut: BattleCut, t: number): void {
+  const hold = cut === "warHold";
+  const attack = hold ? 87 : Math.min(t, 87);
+  defenders.forEach((d, i) => {
+    if (d.lane !== lane) return;
+    let x = d.line, pose: string;
+    if (i === 0) {
+      // Held upright between the corpse's hands, then dropped.
+      pose = attack < 60 ? "run_" + (attack < 40 ? stride(t, 5) : 0) : d.down;
+      x = slide(x, 23, attack, 40, 59);
+    } else if (i === 1) {
+      pose = attack < 50 ? "guard" : attack < 60 ? "hit_0" : d.down;
+      x = slide(x, 37, attack, 50, 62);
+    } else {
+      pose = attack < 62 ? "guard" : "hit_0";
+      x = slide(x, 59, attack, 62, 84);
+      if (hold) {
+        x = slide(x, -18, t, 0, 49);
+        pose = "walk_" + 2 * stride(t, 4);
+      }
+    }
+    draw(d.sheet + "." + pose, origin + x, lane, i === 2 && hold, d.scale);
+  });
+  acolytes.forEach((c, i) => {
+    if (lane !== c.lane) return;
+    const start = 8 + i * 3, stop = i === 1 ? 49 : 58;
+    const x = slide(c.line, c.contact, attack, start, stop);
+    let pose = attack > start && attack < stop ? "walk_0" : "idle_0";
+    if (i === 1 && attack >= 42 && attack < 60) pose = attack < 50 ? "atk_0" : "atk_1";
+    draw("sd_blood_acolyte." + pose, origin + x, lane, true, 1.22);
+  });
+  corpses.forEach((c, i) => {
+    if (lane !== c.lane) return;
+    const stop = [40, 60, 64][i];
+    const drag = i === 0 ? slide(0, 5, attack, 40, 59) : 0;
+    const x = slide(c.x, c.contact, attack, 6 + i * 4, stop) + drag;
+    let pose = attack < stop ? "walk_" + [0, 1, 2, 1][Math.floor(t / 6) % 4] : "walk_0";
+    if (!hold && attack >= stop && attack < stop + 20) pose = i === 0 ? "stab" : i === 1 ? "atk_1" : "guard";
+    risen(origin + x, lane, pose);
+  });
 }
 
-export function drawBloodBattle(origin: number, t: number, revival: boolean, guard: Look): void {
-  const age = t - (revival ? commandAt : strikeAt);
-  const shadow = revival ? 1 : Math.max(0, Math.min(1, age / 20));
-  for (let y = 54; y < R.SCREEN_H; y += 3) {
-    const opacity = Math.min(1, (y - 54) / 24) * (.09 + .18 * shadow);
-    R.shadeRect(0, y * R.PX, R.PHYS_W, 3 * R.PX, RGB(30, 14, 19), opacity);
+export function drawBloodBattle(origin: number, cut: BattleCut, t: number): void {
+  // Tiny figures stay on the distant rock/sand boundary, behind every speaking cut.
+  for (const group of [13, 65, 117]) {
+    for (let i = 0; i < 5; i++)
+      draw(i % 2 ? "sd_blood_acolyte.atk_0" : "sd_monk.run_" + stride(t + i, 8),
+        origin + group + i * 5, rear, !!(i % 2), .65, RGB(53, 27, 31));
   }
-  ranks(origin, t, guard);
+  const insert = cut === "warSummon" || cut === "warRise";
+  if (cut !== "warClash") master(origin + (insert ? insertX(castX) : castX), cut === "warRise" ? t + 60 : t, insert);
   for (const lane of [middle, front]) {
-    groundPulse(origin, lane, revival ? t - releaseAt : age);
-    if (lane === middle) drawMaster(origin, t, revival);
-    bouts.forEach((bout, i) => {
-      if (bout.lane === lane) skirmish(bout, i, origin, t, revival, guard);
-    });
+    if (cut === "warClash") clash(origin, lane, t);
+    else if (insert) {
+      if (cut === "warSummon" && t >= 13 && t < 38) {
+        const tip = insertX(castX) - (t - 13) * 6;
+        for (let k = 0; k < 17; k++)
+          R.fillRect(origin + tip + k, lane.y - 1 - Math.sin(k * .2) * 2, 2, 1, k < 5 ? ember : red);
+      }
+      ritual(origin, lane, cut, t);
+    } else reversal(origin, lane, cut, t);
   }
 }

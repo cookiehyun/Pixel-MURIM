@@ -912,6 +912,25 @@ baekmujin.bs_1 sd/baekmujin_f/bs_1.png 12 62 fight
 baekmujin.bs_2 sd/baekmujin_f/bs_2.png 17 67 fight
 baekmujin.bs_3 sd/baekmujin_f/bs_3.png 14 44 fight
 baekmujin.bs_4 sd/baekmujin_f/bs_4.png 30 42 fight
+sd_blood_acolyte.idle_0 sd/blood_acolyte/idle_0.png 11 29
+sd_blood_acolyte.walk_0 sd/blood_acolyte/walk_0.png 11 29
+sd_blood_acolyte.atk_0 sd/blood_acolyte/atk_0.png 13 40
+sd_blood_acolyte.atk_1 sd/blood_acolyte/atk_1.png 15 29
+sd_blood_acolyte.hit sd/blood_acolyte/hit.png 19 28
+sd_sect_sword.idle_0 sd/sect_sword/idle_0.png 12 40
+sd_sect_sword.lp_0 sd/sect_sword/lp_0.png 12 37
+sd_sect_sword.lp_1 sd/sect_sword/lp_1.png 14 34
+sd_sect_sword.guard sd/sect_sword/guard.png 11 47
+sd_sect_sword.hit_0 sd/sect_sword/hit_0.png 17 39
+sd_sect_sword.down_1 sd/sect_sword/down_1.png 37 17
+sd_sect_fist.idle_0 sd/sect_fist/idle_0.png 11 40
+sd_sect_fist.lp_0 sd/sect_fist/lp_0.png 12 33
+sd_sect_fist.lp_1 sd/sect_fist/lp_1.png 12 33
+sd_sect_fist.guard sd/sect_fist/guard.png 12 37
+sd_sect_fist.hit_0 sd/sect_fist/hit_0.png 15 38
+sd_sect_fist.down_1 sd/sect_fist/down_1.png 21 13
+sd_sect_fist.walk_0 sd/sect_fist/walk_0.png 13 40
+sd_sect_fist.walk_2 sd/sect_fist/walk_2.png 12 40
 sd_gangsi.rise_0 sd/gangsi/rise_0.png 25 19
 sd_gangsi.rise_0a sd/gangsi/rise_0a.png 25 19
 sd_gangsi.rise_0b sd/gangsi/rise_0b.png 24 21

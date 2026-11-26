@@ -2,7 +2,7 @@
 
 현재 게임은 [walk_0.png](../../../web/data/hi/sd/gangsi/walk_0.png)의 머리, 몸통, 팔, 다리를 관절별로 배치한 기상 5자세와 사이 동작 10장을 쓴다. [재현 스크립트](../../../tools/sd_gangsi_rise.py)를 실행한 뒤 `python3 tools/hi_atlas.py`로 묶는다. 기립 후에는 기존 보행 3장으로 이어진다.
 
-혈마의 시전과 시체에 닿는 파동은 [서장 전장 렌더러](../../../web/src/prologueBattle.ts)의 `drawMaster`, `groundPulse`, `resurrection`에서 조절한다. 아래 자료와 원화 243은 첫 시안의 제작 기록이다.
+혈마의 시전과 시체에 닿는 파동은 [서장 전장 렌더러](../../../web/src/prologueBattle.ts)의 `master`, `ritual`, `drawBloodBattle`에서 조절한다. 아래 자료와 원화 243은 첫 시안의 제작 기록이다.
 
 ## 기상 5프레임 프롬프트
 

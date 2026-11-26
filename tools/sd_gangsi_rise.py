@@ -53,7 +53,7 @@ frames = []
 for i, (start, end) in enumerate(zip(keyframes, keyframes[1:])):
     for suffix, fraction in [('', 0), ('a', 1/3), ('b', 2/3)]:
         angles = [a + (b - a) * fraction for a, b in zip(start, end)]
-        frames.append((f'rise_{i}{suffix}', angles, i >= 3))
+        frames.append((f'rise_{i}{suffix}', angles, i >= 1))
 for name, (torso, neck, reach, leg, knee, back_leg, back_knee), eyes_open in frames:
     canvas = Image.new('RGBA', (96, 96))
 
@@ -77,7 +77,10 @@ for name, (torso, neck, reach, leg, knee, back_leg, back_knee), eyes_open in fra
     place(hair, (12, 15), neck_at, neck)
     if eyes_open:
         eye = project((12, 15), neck_at, neck, (16, 11))
-        canvas.putpixel(tuple(round(c) for c in eye), (196, 47, 41, 255))
+        ex, ey = (round(c) for c in eye)
+        canvas.putpixel((ex, ey), (224, 60, 43, 255))
+        if name.startswith("rise_1"):
+            canvas.putpixel((ex - 1, ey), (160, 30, 34, 255))
     box = canvas.getbbox()
     frame = canvas.crop(box)
     frame.save(DIR / (name + '.png'))

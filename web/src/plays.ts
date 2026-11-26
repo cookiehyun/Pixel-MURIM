@@ -3,6 +3,15 @@
 // script (docs/story/*.md, chapter sections pre / post); "say" adds a field-only line.
 // Design notes per chapter: docs/story/play/.
 import type { Step } from "./field";
+import type { BattleCut } from "./prologueBattle";
+
+function warCut(kind: BattleCut, ticks: number, narration: string, x = 60): Step[] {
+  return [
+    { t: "prop", id: "war", kind, x },
+    { t: "wait", n: ticks },
+    { t: "say", who: "해설", text: narration },
+  ];
+}
 const 단우업음: [string, number, string] = ["sd_danwoo:carry", 0, "DANWOO"];
 const 단우: [string, number, string] = ["sd_danwoo", 0, "DANWOO"];
 const 아롱: [string, number, string] = ["sd_arong", 0, "ARONG"];
@@ -18,23 +27,21 @@ export const PLAYS: Record<string, Record<number, Step[]>> = {
       { t: "map", map: "blood_battlefield" },
       { t: "moon" },
       { t: "wait", n: 60 },
-      { t: "say", who: "해설", text: "백 년 전, 중원의 하늘에 붉은 달이 떠올랐다.\n그날 밤, 혈교가 모습을 드러냈다." },
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
-      { t: "prop", id: "war", kind: "battleLines", x: 60 },
-      { t: "wait", n: 145 },
-      // his face, once, clearly
+      ...warCut("warClash", 76, "백 년 전, 중원의 하늘에 붉은 달이 떠올랐다.\n그날 밤, 혈교가 모습을 드러냈다."),
       { t: "map", map: "hyeolma_face" },
       { t: "cam", x: 0 },
-      { t: "wait", n: 30 },
+      { t: "wait", n: 24 },
       { t: "say", who: "해설", text: "그들의 교주, 혈마." },
-      // the fallen rise as blood corpses and join his host; the living fall back
+      { t: "map", map: "blood_battlefield" },
+      { t: "cam", x: 96 },
+      ...warCut("warSummon", 52, "쓰러진 자들마저 그의 군세가 되었고,", 96),
+      ...warCut("warRise", 107, "죽은 자들은 다시 일어났다.", 96),
       { t: "map", map: "blood_battlefield" },
       { t: "cam", x: 60 },
-      { t: "prop", id: "fallen", kind: "corpseRising", x: 60 },
-      { t: "wait", n: 168 },
-      { t: "say", who: "해설", text: "쓰러진 자들마저 그의 군세가 되었고,\n중원의 수많은 문파가 무너졌다." },
-      { t: "say", who: "해설", text: "후세는 그 시작을 혈월의 밤이라 불렀다." },
+      ...warCut("warRout", 96, "중원의 수많은 문파가 무너졌다."),
+      ...warCut("warHold", 64, "혈월의 밤, 전장은 피와 공포로 뒤덮였다."),
       // SCENE 02. 정마연합과 혈마의 최후
       { t: "map", map: "scroll_map" },
       { t: "cam", x: 0 },

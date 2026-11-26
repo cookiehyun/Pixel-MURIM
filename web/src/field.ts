@@ -12,7 +12,7 @@ import * as Fighter from "./fighter";
 import { MV_LP, MV_HP, MV_LK, MV_HK, MV_SP1, MV_JP, MV_JK } from "./fighter";
 import { D, animId, animFrame, animFrameHold, spriteId, hasSprite, moveId, MT_RUSH, MT_NORMAL, MT_SUPER_QUAKE, LV_UNBLOCK } from "./data";
 import * as FM from "./fieldmap";
-import { drawBloodBattle, battleContacts } from "./prologueBattle";
+import { drawBloodBattle, battleContacts, isBattleCut } from "./prologueBattle";
 import { RGB } from "./util";
 
 export type Look = [string, number, string];
@@ -343,7 +343,7 @@ export function tick(): void {
   if (mMoon >= 0) mMoon++;
   for (const q of props) {
     q.t++;
-    if (q.kind === "battleLines") battleContacts(q.x - camX, q.t);
+    if (isBattleCut(q.kind)) battleContacts(q.x - camX, q.kind, q.t);
   }
   if (mFadeIn > 0) mFadeIn--;
   if (mFlash > 0) mFlash--;
@@ -714,11 +714,9 @@ export function debugWarp(x: number): void { const p = player(); if (p) p.x = x;
 // ---------------------------------------------------------------- scene dressing
 
 function drawProp(q: Prop): void {
+  if (isBattleCut(q.kind)) { drawBloodBattle(q.x - camX, q.kind, q.t); return; }
   const sx = Math.round((q.x - camX) * PX), sy = Math.round(q.y * PX);
   switch (q.kind) {
-    case "battleLines": case "corpseRising":
-      drawBloodBattle(q.x - camX, q.t, q.kind === "corpseRising", host!.look("무사")!);
-      break;
     case "beads":                                          // a broken string of wooden prayer beads, scattered
       for (const [dx, dy] of [[-14, 0], [-9, -1], [-4, 1], [2, 0], [7, -1], [12, 1], [17, 0], [22, 1]])
         { R.physRect(sx + dx * 3, sy - 6 + dy * 2, 6, 6, RGB(92, 58, 30)); R.physRect(sx + dx * 3 + 1, sy - 5 + dy * 2, 2, 2, RGB(160, 112, 64)); }

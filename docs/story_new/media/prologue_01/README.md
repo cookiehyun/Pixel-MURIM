@@ -1,4 +1,6 @@
-# 서장 전장과 혈강시
+# 서장 전장과 혈강시 · 이전 연출 기록
+
+현재 게임의 다섯 컷과 배역은 [새 전장 캡처](../prologue_five/README.md)에 있다.
 
 [여섯 장면](formation.png) · [바닥선 확인](ground-lines.png) · [같은 바닥에서 체형 비교](proportions.png) · [전쟁 재생](battle.gif) · [기상과 추격 재생](rising.gif)
 
