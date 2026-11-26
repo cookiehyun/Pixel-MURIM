@@ -1,6 +1,6 @@
 # 혈월의 밤 · 서장 전장
 
-[마지막 전투부터 진군·암전·지도 전환까지 실제 속도 GIF](final-march.gif)
+[혈교도 협공과 두 번째 기상 수정 전후 비교](../prologue_encirclement/README.md) · [직전 버전의 전투와 진군 GIF](final-march.gif)
 
 | 컷 | 장면 | 화면 |
 |---|---|---|
@@ -17,7 +17,7 @@
 
 | 배역 | 런타임 폴더와 자세 |
 |---|---|
-| 혈교도 | `blood_acolyte/{idle_0,walk_0,atk_0,atk_1,hit}.png`. 기존 `cultist/`의 체형·칼날을 살리고 두건, 옷, 띠에 붉은색을 입혔다. |
+| 혈교도 | `blood_acolyte/{idle_0,walk_0,walk_1,atk_0,atk_1,hit}.png`. 무영의 대전 몸체·검술 자세·발 기준점에 기존 교도의 두건과 붉은 복면·무복을 입혔다. |
 | 수도승 | `monk/run_0.png`, `run_1.png`, `lie_up.png`, `lie_down.png`. |
 | 일반 검객 | `sect_sword/{idle_0,lp_0,lp_1,guard,hit_0,down_1}.png`. 무영 대전 자산의 검술 자세에 청색 무복을 입혔다. |
 | 일반 무림인 | `sect_fist/{idle_0,lp_0,lp_1,guard,hit_0,down_1,walk_0,walk_2}.png`. 단우 대전 자산의 맨손 자세에 녹색 무복과 황토색 머리띠를 입혔다. |

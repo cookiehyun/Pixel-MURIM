@@ -23,20 +23,25 @@ function draw(name: string, x: number, lane: Lane, left = false, scale = 1, tint
 }
 
 const defenders = [
-  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 18, fallenX: 23, delay: 40, marchEnd: 9, down: "lie_up" },
-  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 46, fallenX: 37, delay: 28, marchEnd: 19, down: "down_1" },
-  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 68, fallenX: 59, delay: 16, marchEnd: 44, down: "down_1" },
+  { sheet: "sd_monk", scale: 1.27, lane: front, opening: 25, line: 83, fallenX: 98, delay: 40, marchEnd: 82, down: "lie_up" },
+  { sheet: "sd_sect_sword", scale: 1, lane: middle, opening: 78, line: 119, fallenX: 126, delay: 28, marchEnd: 102, down: "down_1" },
+  { sheet: "sd_sect_fist", scale: 1, lane: front, opening: 130, line: 154, fallenX: 150, delay: 16, marchEnd: 116, down: "down_1" },
 ];
 const acolytes = [
-  { lane: front, opening: 43, line: 91, contact: 95, muster: 105, marchEnd: 85 },
-  { lane: middle, opening: 96, line: 122, contact: 51, muster: 71, marchEnd: 55 },
-  { lane: front, opening: 148, line: 154, contact: 149, muster: 153, marchEnd: 121 },
+  { lane: front, opening: 43, line: 41, contact: 86, strike: 46, left: false, marchEnd: 62 },
+  { lane: middle, opening: 96, line: 69, contact: 113, strike: 50, left: false, marchEnd: 94 },
+  { lane: front, opening: 148, line: 175, contact: 163, strike: 64, left: true, marchEnd: 140 },
 ];
 const corpses = [
-  { lane: front, x: 103, contact: 25, muster: 50, marchEnd: 28, delay: 17, body: "sd_monk.lie_down", scale: 1.27, left: false },
-  { lane: front, x: 135, contact: 76, muster: 87, marchEnd: 67, delay: 8, body: "sd_sect_sword.down_1", scale: 1, left: true },
-  { lane: middle, x: 164, contact: 120, muster: 124, marchEnd: 101, delay: 0, body: "sd_sect_fist.down_1", scale: 1, left: true },
+  { lane: front, x: 103, contact: 102, stand: 53, marchEnd: 24, delay: 17, body: "sd_monk.lie_down", scale: 1.27, left: false },
+  { lane: front, x: 135, contact: 131, stand: 72, marchEnd: 45, delay: 8, body: "sd_sect_sword.down_1", scale: 1, left: true },
+  { lane: middle, x: 164, contact: 161, stand: 139, marchEnd: 126, delay: 0, body: "sd_sect_fist.down_1", scale: 1, left: true },
 ];
+// The standing swordsman body is 40 art pixels tall. Hyeolma is 41 × 1.65
+// on screen; these two scales keep the hooded troops within 88–92% of him.
+function acolyte(pose: string, x: number, lane: Lane, left: boolean): void {
+  R.drawSprite(spriteId("sd_blood_acolyte." + pose), Math.round(x), lane.y, left, -1, 0, lane === front ? 1.54 : 1.50);
+}
 const castX = 180;
 const insertX = (worldX: number) => 22 + (worldX - 86) * 1.46;
 const beat = (t: number, i: number) => (t + i * 11) % (37 + i * 3);
@@ -49,8 +54,10 @@ export function battleContacts(origin: number, cut: BattleCut, t: number): void 
     });
   }
   if (cut === "warRout") {
-    if (t === 50) FX.spawn(origin + 44, middle.y - 13, FX.FX_SLASH);
-    if (t === 62) FX.spawn(origin + 65, front.y - 12, FX.FX_HIT);
+    acolytes.forEach((c, i) => {
+      if (t === c.strike) FX.spawn(origin + c.contact + (c.left ? -13 : 13), defenders[i].lane.y - 13,
+        i === 1 ? FX.FX_SLASH : FX.FX_HIT);
+    });
   }
 }
 
@@ -62,7 +69,7 @@ function clash(origin: number, lane: Lane, t: number): void {
       b < 6 ? "lp_0" : b < 13 ? "lp_1" : b < 29 ? "guard" : "idle_0";
     draw(d.sheet + "." + pose, origin + d.opening + (b < 13 ? 3 : b < 29 ? -2 : 0), lane, false, d.scale);
     const enemy = b < 13 ? "hit" : b < 21 ? "atk_0" : b < 28 ? "atk_1" : "idle_0";
-    draw("sd_blood_acolyte." + enemy, origin + acolytes[i].opening - (enemy === "atk_1" ? 4 : 0), lane, true, 1.22);
+    acolyte(enemy, origin + acolytes[i].opening - (enemy === "atk_1" ? 4 : 0), lane, true);
   });
 }
 const garnet = RGB(105, 18, 33), red = RGB(163, 35, 43), ember = RGB(202, 58, 47);
@@ -160,28 +167,23 @@ function march(t: number, rank: number, start: number, end: number, ghoul: boole
     const frame = moving ? [0, 1, 2, 1][Math.floor(distance / 4 + rank * .67) % 4] : 0;
     risen(x, lane, "walk_" + frame);
   } else {
-    const stepping = moving && Math.floor(distance / 3.5 + rank * .36) % 2;
-    draw("sd_blood_acolyte." + (stepping ? "walk_0" : "idle_0"), x, lane, true, 1.22);
+    const pose = moving ? "walk_" + (Math.floor(distance / 3.5 + rank * .36) % 2) : "idle_0";
+    acolyte(pose, x, lane, true);
   }
 }
 
-function secondRiteAndMarch(origin: number, lane: Lane, cut: BattleCut, t: number): void {
+function aftermathRanks(origin: number, lane: Lane, cut: BattleCut, t: number): void {
   const marching = cut === "warMarch";
-  // The victors make room as the new bodies stir, still facing the fallen.
+  // The two ranks hold the exact places where the attack ended.
   acolytes.forEach((c, i) => {
     if (lane !== c.lane) return;
-    if (marching) return march(t, i * 2, c.muster, c.marchEnd, false, lane, origin);
-    const x = slide(c.contact, c.muster, t, 9, 48);
-    const step = x < c.muster && Math.floor((x - c.contact) / 3.5) % 2;
-    draw("sd_blood_acolyte." + (step ? "walk_0" : "idle_0"), origin + x, lane, true, 1.22);
+    if (marching) march(t, i * 2, c.contact, c.marchEnd, false, lane, origin);
+    else acolyte("idle_0", origin + c.contact, lane, true);
   });
   corpses.forEach((c, i) => {
     if (lane !== c.lane) return;
-    if (marching) return march(t, i * 2 + 1, c.muster, c.marchEnd, true, lane, origin);
-    const start = c.contact + (i === 0 ? 5 : 0); // the first ghoul dragged the monk before dropping him
-    const x = slide(start, c.muster, t, 9, 48);
-    const frame = x < c.muster ? [0, 1, 2, 1][Math.floor((x - start) / 4) % 4] : 0;
-    risen(origin + x, lane, "walk_" + frame);
+    if (marching) march(t, i * 2 + 1, c.stand, c.marchEnd, true, lane, origin);
+    else risen(origin + c.stand, lane, "walk_0");
   });
   defenders.forEach((d, i) => {
     if (lane !== d.lane) return;
@@ -193,38 +195,40 @@ function secondRiteAndMarch(origin: number, lane: Lane, cut: BattleCut, t: numbe
 }
 
 function reversal(origin: number, lane: Lane, t: number): void {
-  const attack = Math.min(t, 80);
   defenders.forEach((d, i) => {
     if (d.lane !== lane) return;
     let x = d.line, pose: string;
     if (i === 0) {
-      // Held upright between the corpse's hands, then dropped.
-      pose = attack < 60 ? "run_" + (attack < 40 ? stride(t, 5) : 0) : d.down;
-      x = slide(x, d.fallenX, attack, 40, 59);
-    } else if (i === 1) {
-      pose = attack < 50 ? "guard" : attack < 60 ? "hit_0" : d.down;
-      x = slide(x, d.fallenX, attack, 50, 62);
+      // The monk is driven into the ghoul's grasp and struck while held.
+      pose = t < 60 ? "run_" + (t < 40 ? stride(t, 5) : 0) : d.down;
+      x = slide(x, d.fallenX, t, 12, 40);
     } else {
-      pose = attack < 62 ? "guard" : attack < 80 ? "hit_0" : d.down;
-      x = slide(x, d.fallenX, attack, 62, 79);
+      const impact = acolytes[i].strike;
+      pose = t < impact ? "guard" : t < (i === 1 ? 60 : 80) ? "hit_0" : d.down;
+      x = slide(x, d.fallenX, t, impact, impact + 9);
     }
     draw(d.sheet + "." + pose, origin + x, lane, false, d.scale);
   });
   acolytes.forEach((c, i) => {
     if (lane !== c.lane) return;
-    const start = 8 + i * 3, stop = i === 1 ? 49 : 58;
-    const x = slide(c.line, c.contact, attack, start, stop);
-    let pose = attack > start && attack < stop ? "walk_0" : "idle_0";
-    if (i === 1 && attack >= 42 && attack < 60) pose = attack < 50 ? "atk_0" : "atk_1";
-    draw("sd_blood_acolyte." + pose, origin + x, lane, true, 1.22);
+    const start = 5 + i * 3;
+    const x = slide(c.line, c.contact, t, start, c.strike);
+    let pose = "idle_0";
+    if (t >= c.strike - 7 && t < c.strike + 9)
+      pose = t < c.strike ? "atk_0" : "atk_1";
+    else if (t > start && t < c.strike)
+      pose = "walk_" + (Math.floor(Math.abs(x - c.line) / 4) % 2);
+    acolyte(pose, origin + x, lane, t >= c.strike + 12 || c.left);
   });
   corpses.forEach((c, i) => {
     if (lane !== c.lane) return;
-    const stop = [40, 60, 64][i];
-    const drag = i === 0 ? slide(0, 5, attack, 40, 59) : 0;
-    const x = slide(c.x, c.contact, attack, 6 + i * 4, stop) + drag;
-    let pose = attack < stop ? "walk_" + [0, 1, 2, 1][Math.floor(t / 6) % 4] : "walk_0";
-    if (attack < 80 && attack >= stop && attack < stop + 20) pose = i === 0 ? "stab" : i === 1 ? "atk_1" : "guard";
+    const contactTick = [39, 45, 57][i];
+    const release = contactTick + 12;
+    const contactX = slide(c.x, c.contact, t, 5, contactTick);
+    const x = slide(contactX, c.stand, t, release, 80);
+    let pose = "walk_0";
+    if (t >= contactTick && t < release) pose = i === 0 ? "stab" : "atk_1";
+    else if (t < 80) pose = "walk_" + [0, 1, 2, 1][Math.floor((c.x - x) / 4) % 4];
     risen(origin + x, lane, pose);
   });
 }
@@ -234,9 +238,12 @@ export function drawBloodBattle(origin: number, cut: BattleCut, t: number): void
   const aftermath = cut === "warMarch" || cut === "warSecondRise";
   const rearTick = aftermath ? 80 : cut === "warRout" ? Math.min(t, 80) : t;
   for (const group of [13, 65, 117]) {
-    for (let i = 0; i < 5; i++)
-      draw(i % 2 ? "sd_blood_acolyte.atk_0" : "sd_monk.run_" + stride(rearTick + i, 8),
-        origin + group + i * 5, rear, !!(i % 2), .65, RGB(53, 27, 31));
+    for (let i = 0; i < 5; i++) {
+      const hooded = i % 2 === 1;
+      const pose = hooded ? "sd_blood_acolyte.atk_" + stride(rearTick + group + i * 3, 11)
+        : "sd_monk.run_" + stride(rearTick + i, 8);
+      draw(pose, origin + group + i * 5, rear, hooded, hooded ? .49 : .65, RGB(53, 27, 31));
+    }
   }
   const insert = cut === "warSummon" || cut === "warRise";
   if (cut !== "warClash") master(origin + (insert ? insertX(castX) : castX), cut === "warRise" ? t + 60 : t, (insert && t < 110) || (cut === "warSecondRise" && t < 121));
@@ -251,7 +258,8 @@ export function drawBloodBattle(origin: number, cut: BattleCut, t: number): void
       for (const c of corpses) {
         if (c.lane === lane) ritualBody(origin + insertX(c.x), lane, c.body, c.scale, c.left, t, c.delay, cut === "warRise");
       }
-    } else if (aftermath) secondRiteAndMarch(origin, lane, cut, t);
+    } else if (cut === "warRout" && t >= 80) aftermathRanks(origin, lane, cut, 0);
+    else if (aftermath) aftermathRanks(origin, lane, cut, t);
     else reversal(origin, lane, t);
   }
 }
