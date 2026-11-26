@@ -1,0 +1,50 @@
+[
+  {
+    "slot": 0,
+    "distance": 22,
+    "face": 1,
+    "tick": 2,
+    "attacks": [
+      {
+        "x": 98,
+        "y": 62,
+        "w": 7,
+        "h": 5
+      }
+    ],
+    "hurts": [
+      {
+        "x": 104,
+        "y": 58,
+        "w": 16,
+        "h": 30
+      }
+    ],
+    "damage": 30,
+    "contact": true
+  },
+  {
+    "slot": 3,
+    "distance": 22,
+    "face": 1,
+    "tick": 4,
+    "attacks": [
+      {
+        "x": 98,
+        "y": 60,
+        "w": 8,
+        "h": 6
+      }
+    ],
+    "hurts": [
+      {
+        "x": 104,
+        "y": 58,
+        "w": 16,
+        "h": 30
+      }
+    ],
+    "damage": 100,
+    "contact": true
+  }
+]

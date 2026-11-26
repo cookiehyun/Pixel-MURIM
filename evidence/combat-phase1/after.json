@@ -1,0 +1,473 @@
+[
+  {
+    "outcome": "whiff",
+    "slot": 0,
+    "distance": 22,
+    "face": 1,
+    "tick": 2,
+    "attacks": [
+      {
+        "x": 94,
+        "y": 69,
+        "w": 5,
+        "h": 5
+      }
+    ],
+    "hurts": [
+      {
+        "x": 107,
+        "y": 52,
+        "w": 10,
+        "h": 11
+      },
+      {
+        "x": 108,
+        "y": 63,
+        "w": 10,
+        "h": 12
+      },
+      {
+        "x": 114,
+        "y": 75,
+        "w": 6,
+        "h": 13
+      },
+      {
+        "x": 106,
+        "y": 75,
+        "w": 6,
+        "h": 13
+      },
+      {
+        "x": 103,
+        "y": 64,
+        "w": 5,
+        "h": 4
+      },
+      {
+        "x": 105,
+        "y": 67,
+        "w": 5,
+        "h": 4
+      }
+    ],
+    "damage": 0,
+    "contact": false
+  },
+  {
+    "outcome": "hit",
+    "slot": 3,
+    "distance": 22,
+    "face": 1,
+    "tick": 4,
+    "attacks": [
+      {
+        "x": 98,
+        "y": 59,
+        "w": 8,
+        "h": 6
+      }
+    ],
+    "hurts": [
+      {
+        "x": 107,
+        "y": 52,
+        "w": 10,
+        "h": 11
+      },
+      {
+        "x": 108,
+        "y": 63,
+        "w": 10,
+        "h": 12
+      },
+      {
+        "x": 114,
+        "y": 75,
+        "w": 6,
+        "h": 13
+      },
+      {
+        "x": 106,
+        "y": 75,
+        "w": 6,
+        "h": 13
+      },
+      {
+        "x": 103,
+        "y": 64,
+        "w": 5,
+        "h": 4
+      },
+      {
+        "x": 105,
+        "y": 67,
+        "w": 5,
+        "h": 4
+      }
+    ],
+    "damage": 100,
+    "contact": true
+  },
+  {
+    "basics": [
+      {
+        "move": "lp",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 15,
+          "firstMiss": 16
+        },
+        "left": {
+          "lastHit": 15,
+          "firstMiss": 16
+        }
+      },
+      {
+        "move": "hp",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 18,
+          "firstMiss": 19
+        },
+        "left": {
+          "lastHit": 18,
+          "firstMiss": 19
+        }
+      },
+      {
+        "move": "lk",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 21,
+          "firstMiss": 22
+        },
+        "left": {
+          "lastHit": 21,
+          "firstMiss": 22
+        }
+      },
+      {
+        "move": "hk",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 24,
+          "firstMiss": 25
+        },
+        "left": {
+          "lastHit": 24,
+          "firstMiss": 25
+        }
+      },
+      {
+        "move": "clp",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 17,
+          "firstMiss": 18
+        },
+        "left": {
+          "lastHit": 17,
+          "firstMiss": 18
+        }
+      },
+      {
+        "move": "chp",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 8,
+          "firstMiss": 9
+        },
+        "left": {
+          "lastHit": 8,
+          "firstMiss": 9
+        }
+      },
+      {
+        "move": "clk",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 17,
+          "firstMiss": 18
+        },
+        "left": {
+          "lastHit": 17,
+          "firstMiss": 18
+        }
+      },
+      {
+        "move": "chk",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 17,
+          "firstMiss": 18
+        },
+        "left": {
+          "lastHit": 17,
+          "firstMiss": 18
+        }
+      },
+      {
+        "move": "jp",
+        "attackerHeight": 8,
+        "right": {
+          "lastHit": 23,
+          "firstMiss": 24
+        },
+        "left": {
+          "lastHit": 23,
+          "firstMiss": 24
+        }
+      },
+      {
+        "move": "jk",
+        "attackerHeight": 8,
+        "right": {
+          "lastHit": 23,
+          "firstMiss": 24
+        },
+        "left": {
+          "lastHit": 23,
+          "firstMiss": 24
+        }
+      },
+      {
+        "move": "ovh",
+        "attackerHeight": 0,
+        "right": {
+          "lastHit": 14,
+          "firstMiss": 15
+        },
+        "left": {
+          "lastHit": 14,
+          "firstMiss": 15
+        }
+      }
+    ]
+  },
+  {
+    "checks": [
+      "LP high evade 1",
+      "HK above crouch 1",
+      "mid standing guard 1",
+      "mid vs crouch guard 1",
+      "low crouch guard 1",
+      "low vs standing guard 1",
+      "startup empty 1",
+      "recovery empty 1",
+      "one hit across parts and ticks 1",
+      "trade 1",
+      "double KO 1",
+      "P1 last pixel 1",
+      "P2 last pixel 1",
+      "uppercut airborne 1",
+      "arm retracts 1",
+      "one mirrored cell 1",
+      "wall 1",
+      "LP high evade -1",
+      "HK above crouch -1",
+      "mid standing guard -1",
+      "mid vs crouch guard -1",
+      "low crouch guard -1",
+      "low vs standing guard -1",
+      "startup empty -1",
+      "recovery empty -1",
+      "one hit across parts and ticks -1",
+      "trade -1",
+      "double KO -1",
+      "P1 last pixel -1",
+      "P2 last pixel -1",
+      "uppercut airborne -1",
+      "arm retracts -1",
+      "one mirrored cell -1",
+      "wall -1",
+      "counter stance",
+      "grounded throw",
+      "air throw excluded",
+      "projectile vs authored hurtboxes",
+      "sword kit fallback",
+      "three rush hits",
+      "story legacy",
+      "lockstep legacy"
+    ]
+  },
+  {
+    "mode": "training",
+    "stage": "fight",
+    "face": 1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "mode": "training",
+    "stage": "fight",
+    "face": -1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "mode": "arcade",
+    "stage": "fight",
+    "face": 1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "mode": "arcade",
+    "stage": "fight",
+    "face": -1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "mode": "tag",
+    "stage": "before tag",
+    "face": 1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "mode": "tag",
+    "stage": "before tag",
+    "face": -1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "swaps": 1,
+    "entry": [
+      {
+        "x": 68,
+        "y": 12,
+        "w": 10,
+        "h": 10
+      },
+      {
+        "x": 67,
+        "y": 22,
+        "w": 11,
+        "h": 10
+      },
+      {
+        "x": 67,
+        "y": 32,
+        "w": 12,
+        "h": 5
+      }
+    ]
+  },
+  {
+    "mode": "tag",
+    "stage": "after tag",
+    "face": 1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "mode": "tag",
+    "stage": "after tag",
+    "face": -1,
+    "results": [
+      {
+        "distance": 15,
+        "damage": 30
+      },
+      {
+        "distance": 16,
+        "damage": 0
+      },
+      {
+        "distance": 22,
+        "damage": 0
+      }
+    ]
+  },
+  {
+    "lockstepFrames": 130,
+    "finalHash": 610093141
+  }
+]
