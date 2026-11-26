@@ -51,6 +51,9 @@ for k, (nm, p) in enumerate(zip(names, sil)):
     right = W if k == len(sil) - 1 else int((cx[k] + cx[k + 1]) / 2)
     top, bot = p[:, 0].min(), p[:, 0].max()
     s = height / (bot - top + 1)                          # source px -> art px
+    if char == "baekmujin" and nm in ("fall_4", "fall_5"):
+        # Keep the final burst and fading sparks local to the marked opponent.
+        s *= 0.60
     feet = p[p[:, 0] >= bot - (bot - top) * 0.1]
     fxx, fyy = feet[:, 1].mean(), bot
     m = fx[:, left:right]

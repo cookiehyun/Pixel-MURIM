@@ -1570,7 +1570,8 @@ function crashStep(i: number, t: number): void {
     if (ghost && t === CRASH_GHOST_END) {                // the afterimages break all at once
       Combat.dealDamage(o, total - 220); Combat.addComboHit(i);
       applyHit(o, 0, 3.5, true); fo.flash = 2;
-      Combat.C.WhiteFlash = 3; Combat.C.HitStop = 8; Combat.C.ImpactDark = 5;
+      if (f.kit !== "baekmujin") Combat.C.WhiteFlash = 3;
+      Combat.C.HitStop = 8; Combat.C.ImpactDark = 5;
       FX.spawn(f.cineCX, vint(fo.footY) - 18, FX.FX_HEAVY);
     }
   }
