@@ -18,12 +18,20 @@ type Edge = { time: number; code: number; down: boolean; touch: boolean };
 const pending: Edge[] = [];
 const sampledKeys = new Set<number>(), sampledTouch = new Set<number>();
 
-function record(code: number, down: boolean, touch = false): void {
-  pending.push({time: performance.now(), code, down, touch});
+function record(code: number, down: boolean, timestamp: number, touch = false): void {
+  // RAF deadlines and modern DOM event timestamps are relative to timeOrigin.
+  // Older browsers can report epoch milliseconds instead.
+  const time = timestamp >= performance.timeOrigin ? timestamp - performance.timeOrigin : timestamp;
+  const edge = {time, code, down, touch};
+  // Keyboard and pointer tasks may arrive out of timestamp order. Preserve
+  // delivery order on ties and keep a future edge from hiding an older one.
+  let i = pending.length;
+  while (i > 0 && pending[i - 1].time > time) i--;
+  pending.splice(i, 0, edge);
 }
 
-function clearKeys(): void {
-  for (const code of keyDown) record(code, false);
+function clearKeys(timestamp = performance.now()): void {
+  for (const code of keyDown) record(code, false, timestamp);
   keyDown.clear();
 }
 
@@ -41,11 +49,11 @@ export function init(): void {
   window.addEventListener("keydown", (e) => {
     if (suspended) return;
     if (e.keyCode === 9 || e.keyCode === 0x70 || (e.keyCode >= 0x25 && e.keyCode <= 0x28) || e.keyCode === 32) e.preventDefault();
-    if (!keyDown.has(e.keyCode)) { record(e.keyCode, true); keyLatch.add(e.keyCode); lastKey = e.keyCode; }
+    if (!keyDown.has(e.keyCode)) { record(e.keyCode, true, e.timeStamp); keyLatch.add(e.keyCode); lastKey = e.keyCode; }
     keyDown.add(e.keyCode);
   });
-  window.addEventListener("keyup", (e) => { if (keyDown.delete(e.keyCode)) record(e.keyCode, false); });
-  window.addEventListener("blur", () => { clearKeys(); focusLost = true; });
+  window.addEventListener("keyup", (e) => { if (keyDown.delete(e.keyCode)) record(e.keyCode, false, e.timeStamp); });
+  window.addEventListener("blur", (e) => { clearKeys(e.timeStamp); focusLost = true; });
 }
 
 export function setVK(b: number, code: number): void { vk[b] = code; }
@@ -72,6 +80,8 @@ export function poll(fast = false, deadline = Infinity): void {
     keyLatch.clear();
     touchLatch.fill(false);
   }
+  // A late edge belongs to the next unprocessed step. Never rewind a frame;
+  // removing the consumed prefix prevents replay on the following step.
   let used = 0;
   while (used < pending.length && (!fast || pending[used].time <= deadline + 1e-6)) {
     const edge = pending[used++];
@@ -104,8 +114,8 @@ export const isDown = (b: number) => cur[b];
 export const isPressed = (b: number) => edges[b];
 
 /** Touch controls: hold / release a logical button (also latched so a quick tap is never lost). */
-export function touch(b: number, down: boolean): void {
-  if (down !== touchDown[b]) record(b, down, true);
+export function touch(b: number, down: boolean, timestamp: number): void {
+  if (down !== touchDown[b]) record(b, down, timestamp, true);
   if (down && !touchDown[b]) touchLatch[b] = true;
   touchDown[b] = down;
 }

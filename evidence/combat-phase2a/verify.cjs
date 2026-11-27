@@ -34,7 +34,12 @@ assert.ok(['before', 'after'].includes(phase));
       await page.waitForFunction(() => window.__pm, null, {polling: 100});
       report[mode] = await page.evaluate(({mode,phase}) => {
         const pm = window.__pm, {G,F,fighter,combat} = pm;
-        const key = (type, keyCode) => window.dispatchEvent(new KeyboardEvent(type, {keyCode}));
+        const key = (type, keyCode) => {
+          const event = new KeyboardEvent(type, {keyCode});
+          // Synthetic inputs share this harness's virtual RAF time origin.
+          Object.defineProperty(event, 'timeStamp', {value: performance.now()});
+          window.dispatchEvent(event);
+        };
         const tap = code => { key('keydown',code); advance(3); key('keyup',code); advance(3); };
         tap(65);
         for (let i=0; i<{arcade:1,tag:2,training:3}[mode]; i++) tap(40);

@@ -1,0 +1,207 @@
+[
+  {
+    "kind": "key",
+    "buttons": [
+      "A",
+      "S"
+    ],
+    "late": false,
+    "blockMs": 62.6999999997206,
+    "events": [
+      {
+        "type": "keydown",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 7.899999999906868,
+        "deliveredMs": 63.8000000002794
+      },
+      {
+        "type": "keyup",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 10.899999999906868,
+        "deliveredMs": 64.10000000009313
+      },
+      {
+        "type": "keydown",
+        "button": "s",
+        "trusted": true,
+        "sourceMs": 24.899999999906868,
+        "deliveredMs": 64.3000000002794
+      },
+      {
+        "type": "keyup",
+        "button": "s",
+        "trusted": true,
+        "sourceMs": 27.899999999906868,
+        "deliveredMs": 64.3000000002794
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 1,
+        "mask": 1
+      },
+      {
+        "frame": 2,
+        "mask": 2
+      }
+    ],
+    "hits": [
+      {
+        "frame": 7,
+        "damage": 30
+      },
+      {
+        "frame": 26,
+        "damage": 90
+      }
+    ]
+  },
+  {
+    "kind": "key",
+    "buttons": [
+      "A",
+      "A"
+    ],
+    "late": false,
+    "blockMs": 62.5,
+    "events": [
+      {
+        "type": "keydown",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 7.900000000372529,
+        "deliveredMs": 63.90000000037253
+      },
+      {
+        "type": "keyup",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 10.900000000372529,
+        "deliveredMs": 64.20000000018626
+      },
+      {
+        "type": "keydown",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 24.90000000037253,
+        "deliveredMs": 64.3000000002794
+      },
+      {
+        "type": "keyup",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 27.90000000037253,
+        "deliveredMs": 64.40000000037253
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 1,
+        "mask": 1
+      },
+      {
+        "frame": 2,
+        "mask": 1
+      }
+    ],
+    "hits": [
+      {
+        "frame": 7,
+        "damage": 30
+      }
+    ]
+  },
+  {
+    "kind": "touch",
+    "buttons": [
+      "A",
+      "A"
+    ],
+    "late": false,
+    "blockMs": 62.60000000009313,
+    "events": [
+      {
+        "type": "pointerdown",
+        "button": "A",
+        "trusted": true,
+        "sourceMs": 8,
+        "deliveredMs": 72.20000000018626
+      },
+      {
+        "type": "pointerup",
+        "button": "A",
+        "trusted": true,
+        "sourceMs": 11,
+        "deliveredMs": 72.70000000018626
+      },
+      {
+        "type": "pointerdown",
+        "button": "A",
+        "trusted": true,
+        "sourceMs": 25,
+        "deliveredMs": 73.39999999990687
+      },
+      {
+        "type": "pointerup",
+        "button": "A",
+        "trusted": true,
+        "sourceMs": 28,
+        "deliveredMs": 73.5
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 1,
+        "mask": 1
+      },
+      {
+        "frame": 2,
+        "mask": 1
+      }
+    ],
+    "hits": [
+      {
+        "frame": 7,
+        "damage": 30
+      }
+    ]
+  },
+  {
+    "kind": "key",
+    "buttons": [
+      "A"
+    ],
+    "late": true,
+    "blockMs": 62.10000000009313,
+    "events": [
+      {
+        "type": "keydown",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 7.899999999906868,
+        "deliveredMs": 64.60000000009313
+      },
+      {
+        "type": "keyup",
+        "button": "a",
+        "trusted": true,
+        "sourceMs": 10.899999999906868,
+        "deliveredMs": 64.8000000002794
+      }
+    ],
+    "inputs": [
+      {
+        "frame": 3,
+        "mask": 1
+      }
+    ],
+    "hits": [
+      {
+        "frame": 9,
+        "damage": 30
+      }
+    ]
+  }
+]
