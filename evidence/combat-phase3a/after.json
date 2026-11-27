@@ -1,0 +1,4930 @@
+[
+  {
+    "mode": "training",
+    "face": 1,
+    "tag": false,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "training",
+    "face": 1,
+    "tag": false,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "training",
+    "face": -1,
+    "tag": false,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "training",
+    "face": -1,
+    "tag": false,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "arcade",
+    "face": 1,
+    "tag": false,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "arcade",
+    "face": 1,
+    "tag": false,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "arcade",
+    "face": -1,
+    "tag": false,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "arcade",
+    "face": -1,
+    "tag": false,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": 1,
+    "tag": false,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": 1,
+    "tag": false,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": -1,
+    "tag": false,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": -1,
+    "tag": false,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": 1,
+    "tag": true,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": 1,
+    "tag": true,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": 0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": 2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": -1,
+    "tag": true,
+    "setup": "seed",
+    "window": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "combo": {
+      "setup": "seed",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "seed",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 15.533,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "seed",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 62,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 62,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 74,
+        "distance": 11.933,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "seed",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "seed",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 6,
+          "height": 18.389,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 10.833,
+          "height": 9.444,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 86,
+        "distance": 15.233,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "posePixels": 538,
+      "jumpInput": 11,
+      "defenceInput": {
+        "frame": 11,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 68,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  },
+  {
+    "mode": "tag",
+    "face": -1,
+    "tag": true,
+    "setup": "jump",
+    "window": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "combo": {
+      "setup": "jump",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "noX": {
+      "setup": "jump",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 20.983,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "late": {
+      "setup": "jump",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 60,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 60,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        }
+      ],
+      "landing": {
+        "frame": 73,
+        "distance": 17.383,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538
+    },
+    "guard": {
+      "setup": "jump",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 4
+      }
+    },
+    "jump": {
+      "setup": "jump",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 3,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 58,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 3,
+          "move": "chp"
+        },
+        {
+          "frame": 58,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 12,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 12.222,
+          "vx": -0.55,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.hit_1"
+        },
+        {
+          "frame": 70,
+          "move": "hk",
+          "damage": 100,
+          "distance": 16.833,
+          "height": 3.278,
+          "vx": -2.2,
+          "vy": 4.167,
+          "combo": 2,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 85,
+        "distance": 19.033,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "jumpInput": 1,
+      "posePixels": 538,
+      "defenceInput": {
+        "frame": 13,
+        "dir": 8
+      }
+    },
+    "probe": {
+      "frame": 70,
+      "damage": 0,
+      "combo": 2,
+      "hurtRects": 0
+    }
+  }
+]

@@ -1,0 +1,2634 @@
+{
+  "training": {
+    "fight": [
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": 2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": 1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": -2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": -1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      }
+    ],
+    "tapOffsets": [
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": 1,
+        "air": false,
+        "offset": 1,
+        "starts": 1,
+        "presses": [
+          1
+        ],
+        "inputEdges": [
+          {
+            "frame": 1,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          7
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": 2.3529,
+        "events": {
+          "active": {
+            "frame": 7,
+            "ms": 116.667,
+            "oldTicks": 2.333
+          },
+          "hit": {
+            "frame": 7,
+            "ms": 116.667,
+            "oldTicks": 2.333
+          },
+          "attackerReady": {
+            "frame": 31,
+            "ms": 516.667,
+            "oldTicks": 10.333
+          },
+          "defenderReady": {
+            "frame": 34,
+            "ms": 566.667,
+            "oldTicks": 11.333
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": 1,
+        "air": false,
+        "offset": 2,
+        "starts": 1,
+        "presses": [
+          2
+        ],
+        "inputEdges": [
+          {
+            "frame": 2,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          8
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": 2.3529,
+        "events": {
+          "active": {
+            "frame": 8,
+            "ms": 133.333,
+            "oldTicks": 2.667
+          },
+          "hit": {
+            "frame": 8,
+            "ms": 133.333,
+            "oldTicks": 2.667
+          },
+          "attackerReady": {
+            "frame": 32,
+            "ms": 533.333,
+            "oldTicks": 10.667
+          },
+          "defenderReady": {
+            "frame": 35,
+            "ms": 583.333,
+            "oldTicks": 11.667
+          }
+        }
+      }
+    ],
+    "batchedDisplay": [
+      {
+        "eventMs": 8.333,
+        "inputPolls": [
+          1
+        ],
+        "firstHit": {
+          "frame": 7,
+          "ms": 116.667,
+          "oldTicks": 2.333
+        }
+      },
+      {
+        "eventMs": 25,
+        "inputPolls": [
+          2
+        ],
+        "firstHit": {
+          "frame": 8,
+          "ms": 133.333,
+          "oldTicks": 2.667
+        }
+      }
+    ],
+    "walk": {
+      "time": {
+        "frame": 30,
+        "ms": 500,
+        "oldTicks": 10
+      },
+      "dx": 20.000000000000142,
+      "timerElapsed": 0
+    },
+    "jump": {
+      "landing": {
+        "frame": 51,
+        "ms": 850,
+        "oldTicks": 17
+      },
+      "dx": 30.6,
+      "height": 18.0556
+    },
+    "cpu": [
+      {
+        "level": 0,
+        "firstVisible": {
+          "frame": 24,
+          "ms": 400,
+          "oldTicks": 8
+        }
+      },
+      {
+        "level": 1,
+        "firstVisible": {
+          "frame": 15,
+          "ms": 250,
+          "oldTicks": 5
+        }
+      },
+      {
+        "level": 2,
+        "firstVisible": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        }
+      }
+    ]
+  },
+  "arcade": {
+    "fight": [
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": 2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": 1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": -2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": -1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      }
+    ],
+    "walk": {
+      "time": {
+        "frame": 30,
+        "ms": 500,
+        "oldTicks": 10
+      },
+      "dx": 20.000000000000142,
+      "timerElapsed": 10
+    }
+  },
+  "tag": {
+    "beforeTag": [
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": 2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": 1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": -2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": -1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      }
+    ],
+    "afterTag": [
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": 2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": 1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": 1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": 9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 15,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [
+          9
+        ],
+        "damage": 30,
+        "hitstop": {
+          "frame": 9,
+          "ms": 150,
+          "oldTicks": 3
+        },
+        "pushAtRecovery": -2.3529,
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "hit": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 33,
+            "ms": 550,
+            "oldTicks": 11
+          },
+          "defenderReady": {
+            "frame": 36,
+            "ms": 600,
+            "oldTicks": 12
+          }
+        }
+      },
+      {
+        "move": "lp",
+        "distance": 16,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 1
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 9,
+            "ms": 150,
+            "oldTicks": 3
+          },
+          "attackerReady": {
+            "frame": 24,
+            "ms": 400,
+            "oldTicks": 8
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 28,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 100,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1883,
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 54,
+            "ms": 900,
+            "oldTicks": 18
+          },
+          "defenderReady": {
+            "frame": 60,
+            "ms": 1000,
+            "oldTicks": 20
+          }
+        }
+      },
+      {
+        "move": "hk",
+        "distance": 29,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 8
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 42,
+            "ms": 700,
+            "oldTicks": 14
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 18,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          15
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -7.1262,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 15,
+            "ms": 250,
+            "oldTicks": 5
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 19,
+        "face": -1,
+        "air": false,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [],
+        "damage": 0,
+        "hitstop": {
+          "frame": 0,
+          "ms": 0,
+          "oldTicks": 0
+        },
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 45,
+            "ms": 750,
+            "oldTicks": 15
+          }
+        }
+      },
+      {
+        "move": "chp",
+        "distance": 6,
+        "face": -1,
+        "air": true,
+        "offset": 3,
+        "starts": 1,
+        "presses": [
+          3
+        ],
+        "inputEdges": [
+          {
+            "frame": 3,
+            "mask": 2
+          }
+        ],
+        "hits": [
+          12
+        ],
+        "damage": 80,
+        "hitstop": {
+          "frame": 12,
+          "ms": 200,
+          "oldTicks": 4
+        },
+        "pushAtRecovery": -9.35,
+        "events": {
+          "active": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "hit": {
+            "frame": 12,
+            "ms": 200,
+            "oldTicks": 4
+          },
+          "attackerReady": {
+            "frame": 57,
+            "ms": 950,
+            "oldTicks": 19
+          },
+          "defenderReady": {
+            "frame": 135,
+            "ms": 2250,
+            "oldTicks": 45
+          }
+        }
+      }
+    ],
+    "walk": {
+      "time": {
+        "frame": 30,
+        "ms": 500,
+        "oldTicks": 10
+      },
+      "dx": 20.000000000000142,
+      "timerElapsed": 10
+    }
+  }
+}

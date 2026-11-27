@@ -4,7 +4,8 @@ const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const phase = process.argv[2];
+const phase3a = process.argv[2] === 'after-3a';
+const phase = phase3a ? 'after' : process.argv[2];
 assert.ok(['before', 'after'].includes(phase));
 (async () => {
   const after = phase === 'after';
@@ -184,6 +185,8 @@ assert.ok(['before', 'after'].includes(phase));
         for(const stage of (mode==='tag'?['beforeTag','afterTag']:['fight'])) {
           report[mode][stage].forEach((row,i)=>{
             const old=baseline[mode][stage][i];
+            // Phase 3A only retunes the airborne uppercut's horizontal push.
+            if(phase3a && old.air && old.move==='chp') old.pushAtRecovery /= 4;
             for(const field of ['move','distance','face','air','damage','events','hitstop','pushAtRecovery'])
               assert.deepEqual(row[field],old[field],mode+' '+stage+' '+row.move+' '+field);
           });
@@ -194,6 +197,7 @@ assert.ok(['before', 'after'].includes(phase));
     }
     for(const k of ['active','hit']) assert.equal(b.events[k].frame-a.events[k].frame,phase==='after'?1:0);
     assert.equal(b.presses[0]-a.presses[0],phase==='after'?1:0);
-    fs.writeFileSync(path.join(__dirname, phase+'.json'), JSON.stringify(report,null,2)+'\n');
+    const output=phase3a?'../combat-phase3a/2a-regression.json':phase+'.json';
+    fs.writeFileSync(path.join(__dirname, output), JSON.stringify(report,null,2)+'\n');
   } finally { await browser.close(); }
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -21,6 +21,10 @@ import { RGB, clng, vint } from "./util";
 
 export const ST_IDLE = 0, ST_WALK = 1, ST_CROUCH = 2, ST_JUMP = 3, ST_ATTACK = 4, ST_GUARD = 5, ST_HIT = 6,
   ST_DOWN = 7, ST_THROW = 8, ST_THROWN = 9, ST_DASH = 10, ST_LAND = 11;
+// A launched opponent follows the down arc, with one hittable airborne pose.
+const DOWN_JUGGLE = 4;
+export const canAirFollow = (i: number) => F[i].state === ST_DOWN && F[i].downPhase === DOWN_JUGGLE;
+
 export const MV_LP = 0, MV_HP = 1, MV_LK = 2, MV_HK = 3, MV_CLP = 4, MV_CHP = 5, MV_CLK = 6, MV_CHK = 7, MV_JP = 8,
   MV_JK = 9, MV_THROW = 10, MV_SP1 = 11, MV_SP2 = 12, MV_SUPER = 13, MV_OVH = 14;
 export const B_LP = 1, B_HP = 2, B_LK = 4, B_HK = 8;
@@ -440,6 +444,7 @@ function updateFighter(i: number, steps: number, pulse: boolean): void {
       break;
     case ST_DOWN:
       switch (f.downPhase) {
+        case DOWN_JUGGLE:
         case 0: if (airStep(i, steps)) { f.downPhase = 1; f.stTick = 0; } break;
         case 1:
           if (f.health > 0) {
@@ -815,13 +820,17 @@ export function setState(i: number, st: number): void {
   if (st === ST_IDLE || st === ST_WALK || st === ST_JUMP || st === ST_DASH) f.crouch = false;
 }
 
-export function applyHit(i: number, hitstun: number, push: number, knockdown: boolean): void {
+export function applyHit(i: number, hitstun: number, push: number, knockdown: boolean, launch = false): void {
   const f = F[i];
   f.bufAtk = -1;
   if (f.onGround) f.footY = GROUND_Y;
   if (knockdown || !f.onGround) {
+    const falling = canAirFollow(i);
     setState(i, ST_DOWN);
-    f.downPhase = 0; f.onGround = false; f.vy = -3.5; f.vx = -f.facing * push;
+    f.downPhase = launch && !falling ? DOWN_JUGGLE : 0;
+    f.onGround = false;
+    f.vy = falling ? Math.max(0, f.vy) : -3.5;
+    f.vx = -f.facing * push * (f.downPhase === DOWN_JUGGLE ? 0.25 : 1);
   } else {
     f.crouch = f.state === ST_CROUCH || ((f.state === ST_ATTACK || f.state === ST_GUARD || f.state === ST_HIT) && f.crouch);
     setState(i, ST_HIT);
@@ -973,7 +982,32 @@ export const hitRects = (i: number) => strikes(i).flatMap(s => s.boxes);
 export function evades(i: number, strike?: StrikeWindow): boolean {
   return !!strike && !!profile(i)?.evades[poseKey(i)]?.includes(strike.grade);
 }
+// Collision follows the opaque runs of the displayed hit sprite, using the
+// same foot anchor and horizontal reflection as drawing. Cache local spans.
+const airHitShapes = new Map<number, LocalBox[]>();
+function airHitShape(sprite: number): LocalBox[] {
+  const cached = airHitShapes.get(sprite);
+  if (cached) return cached;
+  const spans: LocalBox[] = [];
+  const width = D.SprW[sprite], offset = D.SprOff[sprite];
+  for (let y = 0; y < D.SprH[sprite]; y++) {
+    let x = 0;
+    while (x < width) {
+      const start = x;
+      while (x < width && D.SprPix[offset + y * width + x] >= 0) x++;
+      if (x > start) spans.push([start - D.SprAX[sprite], y - D.SprAY[sprite], x - start, 1]);
+      x++;
+    }
+  }
+  airHitShapes.set(sprite, spans);
+  return spans;
+}
+
 export function hurtRects(i: number): Box[] {
+  if (canAirFollow(i)) {
+    const pose = currentSprite(i);
+    return airHitShape(rageShown(i) ? rageSprite(pose) : pose).map(box => worldBox(i, box));
+  }
   const fallback = legacyHurtRect(i);
   if (!fallback) return [];
   const kit = profile(i), shape = kit?.poses[poseKey(i)];
@@ -1131,6 +1165,7 @@ export function currentSprite(i: number): number {
     }
     case ST_DOWN:
       switch (f.downPhase) {
+        case DOWN_JUGGLE: return f.sHit1;
         case 0: return f.sDown0;
         case 1: return t < 3 && f.sDownB >= 0 ? f.sDownB : f.sDown1;      // bounce off the floor first
         case 3: {

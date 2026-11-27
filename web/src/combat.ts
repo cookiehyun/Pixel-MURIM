@@ -2,9 +2,9 @@ import * as Training from "./trainingFrames";
 import { advanceTicks } from "./combatTime";
 // Port of Combat.bas: hit resolution, guard, combo scaling, meter, hit stop, KO.
 import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE, MT_SUPER_RIFT } from "./data";
-import { profiledFight } from "./game";
+import { profiledFight, fastFight } from "./game";
 import * as FX from "./fx";
-import { F, inStartup, strikes, hurtRects, intersection, evades, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
+import { F, MV_CHP, canAirFollow, inStartup, strikes, hurtRects, intersection, evades, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
 
 export const C = { HitStop: 0, SuperFreeze: 0, SuperOwner: 0, SlowMo: 0, ImpactDark: 0, WhiteFlash: 0, KoFinished: false };
 const KO_TICKS = 80;
@@ -57,7 +57,7 @@ export function resolve(steps = 1): void {
   }
   for (let a = 0; a <= 1; a++) {
     const d = 1 - a, st = F[d].state;
-    if (!(st === ST_HIT || st === ST_THROWN || (st === ST_DOWN && F[d].downPhase === 0))) mCombo[a] = 0;
+    if (!(st === ST_HIT || st === ST_THROWN || (st === ST_DOWN && !F[d].onGround))) mCombo[a] = 0;
   }
   const first = meleeContact(0);
   // Cinematic moves and parries take control of the opponent. Only ordinary strikes trade.
@@ -124,7 +124,7 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
   const level = special && !isProj && F[a].prefix === "cheolsan" && raging(a) ? LV_UNBLOCK : D.MvLevel[mv];
   if (level === LV_UNBLOCK && F[d].state === ST_GUARD) showText("GUARD BREAK", 24, a);
 
-  if ((mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE || mt === MT_SUPER_RIFT) && !blocks(d, level)) {
+  if ((mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE || mt === MT_SUPER_RIFT) && !canAirFollow(d) && !blocks(d, level)) {
     FX.spawn(cx, cy, FX.FX_SLASH);
     startSuperSlash(a, d);
     return 0;
@@ -155,7 +155,9 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     if (mCombo[a] >= 4) { stun = Math.max(2, stun - Math.floor((mCombo[a] - 3) * 1.5)); push *= 1 + 0.2 * (mCombo[a] - 3); }
     if (counter) stun += 4;
     const kd = (D.MvKD[mv] && lastHit) || ko;
-    applyHit(d, stun, push, kd);
+    const launch = !ko && !isProj && !fd.onGround && !canAirFollow(d) && fastFight()
+      && F[a].kit === "danwoo" && mv === F[a].moves[MV_CHP];
+    applyHit(d, stun, push, kd, launch);
     F[d].flash = 2;
     addMeter(a, isProj ? 30 : 50);
     addMeter(d, 25);
