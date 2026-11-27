@@ -155,7 +155,7 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     if (mCombo[a] >= 4) { stun = Math.max(2, stun - Math.floor((mCombo[a] - 3) * 1.5)); push *= 1 + 0.2 * (mCombo[a] - 3); }
     if (counter) stun += 4;
     const kd = (D.MvKD[mv] && lastHit) || ko;
-    const launch = !ko && !isProj && !fd.onGround && !canAirFollow(d) && fastFight()
+    const launch = !ko && !isProj && (counter || !fd.onGround) && !canAirFollow(d) && fastFight()
       && F[a].kit === "danwoo" && mv === F[a].moves[MV_CHP];
     applyHit(d, stun, push, kd, launch);
     F[d].flash = 2;

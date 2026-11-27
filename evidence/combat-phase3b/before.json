@@ -1,0 +1,4098 @@
+[
+  {
+    "mode": "training",
+    "tag": false,
+    "face": 1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "training",
+    "tag": false,
+    "face": -1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "arcade",
+    "tag": false,
+    "face": 1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "arcade",
+    "tag": false,
+    "face": -1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "tag",
+    "tag": false,
+    "face": 1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": 1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "tag",
+    "tag": false,
+    "face": -1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": -1,
+      "tag": false,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "tag",
+    "tag": true,
+    "face": 1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": 2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": 1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": 2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  },
+  {
+    "mode": "tag",
+    "tag": true,
+    "face": -1,
+    "window": [],
+    "combo": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 53,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    },
+    "normal": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 10,
+          "move": "chp",
+          "damage": 80,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "normal",
+      "opponentPresses": [],
+      "damageEvents": [
+        {
+          "frame": 10,
+          "ground": true,
+          "startup": false,
+          "active": false,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 10,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "guard",
+      "opponentPresses": [],
+      "damageEvents": [],
+      "first": {
+        "frame": 10,
+        "result": "guard",
+        "ground": true,
+        "canFollow": false,
+        "hp": 1000
+      }
+    },
+    "active": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 80,
+          "distance": 16,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "active",
+      "opponentPresses": [
+        {
+          "frame": 4,
+          "mask": 1
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": false,
+          "active": true,
+          "result": "hit"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "hit",
+        "ground": true,
+        "canFollow": false,
+        "hp": 920
+      }
+    },
+    "ko": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 82,
+        "distance": 40.6,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "ko",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": false,
+        "canFollow": false,
+        "hp": 0
+      }
+    },
+    "hold_jump": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        },
+        {
+          "frame": 68,
+          "move": "hk",
+          "damage": 100,
+          "distance": 15.684,
+          "height": 0,
+          "vx": -2.2,
+          "vy": -3.5,
+          "combo": 1,
+          "sprite": "danwoo.down_0"
+        }
+      ],
+      "landing": {
+        "frame": 119,
+        "distance": 44.284,
+        "state": 7
+      },
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        },
+        {
+          "frame": 68,
+          "ground": false,
+          "startup": false,
+          "active": false,
+          "result": "air"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "jumpInput": 14,
+      "defenceInput": {
+        "frame": 14,
+        "dir": 8
+      }
+    },
+    "hold_guard": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        },
+        {
+          "frame": 56,
+          "mask": 8,
+          "dir": 5
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        },
+        {
+          "frame": 56,
+          "move": "hk"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": true,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      },
+      "defenceInput": {
+        "frame": 14,
+        "dir": 4
+      }
+    },
+    "noX": {
+      "setup": "ground",
+      "face": -1,
+      "tag": true,
+      "inputs": [
+        {
+          "frame": 1,
+          "mask": 2,
+          "dir": 2
+        }
+      ],
+      "starts": [
+        {
+          "frame": 1,
+          "move": "chp"
+        }
+      ],
+      "hits": [
+        {
+          "frame": 13,
+          "move": "chp",
+          "damage": 100,
+          "distance": 12,
+          "height": 0,
+          "vx": -2.2,
+          "vy": 0,
+          "combo": 1,
+          "sprite": "danwoo.hit_0"
+        }
+      ],
+      "landing": null,
+      "escape": false,
+      "exposedAfterFollow": 0,
+      "opening": "counter",
+      "opponentPresses": [
+        {
+          "frame": 7,
+          "mask": 8
+        }
+      ],
+      "damageEvents": [
+        {
+          "frame": 13,
+          "ground": true,
+          "startup": true,
+          "active": false,
+          "result": "counter"
+        }
+      ],
+      "first": {
+        "frame": 13,
+        "result": "counter",
+        "ground": true,
+        "canFollow": false,
+        "hp": 900
+      }
+    }
+  }
+]

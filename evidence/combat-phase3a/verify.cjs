@@ -7,7 +7,6 @@ const os = require('node:os');
 const {execFileSync} = require('node:child_process');
 const {chromium} = require('playwright');
 const phase = process.argv[2];
-assert.ok(['before','after'].includes(phase));
 
 async function setupPage(browser, mode) {
   const page=await browser.newPage();
@@ -45,12 +44,12 @@ async function setupPage(browser, mode) {
       menu(65);
     }
     if(G.GameMode!=={training:0,arcade:3,tag:4}[mode] || G.Multi || G.GameState!==1) throw Error('menu route '+mode);
-    K.setVK(K.keyOf(2,2),79); // O = opponent jump; J/L = left/right
-    K.setVK(K.keyOf(2,0),74); K.setVK(K.keyOf(2,1),76);
+    K.setVK(K.keyOf(2,2),79); // O = opponent jump; N/L = left/right
+    K.setVK(K.keyOf(2,0),78); K.setVK(K.keyOf(2,1),76);
     let frame,ground,row,record,images,probe;
     const round=n=>+n.toFixed(3);
     function begin({face,setup,tag=false,capture=false,thirdProbe=false}) {
-      for(const code of [40,83,88,79,74,76]) key(code,false);
+      for(const code of [40,83,88,79,78,76]) key(code,false);
       pm.startMatch(17);pm.setDummy(fighter.DUMMY_IDLE);ticks(180);
       if(tag){press(67);ticks(75);}
       if(pm.tag.active() && pm.tag.tagCount(0)!==Number(tag)) throw Error('tag swap');
@@ -117,7 +116,7 @@ async function setupPage(browser, mode) {
       inputs.push([upper,40,true]);tap(upper,83);inputs.push([upper+1,40,false]);
       if(x) tap(x,88);
       if(defend){
-        const back=face===1?76:74;
+        const back=face===1?76:78;
         const button=defend==='guard'?back:79;
         inputs.push([upper+10,button,true],[upper+68,button,false]);
       }
@@ -138,7 +137,7 @@ async function setupPage(browser, mode) {
 // boundary so host scheduling cannot move an event into the next fight frame.
 async function nativeTrial(page, config) {
   const actions=await page.evaluate(c=>{verifier.begin(c);return verifier.schedule(c);},config);
-  const names={40:'ArrowDown',79:'o',74:'j',76:'l',83:'s',88:'x'};
+  const names={40:'ArrowDown',79:'o',78:'n',76:'l',83:'s',88:'x',73:'i',85:'u'};
   for(const [frame,key,down] of actions){
     await page.evaluate(end=>verifier.advance(end),frame-1);
     await page.keyboard[down?'down':'up'](names[key]);
@@ -146,7 +145,16 @@ async function nativeTrial(page, config) {
   return page.evaluate(()=>{verifier.advance(120);return verifier.result();});
 }
 
+async function saveGif(page,output){
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'murim-3a-'));
+  const images=await page.evaluate(()=>verifier.images());
+  images.forEach((img,i)=>fs.writeFileSync(path.join(dir,String(i).padStart(3,'0')+'.png'),Buffer.from(img,'base64')));
+  execFileSync('ffmpeg',['-v','error','-y','-framerate','30','-i',path.join(dir,'%03d.png'),'-filter_complex',
+    'split[a][b];[a]palettegen[p];[b][p]paletteuse','-loop','0',output]);
+}
+
 async function main(){
+  assert.ok(['before','after'].includes(phase));
   const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'/usr/bin/chromium'});
   const results=[],errors=[];
   try {
@@ -166,11 +174,7 @@ async function main(){
         const capture=phase==='after' && mode==='training' && face===1 && setup==='jump';
         const combo=await nativeTrial(page,{...config,x,capture});
         if(capture){
-          const dir=fs.mkdtempSync(path.join(os.tmpdir(),'murim-3a-'));
-          const images=await page.evaluate(()=>verifier.images());
-          images.forEach((img,i)=>fs.writeFileSync(path.join(dir,String(i).padStart(3,'0')+'.png'),Buffer.from(img,'base64')));
-          execFileSync('ffmpeg',['-v','error','-y','-framerate','30','-i',path.join(dir,'%03d.png'),'-filter_complex',
-            'split[a][b];[a]palettegen[p];[b][p]paletteuse','-loop','0',path.join(__dirname,'jump-combo.gif')]);
+          await saveGif(page,path.join(__dirname,'jump-combo.gif'));
         }
         const noX=await nativeTrial(page,config);
         const late=await nativeTrial(page,{...config,x:setup==='seed'?62:60});
@@ -219,4 +223,5 @@ async function main(){
     console.log(phase,results.length,'mode / setup / direction combinations passed');
   } finally {await browser.close();}
 }
-main().catch(e=>{console.error(e);process.exitCode=1;});
+module.exports={setupPage,nativeTrial,saveGif};
+if(require.main===module) main().catch(e=>{console.error(e);process.exitCode=1;});

@@ -824,12 +824,13 @@ export function applyHit(i: number, hitstun: number, push: number, knockdown: bo
   const f = F[i];
   f.bufAtk = -1;
   if (f.onGround) f.footY = GROUND_Y;
-  if (knockdown || !f.onGround) {
+  if (launch || knockdown || !f.onGround) {
+    const launchVY = launch && f.onGround ? -4.5 : -3.5;
     const falling = canAirFollow(i);
     setState(i, ST_DOWN);
     f.downPhase = launch && !falling ? DOWN_JUGGLE : 0;
     f.onGround = false;
-    f.vy = falling ? Math.max(0, f.vy) : -3.5;
+    f.vy = falling ? Math.max(0, f.vy) : launchVY;
     f.vx = -f.facing * push * (f.downPhase === DOWN_JUGGLE ? 0.25 : 1);
   } else {
     f.crouch = f.state === ST_CROUCH || ((f.state === ST_ATTACK || f.state === ST_GUARD || f.state === ST_HIT) && f.crouch);
