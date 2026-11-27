@@ -1,5 +1,10 @@
 {
   "danwoo": {
+    "frames": {
+      "lp":  { "startup": 6,  "active": 6, "recovery": 10 },
+      "hk":  { "startup": 12, "active": 9, "recovery": 19 },
+      "chp": { "startup": 9,  "active": 9, "recovery": 25 }
+    },
     "shapes": {
       "stand": {
         "head": [-4, -36, 10, 11],

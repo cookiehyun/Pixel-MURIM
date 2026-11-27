@@ -1,3 +1,4 @@
+import * as Training from "./trainingFrames";
 import { FIGHT_STEPS, advanceTicks } from "./combatTime";
 // Port of Fighter.bas: the fighter state machine, input decoding, boxes and drawing.
 import {
@@ -166,6 +167,7 @@ export function copyFighter(dst: TFighter, src: TFighter): void {
 }
 
 export function resetRound(keepMeter = false): void {
+  Training.reset();
   const m0 = F[0].meter, m1 = F[1].meter;
   resetOne(0);
   resetOne(1);
@@ -489,8 +491,12 @@ function updateAttack(i: number, d: boolean, steps: number, beat: boolean): void
   // Integrate travel on every combat frame. Scripted events fire once at their
   // authored pose boundary; repeats would spawn extra projectiles or damage.
   const nextTick = beat ? t : t + 1;
-  if (mt === MT_NORMAL && nextTick < D.MvStartup[f.mv] && f.onGround && D.MvP1[f.mv] > 0)
-    f.x += f.facing * D.MvP1[f.mv] / steps;
+  const timing = frameTiming(i);
+  if (mt === MT_NORMAL && f.onGround && D.MvP1[f.mv] > 0) {
+    // Forward travel stops one authored pose (three frames) before activation.
+    const advancing = timing ? attackFrame(i) <= timing.startup + 1 - FIGHT_STEPS : nextTick < D.MvStartup[f.mv];
+    if (advancing) f.x += f.facing * D.MvP1[f.mv] / steps;
+  }
   if ((mt === MT_RUSH || mt === MT_SUPER_RUSH) && nextTick >= D.MvStartup[f.mv] && nextTick < D.MvStartup[f.mv] + D.MvActive[f.mv])
     f.x += f.facing * D.MvP1[f.mv] / steps;
   if (beat) switch (mt) {
@@ -564,7 +570,8 @@ function updateAttack(i: number, d: boolean, steps: number, beat: boolean): void
       return;
     }
   }
-  if (t >= moveTotal(f.mv)) setState(i, d ? ST_CROUCH : ST_IDLE);
+  const finished = timing ? attackFrame(i) >= timing.startup + timing.active + timing.recovery : t >= moveTotal(f.mv);
+  if (finished) setState(i, d ? ST_CROUCH : ST_IDLE);
 }
 
 function canCancelIntoSpecial(i: number, slot: number): boolean {
@@ -602,7 +609,7 @@ function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boole
   } else setState(i, ST_IDLE);
 }
 
-function startAttack(i: number, atk: number, crouching: boolean, chained: boolean): boolean {
+function startAttack(i: number, atk: number, crouching: boolean, chained: boolean, bufferAge = F[i].bufAge): boolean {
   const f = F[i];
   let mv: number;
   if (atk === MV_THROW) atk = MV_LP;
@@ -627,6 +634,9 @@ function startAttack(i: number, atk: number, crouching: boolean, chained: boolea
   f.mv = mv; f.crouch = crouching; f.vx = 0; f.hasHit = false; f.hitCount = 0;
   if (!chained) f.chain = 0;
   setState(i, ST_ATTACK);
+  if (G.GameMode === MODE_TRAINING && fastFight() && i === controlled()) {
+    Training.attackStarted(i, moveKey(i), frameTiming(i), chained, bufferAge);
+  }
   return true;
 }
 
@@ -636,7 +646,7 @@ function canBeGrabbed(o: number): boolean {
   switch (f.state) {
     case ST_IDLE: case ST_WALK: case ST_CROUCH: case ST_DASH: case ST_LAND: return true;
     case ST_GUARD: return f.stun === 0;
-    case ST_ATTACK: return f.stTick >= D.MvStartup[f.mv] + D.MvActive[f.mv];
+    case ST_ATTACK: return inRecovery(o);
   }
   return false;
 }
@@ -872,17 +882,33 @@ function updateFacing(i: number): void {
 
 // ---------------------------------------------------------------- boxes
 
+export const attackFrame = (i: number) => 1 + F[i].stTick * FIGHT_STEPS + F[i].subframe;
+export const frameTiming = (i: number) => fastFight() && F[i].state === ST_ATTACK
+  ? profiles[F[i].kit]?.frames?.[moveKey(i)] : undefined;
+
+// Signed time from the first active frame, expressed in source-pose ticks
+// for the existing animation and per-pose hitbox windows.
+function activeTime(i: number, timing = frameTiming(i)): number {
+  return timing ? (attackFrame(i) - 1 - timing.startup) / FIGHT_STEPS : F[i].stTick - D.MvStartup[F[i].mv];
+}
+export const inStartup = (i: number) => F[i].state === ST_ATTACK && activeTime(i) < 0;
+
+function activeDuration(i: number, timing = frameTiming(i)): number {
+  return timing ? timing.active / FIGHT_STEPS : D.MvActive[F[i].mv];
+}
+
 export function inActive(i: number): boolean {
-  const f = F[i];
-  if (f.state !== ST_ATTACK) return false;
-  return f.stTick >= D.MvStartup[f.mv] && f.stTick < D.MvStartup[f.mv] + D.MvActive[f.mv];
+  if (F[i].state !== ST_ATTACK) return false;
+  const timing = frameTiming(i), elapsed = activeTime(i, timing);
+  return elapsed >= 0 && elapsed < activeDuration(i, timing);
 }
 
 export function inRecovery(i: number): boolean {
   const f = F[i];
   if (f.state === ST_LAND) return true;
-  if (f.state === ST_ATTACK && f.onGround) return f.stTick >= D.MvStartup[f.mv] + D.MvActive[f.mv];
-  return false;
+  if (f.state !== ST_ATTACK || !f.onGround) return false;
+  const timing = frameTiming(i);
+  return activeTime(i, timing) >= activeDuration(i, timing);
 }
 
 export interface Box { x: number; y: number; w: number; h: number }
@@ -912,8 +938,8 @@ const profile = (i: number) => profiledFight() ? profiles[F[i].kit] : undefined;
 const moveKey = (i: number) => mvKeyOf(F[i].mv).split(".").pop()!;
 // A profiled move can give an active window its own sprite and hurt pose.
 function activeWindows(i: number) {
-  const f = F[i], elapsed = f.stTick - D.MvStartup[f.mv];
-  return profile(i)?.moves[moveKey(i)]?.filter(w => elapsed >= w.from && elapsed < (w.until ?? D.MvActive[f.mv]));
+  const elapsed = activeTime(i);
+  return profile(i)?.moves[moveKey(i)]?.filter(w => elapsed >= w.from && elapsed < (w.until ?? Infinity));
 }
 const activePose = (i: number) => activeWindows(i)?.find(w => w.pose)?.pose;
 export function poseKey(i: number): string {
@@ -1076,9 +1102,10 @@ export function currentSprite(i: number): number {
         const pose = activePose(i);
         if (pose) return spriteId(pose);
       }
-      if (t < D.MvStartup[mv] && D.MvSeqPre[mv] >= 0) return animFrameHold(D.MvSeqPre[mv], t);
-      if (t >= D.MvStartup[mv] && D.MvSeqAct[mv] >= 0 && (inActive(i) || !f.onGround)) return animFrameHold(D.MvSeqAct[mv], t - D.MvStartup[mv]);
-      if (inRecovery(i) && D.MvSeqRec[mv] >= 0) return animFrameHold(D.MvSeqRec[mv], t - D.MvStartup[mv] - D.MvActive[mv]);
+      const activeTick = Math.floor(activeTime(i));
+      if (activeTick < 0 && D.MvSeqPre[mv] >= 0) return animFrameHold(D.MvSeqPre[mv], t);
+      if (activeTick >= 0 && D.MvSeqAct[mv] >= 0 && (inActive(i) || !f.onGround)) return animFrameHold(D.MvSeqAct[mv], activeTick);
+      if (inRecovery(i) && D.MvSeqRec[mv] >= 0) return animFrameHold(D.MvSeqRec[mv], Math.floor(activeTime(i) - activeDuration(i)));
       if (mt === MT_RISE && !f.onGround) return D.MvSprA[mv];
       if (inActive(i)) return D.MvSprA[mv];
       return D.MvSprS[mv];
@@ -1581,7 +1608,7 @@ function drawFlurry(i: number): void {
 export function debugStart(i: number, slot: number): boolean {
   if (slot === MV_SUPER) F[i].meter = METER_MAX;
   F[i].naegong = NAEGONG_MAX;
-  return startAttack(i, slot, false, false);
+  return startAttack(i, slot, false, false, 0);
 }
 
 // ---- Cheonma: 천마검법 (Cheonma sword art). Three strikes that meet in one crash; the sword stays drawn after.

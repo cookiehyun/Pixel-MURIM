@@ -7,7 +7,10 @@ export interface StrikeWindow {
   from: number; until?: number; pose?: string; group: string; grade: Grade;
   guard: "standing" | "crouching" | "either"; boxes: LocalBox[];
 }
+// Counts of occupied 60 Hz frames. Input is frame 1, active starts at startup+1.
+export interface MoveFrames { startup: number; active: number; recovery: number }
 export interface CombatProfile {
+  frames?: Record<string, MoveFrames>;
   cancelOn?: Record<string, ("guard" | "hit")[]>;
   shapes: Record<string, Record<string,LocalBox>>; poses: Record<string, string>;
   moves: Record<string, StrikeWindow[]>; evades: Record<string, Grade[]>;

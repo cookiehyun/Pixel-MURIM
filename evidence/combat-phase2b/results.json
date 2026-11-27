@@ -1,0 +1,3064 @@
+{
+  "rows": [
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 32
+        },
+        {
+          "side": 0,
+          "frame": 84
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 31,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 35
+        },
+        {
+          "side": 1,
+          "frame": 87
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 31,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 0,
+      "firstBox": 7,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 29
+        },
+        {
+          "side": 0,
+          "frame": 81
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 28,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 1,
+      "firstBox": 7,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 26
+        },
+        {
+          "side": 1,
+          "frame": 78
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 28,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "hk",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 13,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 100,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 53
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 52,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "hk",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 13,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 100,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 59
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 52,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "hk",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 0,
+      "firstBox": 13,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 47
+        },
+        {
+          "side": 0,
+          "frame": 99
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 46,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "hk",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 1,
+      "firstBox": 13,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 44
+        },
+        {
+          "side": 1,
+          "frame": 96
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 46,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 10,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 56
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 10,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 53
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 0,
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 50
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 49,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 1,
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 38
+        },
+        {
+          "side": 1,
+          "frame": 90
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 49,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 18,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 56
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 13,
+        "distance": 18,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 18,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 56
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 13,
+        "distance": 18,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 32
+        },
+        {
+          "side": 0,
+          "frame": 84
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 31,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 35
+        },
+        {
+          "side": 1,
+          "frame": 87
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 31,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 0,
+      "firstBox": 7,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 29
+        },
+        {
+          "side": 0,
+          "frame": 81
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 28,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 1,
+      "firstBox": 7,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 26
+        },
+        {
+          "side": 1,
+          "frame": 78
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 28,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "hk",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 13,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 100,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 53
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 52,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "hk",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 13,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 100,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 59
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 52,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": 6
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "hk",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 0,
+      "firstBox": 13,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 47
+        },
+        {
+          "side": 0,
+          "frame": 99
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 46,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "hk",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 1,
+      "firstBox": 13,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 44
+        },
+        {
+          "side": 1,
+          "frame": 96
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 46,
+      "physical": {
+        "frame": 13,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 13,
+        "contactFrame": 13,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 10,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 56
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 10,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 53
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 0,
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 50
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 49,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "jumpSide": 1,
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 38
+        },
+        {
+          "side": 1,
+          "frame": 90
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 49,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 18,
+      "guard": false,
+      "jumpSide": 0,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 0,
+          "frame": 56
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 13,
+        "distance": 18,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 18,
+      "guard": false,
+      "jumpSide": 1,
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 13,
+          "damage": 80,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [
+        {
+          "side": 1,
+          "frame": 56
+        }
+      ],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 55,
+      "physical": {
+        "frame": 13,
+        "distance": 18,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 10,
+        "contactFrame": 13,
+        "distance": 18,
+        "advantage": 0
+      },
+      "finalResult": "hit"
+    }
+  ],
+  "combos": [
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 12,
+      "guard": false,
+      "follow": "lp",
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        },
+        {
+          "attacker": 0,
+          "frame": 23,
+          "damage": 30,
+          "defenderPreviousState": 6
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        },
+        {
+          "side": 0,
+          "frame": 17,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 47,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "cancel": {
+        "from": "lp",
+        "to": "lp",
+        "frame": 17,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 8,
+        "started": 17,
+        "result": "hit",
+        "firstActive": 16,
+        "contactFrame": 16,
+        "distance": 13.506472104389672,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 15,
+      "guard": false,
+      "follow": "lp",
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        },
+        {
+          "side": 0,
+          "frame": 17,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 38,
+      "physical": {
+        "frame": 7,
+        "distance": 15,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 15,
+        "advantage": 3
+      },
+      "cancel": {
+        "from": "lp",
+        "to": "lp",
+        "frame": 17,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 8,
+        "started": 17,
+        "result": "whiff",
+        "firstActive": 16
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 15,
+      "guard": false,
+      "follow": "hp",
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        },
+        {
+          "attacker": 0,
+          "frame": 26,
+          "damage": 90,
+          "defenderPreviousState": 6
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        },
+        {
+          "side": 0,
+          "frame": 17,
+          "move": 2
+        }
+      ],
+      "attackerRecovered": 56,
+      "physical": {
+        "frame": 7,
+        "distance": 15,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 15,
+        "advantage": 3
+      },
+      "cancel": {
+        "from": "lp",
+        "to": "hp",
+        "frame": 17,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 15,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 12,
+      "guard": false,
+      "follow": "lp",
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        },
+        {
+          "attacker": 0,
+          "frame": 23,
+          "damage": 30,
+          "defenderPreviousState": 6
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        },
+        {
+          "side": 0,
+          "frame": 17,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 47,
+      "physical": {
+        "frame": 7,
+        "distance": 12,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 12,
+        "advantage": 3
+      },
+      "cancel": {
+        "from": "lp",
+        "to": "lp",
+        "frame": 17,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 8,
+        "started": 17,
+        "result": "hit",
+        "firstActive": 16,
+        "contactFrame": 16,
+        "distance": 13.506472104389672,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 15,
+      "guard": false,
+      "follow": "lp",
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        },
+        {
+          "side": 0,
+          "frame": 17,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 38,
+      "physical": {
+        "frame": 7,
+        "distance": 15,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 15,
+        "advantage": 3
+      },
+      "cancel": {
+        "from": "lp",
+        "to": "lp",
+        "frame": 17,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 8,
+        "started": 17,
+        "result": "whiff",
+        "firstActive": 16
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 15,
+      "guard": false,
+      "follow": "hp",
+      "firstBox": 7,
+      "contacts": [
+        {
+          "attacker": 0,
+          "frame": 7,
+          "damage": 30,
+          "defenderPreviousState": 0
+        },
+        {
+          "attacker": 0,
+          "frame": 26,
+          "damage": 90,
+          "defenderPreviousState": 6
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        },
+        {
+          "side": 0,
+          "frame": 17,
+          "move": 2
+        }
+      ],
+      "attackerRecovered": 56,
+      "physical": {
+        "frame": 7,
+        "distance": 15,
+        "outcome": "hit"
+      },
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 15,
+        "advantage": 3
+      },
+      "cancel": {
+        "from": "lp",
+        "to": "hp",
+        "frame": 17,
+        "advantage": 3
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "hit",
+        "firstActive": 7,
+        "contactFrame": 7,
+        "distance": 15,
+        "advantage": 3
+      },
+      "finalResult": "hit"
+    }
+  ],
+  "punishes": [
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "punish": "lp",
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        },
+        {
+          "side": 1,
+          "frame": 38,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 49,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "punishInput": 38,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 1,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 38,
+        "started": 38,
+        "result": "whiff",
+        "firstActive": 7
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "punish": "hp",
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 1,
+          "frame": 47,
+          "damage": 90,
+          "defenderPreviousState": 4
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        },
+        {
+          "side": 1,
+          "frame": 38,
+          "move": 2
+        }
+      ],
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "punishInput": 38,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 12,
+      "guard": true,
+      "punish": "lk",
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 1,
+          "frame": 47,
+          "damage": 40,
+          "defenderPreviousState": 4
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        },
+        {
+          "side": 1,
+          "frame": 38,
+          "move": 4
+        }
+      ],
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "punishInput": 38,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "punish": "lp",
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        },
+        {
+          "side": 1,
+          "frame": 38,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 49,
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "punishInput": 38,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 1,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 38,
+        "started": 38,
+        "result": "whiff",
+        "firstActive": 7
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "punish": "hp",
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 1,
+          "frame": 47,
+          "damage": 90,
+          "defenderPreviousState": 4
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        },
+        {
+          "side": 1,
+          "frame": 38,
+          "move": 2
+        }
+      ],
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "punishInput": 38,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 12,
+      "guard": true,
+      "punish": "lk",
+      "firstBox": 10,
+      "contacts": [
+        {
+          "attacker": 1,
+          "frame": 47,
+          "damage": 40,
+          "defenderPreviousState": 4
+        }
+      ],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        },
+        {
+          "side": 1,
+          "frame": 38,
+          "move": 4
+        }
+      ],
+      "physical": {
+        "frame": 10,
+        "distance": 12,
+        "outcome": "guard"
+      },
+      "punishInput": 38,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "guard",
+        "firstActive": 10,
+        "contactFrame": 10,
+        "distance": 12,
+        "advantage": -12
+      },
+      "finalResult": "guard"
+    }
+  ],
+  "whiffs": [
+    {
+      "move": "lp",
+      "face": 1,
+      "distance": 16,
+      "guard": false,
+      "firstBox": 7,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 22,
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 7
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 7
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "hk",
+      "face": 1,
+      "distance": 29,
+      "guard": false,
+      "firstBox": 13,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 40,
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 13
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 13
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "chp",
+      "face": 1,
+      "distance": 19,
+      "guard": false,
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 43,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 10
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 10
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "lp",
+      "face": -1,
+      "distance": 16,
+      "guard": false,
+      "firstBox": 7,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 0
+        }
+      ],
+      "attackerRecovered": 22,
+      "result": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 7
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "lp",
+        "timing": {
+          "startup": 6,
+          "active": 6,
+          "recovery": 10
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 7
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "hk",
+      "face": -1,
+      "distance": 29,
+      "guard": false,
+      "firstBox": 13,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 6
+        }
+      ],
+      "attackerRecovered": 40,
+      "result": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 13
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "hk",
+        "timing": {
+          "startup": 12,
+          "active": 9,
+          "recovery": 19
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 13
+      },
+      "finalResult": "whiff"
+    },
+    {
+      "move": "chp",
+      "face": -1,
+      "distance": 19,
+      "guard": false,
+      "firstBox": 10,
+      "contacts": [],
+      "jumps": [],
+      "starts": [
+        {
+          "side": 0,
+          "frame": 1,
+          "move": 10
+        }
+      ],
+      "attackerRecovered": 43,
+      "result": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 10
+      },
+      "finalObservation": {
+        "side": 0,
+        "move": "chp",
+        "timing": {
+          "startup": 9,
+          "active": 9,
+          "recovery": 25
+        },
+        "inputAt": 1,
+        "started": 1,
+        "result": "whiff",
+        "firstActive": 10
+      },
+      "finalResult": "whiff"
+    }
+  ],
+  "shifted": {
+    "move": "lp",
+    "face": 1,
+    "distance": 12,
+    "guard": false,
+    "firstBox": 8,
+    "contacts": [
+      {
+        "attacker": 0,
+        "frame": 8,
+        "damage": 30,
+        "defenderPreviousState": 0
+      }
+    ],
+    "jumps": [],
+    "starts": [
+      {
+        "side": 0,
+        "frame": 1,
+        "move": 0
+      }
+    ],
+    "attackerRecovered": 32,
+    "physical": {
+      "frame": 8,
+      "distance": 12,
+      "outcome": "hit"
+    },
+    "result": {
+      "side": 0,
+      "move": "lp",
+      "timing": {
+        "startup": 7,
+        "active": 6,
+        "recovery": 10
+      },
+      "inputAt": 1,
+      "started": 1,
+      "result": "hit",
+      "firstActive": 8,
+      "contactFrame": 8,
+      "distance": 12,
+      "advantage": 3
+    },
+    "finalObservation": {
+      "side": 0,
+      "move": "lp",
+      "timing": {
+        "startup": 7,
+        "active": 6,
+        "recovery": 10
+      },
+      "inputAt": 1,
+      "started": 1,
+      "result": "hit",
+      "firstActive": 8,
+      "contactFrame": 8,
+      "distance": 12,
+      "advantage": 3
+    },
+    "finalResult": "hit"
+  }
+}

@@ -1,3 +1,4 @@
+import * as Training from "./trainingFrames";
 import { LEGACY_MS, FIGHT_STEPS, advanceTicks } from "./combatTime";
 // Port of Game.bas: game state, one tick of simulation and one render.
 import * as R from "./renderer";
@@ -121,6 +122,8 @@ export function gameTick(deadline = Infinity): void {
   }
   if (G.GameState >= GS_LADDER && G.GameState <= GS_ENDING) { Arcade.screenTick(); return; }
 
+  const training = steps > 1 && G.GameMode === MODE_TRAINING;
+  if (training) Training.tick();
   framePhase = (framePhase + 1) % steps;
   const pulse = framePhase === 0;
   for (let i = 0; i <= 1; i++) {
@@ -141,7 +144,9 @@ export function gameTick(deadline = Infinity): void {
     if (C.SlowMo > 0) C.SlowMo = advanceTicks(C.SlowMo, steps, -1);
     Tag.inputs(Match.inputAllowed(), pulse);
     Tag.tick(steps);
+    if (training) Training.observeWakeup();
     Fighter.update(steps, pulse);
+    if (training) Training.observeBoxes();
     Projectile.update(steps);
     Combat.resolve(steps);
   }

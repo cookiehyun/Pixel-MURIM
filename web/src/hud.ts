@@ -1,3 +1,5 @@
+import { G, MODE_TRAINING, profiledFight } from "./game";
+import * as Training from "./trainingFrames";
 // Port of Hud.bas: health bars with damage trail, names, gauges, combo counter, banners, KO.
 import { F, METER_MAX, NAEGONG_MAX } from "./fighter";
 import * as Tag from "./tag";
@@ -42,7 +44,24 @@ export function draw(): void {
     else if (owner === 1) Font.drawText(t, P2_X + BAR_W + 1, 22, RGB(255, 140, 70), 1, 2);
     else Font.drawText(t, Math.trunc(SCREEN_W / 2), 22, RGB(150, 220, 255), 1, 1);
   }
+  if (G.GameMode === MODE_TRAINING && profiledFight()) drawFrameData();
   if (Combat.isKO()) drawKO();
+}
+
+function drawFrameData(): void {
+  const {latest: row, cancel} = Training.report();
+  if (!row) return;
+  const white = RGB(248, 244, 222);
+  const active = row.firstActive === undefined ? "-" : row.firstActive + "F";
+  const contact = row.contactFrame === undefined ? "" : " " + row.contactFrame + "F " + row.distance!.toFixed(1) + "PX";
+  Font.drawText(row.move + " ACTIVE " + active + "  " + row.result + contact, 4, 29, white);
+  const adv = row.advantage;
+  const signed = (n: number) => (n > 0 ? "+" : "") + n + "F";
+  if (adv !== undefined) Font.drawText("ADV " + signed(adv), 4, 36, white);
+  if (cancel) {
+    const normal = cancel.advantage === undefined ? "" : "  ADV " + signed(cancel.advantage);
+    Font.drawText(cancel.from + " TO " + cancel.to + " CANCEL " + cancel.frame + "F" + normal, 4, 43, white);
+  }
 }
 
 const ceilDiv = (a: number, b: number) => Math.trunc((a + b - 1) / b);

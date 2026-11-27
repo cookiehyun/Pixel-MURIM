@@ -1,9 +1,10 @@
+import * as Training from "./trainingFrames";
 import { advanceTicks } from "./combatTime";
 // Port of Combat.bas: hit resolution, guard, combo scaling, meter, hit stop, KO.
 import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE, MT_SUPER_RIFT } from "./data";
 import { profiledFight } from "./game";
 import * as FX from "./fx";
-import { F, strikes, hurtRects, intersection, evades, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
+import { F, inStartup, strikes, hurtRects, intersection, evades, applyHit, applyBlock, startSuperSlash, atWall, parrying, counterStrike, demonAwake, raging, METER_MAX, ST_GUARD, ST_ATTACK, ST_HIT, ST_THROWN, ST_DOWN } from "./fighter";
 
 export const C = { HitStop: 0, SuperFreeze: 0, SuperOwner: 0, SlowMo: 0, ImpactDark: 0, WhiteFlash: 0, KoFinished: false };
 const KO_TICKS = 80;
@@ -95,6 +96,7 @@ function land(hit: NonNullable<ReturnType<typeof meleeContact>>, simultaneous: b
   const cx = Math.trunc(overlap.x + overlap.w/2), cy = Math.trunc(overlap.y + overlap.h/2);
   const last = D.MvType[mv] !== MT_RUSH || f.hitCount >= D.MvP2[mv];
   applyAttack(a,d,mv,cx,cy,false,last,blocked,simultaneous,hit.awake);
+  Training.contact(a);
 }
 
 /** One hit of move mv from attacker a on defender d at (cx, cy). */
@@ -127,7 +129,7 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     C.HitStop = 2;
   } else {
     const fd = F[d];
-    const counter = !isProj && fd.state === ST_ATTACK && fd.stTick < D.MvStartup[fd.mv];
+    const counter = !isProj && inStartup(d);
     if (!isProj) F[a].contact = counter ? "counter" : !fd.onGround ? "air" : "hit";
     mCombo[a]++;
     let dmg = D.MvDamage[mv] / hits;
