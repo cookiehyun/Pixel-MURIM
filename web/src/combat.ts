@@ -1,3 +1,4 @@
+import { advanceTicks } from "./combatTime";
 // Port of Combat.bas: hit resolution, guard, combo scaling, meter, hit stop, KO.
 import { D, LV_LOW, LV_OVERHEAD, LV_UNBLOCK, MT_NORMAL, MT_RUSH, MT_SUPER_QUAKE, MT_SUPER_RUSH, MT_SUPER_TELE, MT_SUPER_RIFT } from "./data";
 import { profiledFight } from "./game";
@@ -47,9 +48,9 @@ export function tickTimers(): void {
   if (C.WhiteFlash > 0) C.WhiteFlash--;
 }
 
-export function resolve(): void {
+export function resolve(steps = 1): void {
   if (mKoTimer > 0) {
-    mKoTimer--;
+    mKoTimer = advanceTicks(mKoTimer, steps, -1);
     if (mKoTimer === 0) C.KoFinished = true;
     return;
   }

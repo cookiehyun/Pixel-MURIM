@@ -1,3 +1,4 @@
+import { FIGHT_STEPS, advanceTicks } from "./combatTime";
 // Port of Fighter.bas: the fighter state machine, input decoding, boxes and drawing.
 import {
   D, profiles, type LocalBox, type StrikeWindow, animId, spriteId, moveId, mvKeyOf, hasSprite, hasAnim, animFrame, animFrameHold,
@@ -13,7 +14,7 @@ import * as Combat from "./combat";
 import * as Tag from "./tag";
 import * as Match from "./match";
 import * as K from "./input";
-import { profiledFight, G, MODE_ARCADE, MODE_TRAINING } from "./game";
+import { fastFight, profiledFight, G, MODE_ARCADE, MODE_TRAINING } from "./game";
 import * as Arcade from "./arcade";
 import { RGB, clng, vint } from "./util";
 
@@ -34,7 +35,7 @@ const RAGE_SPEED = 1.35, RIFT_CUTS = 5, RIFT_BREAK = 26, RIFT_END = 40, FLURRY_K
 
 export class TFighter {
   prefix = ""; kit = ""; armed = false;
-  state = 0; stTick = 0; x = 0; footY = 0; vx = 0; vy = 0; slide = 0;
+  state = 0; stTick = 0; subframe = 0; x = 0; footY = 0; vx = 0; vy = 0; slide = 0;
   onGround = true; crouch = false; backward = false; facing = 1;
   contact: "pending" | "whiff" | "guard" | "hit" | "counter" | "air" | "parried" = "pending";
   struckGroups: string[] = [];
@@ -42,7 +43,7 @@ export class TFighter {
   mv = 0; hasHit = false; chain = 0; airAttacked = false; stun = 0; stunTotal = 0;
   downPhase = 0; rollDir = 0; wakeInv = 0; flash = 0; bufAtk = -1; bufAge = 0; bufDash = 0;
   health = 0; maxHealth = 0; healthShown = 0; redCap = 0; trailDelay = 0; meter = 0; naegong = 0; ngFlash = 0;
-  inDir = 5; inPress = 0; inHeld = 0; hist: number[] = new Array(HIST_LEN).fill(5); histPos = 0;
+  inDir = 5; inPress = 0; inHeld = 0; hist: number[] = new Array(HIST_LEN * FIGHT_STEPS).fill(5); histPos = 0;
   walkSpeed = 0; dashSpeed = 0; jumpVY = 0; jumpVX = 0; halfW = 0; hurtH = 0; hurtHC = 0; startX = 0;
   aIdle = 0; aWalk = 0; sCrouch = 0; sJump = 0; sGuard = 0; sCGuard = 0; sHit0 = 0; sHit1 = 0; sCHit = 0;
   sDown0 = 0; sDown1 = 0; sRoll0 = 0; sRoll1 = 0; sRoll2 = 0; sRoll3 = 0; sDash = 0; sBDash = 0;
@@ -260,12 +261,12 @@ export function feedHuman(i: number, ks = 0): void {
   feedInput(i, d, press, held);
 }
 
-export function feedDummy(i: number): void {
+export function feedDummy(i: number, pulse = true): void {
   let d = 5, press = 0;
   if (mDummy === DUMMY_CGUARD) { d = 2; if (threatened(i)) d = 1; }
   else if (mDummy === DUMMY_GUARD) { if (threatened(i)) d = 4; }
   else if (mDummy === DUMMY_ATTACK) {
-    mDummyTick++;
+    if (pulse) mDummyTick++;
     if (mDummyTick >= DUMMY_INTERVAL) {
       mDummyTick = 0;
       press = 1 << (mDummyNext % 4);
@@ -279,22 +280,29 @@ export function feedDummy(i: number): void {
 export function feedInput(i: number, d: number, press: number, held: number): void {
   const f = F[i];
   f.inDir = d; f.inPress = press; f.inHeld = held;
-  f.histPos = (f.histPos + 1) % HIST_LEN;
+  const steps = fastFight() ? FIGHT_STEPS : 1;
+  f.histPos = (f.histPos + 1) % f.hist.length;
   f.hist[f.histPos] = d;
-  if (f.flash > 0) f.flash--;
+  if (f.flash > 0) f.flash = advanceTicks(f.flash, steps, -1);
   const a = decodeAttack(i);
   if (a >= 0) { f.bufAtk = a; f.bufAge = 0; }
-  else if (f.bufAtk >= 0) { f.bufAge++; if (f.bufAge > BUF_TICKS) f.bufAtk = -1; }
+  else if (f.bufAtk >= 0) { f.bufAge++; if (f.bufAge > BUF_TICKS * steps) f.bufAtk = -1; }
   if (tapped(i, 6)) f.bufDash = 1;
   if (tapped(i, 4)) f.bufDash = -1;
   if (d !== 6 && d !== 4) f.bufDash = 0;
 }
 
-const histAt = (i: number, t: number) => F[i].hist[(F[i].histPos - t + HIST_LEN * 4) % HIST_LEN];
+const histAt = (i: number, t: number) => F[i].hist[(F[i].histPos - t + F[i].hist.length) % F[i].hist.length];
 
 function tapped(i: number, d: number): boolean {
   if (histAt(i, 0) !== d || histAt(i, 1) === d) return false;
-  for (let t = 2; t <= 6; t++) if (histAt(i, t) === d) return histAt(i, t + 1) !== d;
+  const steps = fastFight() ? FIGHT_STEPS : 1;
+  for (let t = 2; t <= 6 * steps; t++) {
+    if (histAt(i, t) !== d) continue;
+    // A prior tap could occupy all three samples of one old tick.
+    for (let width = 1; width <= steps; width++) if (histAt(i, t + width) !== d) return true;
+    return false;
+  }
   return false;
 }
 
@@ -302,11 +310,12 @@ const dirMatches = (want: number, got: number) => (want === 2 ? got >= 1 && got 
 
 function matchMotion(i: number, dirs: string, window: number): boolean {
   let j = dirs.length, firstHit = -1;
-  for (let t = 0; t <= window; t++) {
+  const steps = fastFight() ? FIGHT_STEPS : 1;
+  for (let t = 0; t <= window * steps; t++) {
     if (dirMatches(+dirs[j - 1], histAt(i, t))) {
       if (firstHit < 0) firstHit = t;
       j--;
-      if (j === 0) return firstHit <= 4;
+      if (j === 0) return firstHit <= 4 * steps;
     }
   }
   return false;
@@ -350,8 +359,8 @@ function takeAttack(i: number): number {
 
 // ---------------------------------------------------------------- update
 
-export function update(): void {
-  mFrame++;
+export function update(steps = 1, pulse = true): void {
+  if (pulse) mFrame++;
   if (G.GameMode === MODE_TRAINING) {
     if (K.isPressed(K.BTN_SWAP)) { mControl = 1 - mControl; F[0].bufAtk = -1; F[1].bufAtk = -1; }
     if (K.isPressed(K.BTN_DBG_DUMMY)) setDummy((mDummy + 1) % 5);
@@ -359,46 +368,48 @@ export function update(): void {
     if (K.isPressed(K.BTN_DBG_HIT)) applyHit(1 - mControl, 10, 1.5, false);
     if (K.isPressed(K.BTN_DBG_DOWN)) applyHit(1 - mControl, 0, 1.5, true);
   }
-  for (let i = 0; i <= 1; i++) { F[i].specialBoxes = []; updateFighter(i); }
+  for (let i = 0; i <= 1; i++) { F[i].specialBoxes = []; updateFighter(i, steps, pulse); }
   resolvePush();
-  for (let i = 0; i <= 1; i++) { updateFacing(i); updateGhosts(i); }
+  for (let i = 0; i <= 1; i++) { updateFacing(i); if (pulse) updateGhosts(i); }
 }
 
-function updateFighter(i: number): void {
+function updateFighter(i: number, steps: number, pulse: boolean): void {
   const f = F[i];
   const fwd = f.inDir === 3 || f.inDir === 6 || f.inDir === 9;
   const back = f.inDir === 1 || f.inDir === 4 || f.inDir === 7;
   const u = f.inDir >= 7, d = f.inDir <= 3;
   const wantGuard = back && threatened(i);
-  f.stTick++;
-  if (f.naegong < NAEGONG_MAX && !(f.state === ST_ATTACK && D.MvCost[f.mv] > 0)) {
+  f.subframe = (f.subframe + 1) % steps;
+  const beat = f.subframe === 0;
+  if (beat) f.stTick++;
+  if (pulse && f.naegong < NAEGONG_MAX && !(f.state === ST_ATTACK && D.MvCost[f.mv] > 0)) {
     f.naegong += NAEGONG_REGEN;
     if (f.naegong > NAEGONG_MAX) f.naegong = NAEGONG_MAX;
   }
-  if (f.ngFlash > 0) f.ngFlash--;
-  if (f.wakeInv > 0) f.wakeInv--;
+  if (pulse && f.ngFlash > 0) f.ngFlash--;
+  if (pulse && f.wakeInv > 0) f.wakeInv--;
   if (f.rage > 0) {
-    f.rage--;
-    if (f.state === ST_ATTACK && f.onGround) {            // berserk: half recovery, faster startup
+    if (pulse) f.rage--;
+    if (beat && f.state === ST_ATTACK && f.onGround) {            // berserk: half recovery, faster startup
       const s = D.MvStartup[f.mv], a = D.MvActive[f.mv];
       if (f.stTick >= s + a) f.stTick++;
       else if (f.stTick + 1 < s && mFrame % 2 === 0) f.stTick++;
     }
   }
   if (f.slide !== 0) {
-    f.x += f.slide;
-    f.slide *= 0.6;
+    f.x += f.slide * decayDistance(0.6, steps);
+    f.slide *= 0.6 ** (1 / steps);
     if (Math.abs(f.slide) < 0.1) f.slide = 0;
   }
   switch (f.state) {
     case ST_IDLE: case ST_WALK: case ST_CROUCH:
-      actionable(i, fwd, back, u, d, wantGuard); break;
+      actionable(i, fwd, back, u, d, wantGuard, steps); break;
     case ST_GUARD:
-      if (f.stun > 0) { f.stun--; f.x += f.vx; f.vx *= 0.7; }
-      else actionable(i, fwd, back, u, d, wantGuard);
+      if (f.stun > 0) advanceHitstun(f, steps);
+      else actionable(i, fwd, back, u, d, wantGuard, steps);
       break;
     case ST_DASH:
-      f.x += f.vx;
+      f.x += f.vx / steps;
       if (u && !f.backward && f.stTick >= 2) {
         setState(i, ST_JUMP);
         f.onGround = false; f.airAttacked = false; f.vy = f.jumpVY; f.vx = f.facing * f.jumpVX * 1.7; f.footY = GROUND_Y;
@@ -413,18 +424,21 @@ function updateFighter(i: number): void {
         f.contact = "pending"; f.struckGroups = []; f.hitCount = 0; f.hasHit = false;
         setState(i, ST_ATTACK);
       }
-      if (airStep(i)) { setState(i, ST_IDLE); mLandShow[i] = 3; }
+      if (airStep(i, steps)) { setState(i, ST_IDLE); mLandShow[i] = 3; }
       break;
     }
-    case ST_ATTACK: updateAttack(i, d); break;
-    case ST_LAND: f.stun--; if (f.stun <= 0) setState(i, ST_IDLE); break;
+    case ST_ATTACK: updateAttack(i, d, steps, beat); break;
+    case ST_LAND:
+      f.stun = advanceTicks(f.stun, steps, -1);
+      if (f.stun <= 0) setState(i, ST_IDLE);
+      break;
     case ST_HIT:
-      f.x += f.vx; f.vx *= 0.7; f.stun--;
+      advanceHitstun(f, steps);
       if (f.stun <= 0) setState(i, f.crouch ? ST_CROUCH : ST_IDLE);
       break;
     case ST_DOWN:
       switch (f.downPhase) {
-        case 0: if (airStep(i)) { f.downPhase = 1; f.stTick = 0; } break;
+        case 0: if (airStep(i, steps)) { f.downPhase = 1; f.stTick = 0; } break;
         case 1:
           if (f.health > 0) {
             if ((fwd || back) && histAt(i, 1) !== f.inDir && f.stTick >= 1) {
@@ -433,7 +447,7 @@ function updateFighter(i: number): void {
           }
           break;
         case 3:
-          f.x += f.rollDir * ROLL_SPEED;
+          f.x += f.rollDir * ROLL_SPEED / steps;
           if (f.stTick >= ROLL_TICKS) { f.downPhase = 2; f.stTick = 0; }
           break;
         default:
@@ -441,6 +455,7 @@ function updateFighter(i: number): void {
       }
       break;
     case ST_THROW: {
+      if (!beat) break;
       const mt = D.MvType[f.mv];
       if (mt === MT_SUPER_GRAB) superGrabStep(i);
       else if (mt === MT_SUPER_RIFT) riftStep(i);
@@ -469,24 +484,27 @@ function updateFighter(i: number): void {
   clampX(i);
 }
 
-function updateAttack(i: number, d: boolean): void {
+function updateAttack(i: number, d: boolean, steps: number, beat: boolean): void {
   const f = F[i], mt = D.MvType[f.mv], t = f.stTick;
-  switch (mt) {
+  // Integrate travel on every combat frame. Scripted events fire once at their
+  // authored pose boundary; repeats would spawn extra projectiles or damage.
+  const nextTick = beat ? t : t + 1;
+  if (mt === MT_NORMAL && nextTick < D.MvStartup[f.mv] && f.onGround && D.MvP1[f.mv] > 0)
+    f.x += f.facing * D.MvP1[f.mv] / steps;
+  if ((mt === MT_RUSH || mt === MT_SUPER_RUSH) && nextTick >= D.MvStartup[f.mv] && nextTick < D.MvStartup[f.mv] + D.MvActive[f.mv])
+    f.x += f.facing * D.MvP1[f.mv] / steps;
+  if (beat) switch (mt) {
     case MT_PROJ: case MT_SUPER_PROJ: case MT_PROJ_BOOM: case MT_SUPER_FIRE:
       if (t === D.MvStartup[f.mv]) {
         Proj.spawn(i, f.mv);
         if (mt === MT_SUPER_FIRE) Combat.showText(f.superName, 40, i);
       }
       break;
-    case MT_NORMAL:
-      if (t < D.MvStartup[f.mv] && f.onGround && D.MvP1[f.mv] > 0) f.x += f.facing * D.MvP1[f.mv];
-      break;
     case MT_RISE:
       if (t === D.MvStartup[f.mv]) { f.onGround = false; f.vy = D.MvP1[f.mv]; f.vx = f.facing * 0.8; }
       break;
     case MT_RUSH: case MT_SUPER_RUSH:
       if (t >= D.MvStartup[f.mv] && t < D.MvStartup[f.mv] + D.MvActive[f.mv]) {
-        f.x += f.facing * D.MvP1[f.mv];
         if (mt === MT_RUSH && D.MvP2[f.mv] > 1 && f.hasHit && f.hitCount < D.MvP2[f.mv]) {
           if ((t - D.MvStartup[f.mv]) % Math.trunc(D.MvActive[f.mv] / D.MvP2[f.mv]) === 0) f.hasHit = false;
         }
@@ -526,7 +544,7 @@ function updateAttack(i: number, d: boolean): void {
       break;
   }
   if (!f.onGround) {
-    if (airStep(i)) {
+    if (airStep(i, steps)) {
       if (mt === MT_RISE) { setState(i, ST_LAND); f.stun = D.MvRecovery[f.mv]; }
       else setState(i, ST_IDLE);
     }
@@ -554,7 +572,7 @@ function canCancelIntoSpecial(i: number, slot: number): boolean {
   return slot === MV_SUPER ? cur !== MT_SUPER_PROJ && cur !== MT_SUPER_GRAB : cur === MT_NORMAL;
 }
 
-function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boolean, wantGuard: boolean): void {
+function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boolean, wantGuard: boolean, steps: number): void {
   let atk = takeAttack(i);
   const f = F[i];
   if (atk === MV_THROW) {
@@ -579,8 +597,8 @@ function actionable(i: number, fwd: boolean, back: boolean, u: boolean, d: boole
     f.backward = back;
     setState(i, ST_WALK);
     const k = f.rage > 0 ? RAGE_SPEED : 1;
-    if (back) f.x -= f.facing * f.walkSpeed * BACK_WALK * k;
-    else f.x += f.facing * f.walkSpeed * k;
+    if (back) f.x -= f.facing * f.walkSpeed * BACK_WALK * k / steps;
+    else f.x += f.facing * f.walkSpeed * k / steps;
   } else setState(i, ST_IDLE);
 }
 
@@ -752,10 +770,23 @@ export function threatened(i: number): boolean {
   return t;
 }
 
-function airStep(i: number): boolean {
+// Geometric decay and semi-implicit gravity integrate to the original
+// displacement after three substeps, including the first gravity impulse.
+function advanceHitstun(f: TFighter, steps: number): void {
+  f.x += f.vx * decayDistance(0.7, steps);
+  f.vx *= 0.7 ** (1 / steps);
+  f.stun = advanceTicks(f.stun, steps, -1);
+}
+
+function decayDistance(drag: number, steps: number): number {
+  return (1 - drag ** (1 / steps)) / (1 - drag);
+}
+
+function airStep(i: number, steps: number): boolean {
   const f = F[i];
-  f.vy += GRAVITY; f.footY += f.vy; f.x += f.vx;
-  if (f.footY >= GROUND_Y) {
+  f.vy += GRAVITY / steps;
+  f.footY += (f.vy + GRAVITY * (1 - 1 / steps) / 2) / steps; f.x += f.vx / steps;
+  if (f.footY >= GROUND_Y - (steps > 1 ? 1e-9 : 0)) {
     f.footY = GROUND_Y; f.vy = 0; f.vx = 0; f.onGround = true;
     return true;
   }
@@ -767,7 +798,7 @@ export function setState(i: number, st: number): void {
   if (i < 2 && st !== ST_THROW && isDrain(i) && F[1 - i].state === ST_THROWN) {
     applyHit(1 - i, 4, 0, F[1 - i].health <= 0);
   }
-  if (f.state !== st || st === ST_ATTACK || st === ST_HIT || st === ST_DOWN || st === ST_THROW || st === ST_DASH) f.stTick = 0;
+  if (f.state !== st || st === ST_ATTACK || st === ST_HIT || st === ST_DOWN || st === ST_THROW || st === ST_DASH) { f.stTick = 0; f.subframe = 0; }
   f.state = st;
   f.cineSpr = -1;
   if (st === ST_CROUCH) f.crouch = true;
@@ -930,12 +961,14 @@ export function intersection(a: Box, b: Box): Box | null {
 
 // ---------------------------------------------------------------- draw
 
+export function advanceDrawClock(): void { mDraw++; }
+
 export function draw(): void {
   drawGhosts(1 - mControl);
   drawGhosts(mControl);
   drawOne(1 - mControl);
   drawOne(mControl);
-  mDraw++;
+  if (!fastFight()) mDraw++;
   for (let i = 0; i <= 1; i++) {
     if (F[i].state === ST_THROW && D.MvType[F[i].mv] === MT_SUPER_RIFT) drawRifts(i);
     if (F[i].state === ST_THROW && F[i].prefix === "seolhwa" && F[i].mv === F[i].moves[MV_SUPER]) drawFlurry(i);

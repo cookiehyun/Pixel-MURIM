@@ -2,7 +2,7 @@ import { loadAll, D, moveId } from "./data";
 import * as Account from "./account";
 import * as K from "./input";
 import * as R from "./renderer";
-import { gameInit, gameTick, gameRender, G, startMatch, MODE_TRAINING } from "./game";
+import { gameInit, gameTick, stepMs, gameRender, G, startMatch, MODE_TRAINING } from "./game";
 import * as Fighter from "./fighter";
 import * as combat from "./combat";
 import * as tag from "./tag";
@@ -14,7 +14,14 @@ import * as KF from "./kfont";
 import * as Story from "./story";
 import * as FM from "./fieldmap";
 
-const TICK_MS = 50;                    // 20 ticks per second, like the Excel version
+// Debug scripts historically advance 50 ms per call. Use the same steps as RAF.
+function debugTick(): void {
+  const count = Math.round(50 / stepMs());
+  for (let i = 0; i < count; i++) {
+    gameTick();
+    if (stepMs() === 50) break;
+  }
+}
 
 async function main(): Promise<void> {
   const canvas = document.getElementById("screen") as HTMLCanvasElement;
@@ -25,17 +32,20 @@ async function main(): Promise<void> {
   R.init(canvas);
   gameInit();
   setupTouch();
-  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C: combat.C, fighter: Fighter, combat, tag, arcade, lockstep, projectile, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: gameTick, render: gameRender, setDummy: Fighter.setDummy, story: Story, D, moveId };
+  (window as unknown as Record<string, unknown>).__pm = { G, F: Fighter.F, C: combat.C, fighter: Fighter, combat, tag, arcade, lockstep, projectile, startMatch, MODE_TRAINING, debugStart: Fighter.debugStart, tick: debugTick, render: gameRender, setDummy: Fighter.setDummy, story: Story, D, moveId };
   document.getElementById("loading")?.remove();
   let acc = 0, last = performance.now();
   const frame = (now: number) => {
     acc += Math.min(250, now - last);
     last = now;
     let ran = false;
-    while (acc >= TICK_MS) {
-      gameTick(); acc -= TICK_MS; ran = true;
+    while (acc + 1e-8 >= stepMs()) {
+      const elapsed = stepMs();
+      acc = Math.max(0, acc - elapsed);
+      gameTick(now - acc);
+      ran = true;
       // After a browser stall, present this footstep before advancing the formation again.
-      if (acc >= TICK_MS && Story.presentingMarch()) { acc %= TICK_MS; break; }
+      if (acc >= 50 && Story.presentingMarch()) { acc %= 50; break; }
     }
     if (ran) gameRender();
     requestAnimationFrame(frame);

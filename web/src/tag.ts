@@ -1,3 +1,4 @@
+import { advanceTicks } from "./combatTime";
 // Port of Tag.bas: 2 vs 2 tag mode (partner waits in F[2 + side], F[4] is the swap buffer).
 import { F, init as fighterInit, copyFighter, clearGhosts, NAEGONG_MAX, ST_IDLE, ST_WALK, ST_CROUCH, ST_JUMP } from "./fighter";
 import * as FX from "./fx";
@@ -10,6 +11,7 @@ import { rnd, vint } from "./util";
 
 const TAG_COOLDOWN = 40, DROP_HEIGHT = 46, RED_REGEN = 2, CPU_TAG_LOW = 0.5;
 let mOn = false;
+let regenPhase = 0;
 const mCool = [0, 0], mTags = [0, 0];
 
 export const active = () => mOn;
@@ -33,6 +35,7 @@ export const teamRatio = (s: number) => (F[s].health + F[2 + s].health) / (F[s].
 
 export function resetRound(): void {
   if (!mOn) return;
+  regenPhase = 0;
   for (let i = 0; i <= 1; i++) {
     const f = F[2 + i];
     f.health = f.maxHealth; f.healthShown = f.maxHealth; f.redCap = f.maxHealth; f.naegong = NAEGONG_MAX;
@@ -40,10 +43,12 @@ export function resetRound(): void {
   }
 }
 
-export function tick(): void {
+export function tick(steps = 1): void {
   if (!mOn) return;
+  regenPhase = (regenPhase + 1) % steps;
   for (let i = 0; i <= 1; i++) {
-    if (mCool[i] > 0) mCool[i]--;
+    if (mCool[i] > 0) mCool[i] = advanceTicks(mCool[i], steps, -1);
+    if (regenPhase !== 0) continue;
     const f = F[2 + i];
     if (f.health < f.redCap) f.health = Math.min(f.redCap, f.health + RED_REGEN);
     f.healthShown = f.health;
@@ -51,12 +56,12 @@ export function tick(): void {
   }
 }
 
-export function inputs(allowed: boolean): void {
+export function inputs(allowed: boolean, cpuDecision = true): void {
   if (!mOn || !allowed) return;
   for (let i = 0; i <= 1; i++) {
     if (Lockstep.active()) { if (Lockstep.currentRaw(i) & 0x1000) tryTag(i); }
     else if (G.Multi) { if (K.isPressed(K.keyOf(1 + i, 8))) tryTag(i); }
-    else if (isCpu(i)) { if (cpuWantsTag(i)) tryTag(i); }
+    else if (isCpu(i)) { if (cpuDecision && cpuWantsTag(i)) tryTag(i); }
     else if (i === G.controlled()) { if (K.isPressed(K.BTN_TAG)) tryTag(i); }
   }
 }
@@ -83,7 +88,7 @@ export function tryTag(i: number): void {
   F[2 + i].state = ST_IDLE; F[2 + i].stTick = 0; F[2 + i].bufAtk = -1;
   const f = F[i];
   f.x = x; f.facing = fc; f.meter = meter; f.footY = GROUND_Y - DROP_HEIGHT; f.vx = 0; f.vy = 0; f.onGround = false;
-  f.bufAtk = -1; f.bufDash = 0; f.flash = 0; f.stun = 0; f.chain = 0; f.state = ST_JUMP; f.stTick = 0; f.airAttacked = false;
+  f.bufAtk = -1; f.bufDash = 0; f.flash = 0; f.stun = 0; f.chain = 0; f.state = ST_JUMP; f.stTick = 0; f.subframe = 0; f.airAttacked = false;
   clearGhosts(i);
   mCool[i] = TAG_COOLDOWN;
   mTags[i]++;

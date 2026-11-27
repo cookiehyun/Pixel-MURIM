@@ -12,11 +12,26 @@ const keyDown = new Set<number>();
 const keyLatch = new Set<number>();            // pressed since the last poll (taps shorter than a tick)
 const touchDown = new Array<boolean>(BTN_COUNT).fill(false);
 const touchLatch = new Array<boolean>(BTN_COUNT).fill(false);
+// RAF can owe several 60 Hz steps. Replay each physical edge at the first
+// simulation deadline following the DOM event, including down/up between polls.
+type Edge = { time: number; code: number; down: boolean; touch: boolean };
+const pending: Edge[] = [];
+const sampledKeys = new Set<number>(), sampledTouch = new Set<number>();
+
+function record(code: number, down: boolean, touch = false): void {
+  pending.push({time: performance.now(), code, down, touch});
+}
+
+function clearKeys(): void {
+  for (const code of keyDown) record(code, false);
+  keyDown.clear();
+}
+
 let lastKey = 0;
 let focusLost = false;
 let suspended = false;                         // a text form is open: keys go to it, not the game
 
-export function setSuspended(v: boolean): void { suspended = v; keyDown.clear(); keyLatch.clear(); }
+export function setSuspended(v: boolean): void { suspended = v; clearKeys(); keyLatch.clear(); }
 
 export function init(): void {
   vk[BTN_LEFT] = 0x25; vk[BTN_UP] = 0x26; vk[BTN_RIGHT] = 0x27; vk[BTN_DOWN] = 0x28;
@@ -26,11 +41,11 @@ export function init(): void {
   window.addEventListener("keydown", (e) => {
     if (suspended) return;
     if (e.keyCode === 9 || e.keyCode === 0x70 || (e.keyCode >= 0x25 && e.keyCode <= 0x28) || e.keyCode === 32) e.preventDefault();
-    if (!keyDown.has(e.keyCode)) { keyLatch.add(e.keyCode); lastKey = e.keyCode; }
+    if (!keyDown.has(e.keyCode)) { record(e.keyCode, true); keyLatch.add(e.keyCode); lastKey = e.keyCode; }
     keyDown.add(e.keyCode);
   });
-  window.addEventListener("keyup", (e) => keyDown.delete(e.keyCode));
-  window.addEventListener("blur", () => { keyDown.clear(); focusLost = true; });
+  window.addEventListener("keyup", (e) => { if (keyDown.delete(e.keyCode)) record(e.keyCode, false); });
+  window.addEventListener("blur", () => { clearKeys(); focusLost = true; });
 }
 
 export function setVK(b: number, code: number): void { vk[b] = code; }
@@ -48,10 +63,32 @@ export function keyOf(ks: number, logical: number): number {
   return ks === 1 ? BTN_M1 + logical : ks === 2 ? BTN_M2 + logical : logical;
 }
 
-export function poll(): void {
+const edges = new Array<boolean>(BTN_COUNT).fill(false);
+
+export function poll(fast = false, deadline = Infinity): void {
+  // Reuse the legacy latches at 20 Hz. Maintain the sampled state across
+  // menu/fight transitions without carrying old button presses into a match.
+  if (fast) {
+    keyLatch.clear();
+    touchLatch.fill(false);
+  }
+  let used = 0;
+  while (used < pending.length && (!fast || pending[used].time <= deadline + 1e-6)) {
+    const edge = pending[used++];
+    const held = edge.touch ? sampledTouch : sampledKeys;
+    if (edge.down) {
+      held.add(edge.code);
+      if (fast && edge.touch) touchLatch[edge.code] = true;
+      if (fast && !edge.touch) keyLatch.add(edge.code);
+    } else held.delete(edge.code);
+  }
+  if (used) pending.splice(0, used);
   for (let i = 0; i < BTN_COUNT; i++) {
     prev[i] = cur[i];
-    cur[i] = keyDown.has(vk[i]) || keyLatch.has(vk[i]) || touchDown[i] || touchLatch[i];
+    const held = fast ? sampledKeys.has(vk[i]) || sampledTouch.has(i) : keyDown.has(vk[i]) || touchDown[i];
+    const latched = keyLatch.has(vk[i]) || touchLatch[i];
+    cur[i] = held || latched;
+    edges[i] = cur[i] && (!prev[i] || (fast && latched));
     touchLatch[i] = false;
   }
   keyLatch.clear();
@@ -64,10 +101,11 @@ export function consumeFocusLost(): boolean {
 }
 
 export const isDown = (b: number) => cur[b];
-export const isPressed = (b: number) => cur[b] && !prev[b];
+export const isPressed = (b: number) => edges[b];
 
 /** Touch controls: hold / release a logical button (also latched so a quick tap is never lost). */
 export function touch(b: number, down: boolean): void {
+  if (down !== touchDown[b]) record(b, down, true);
   if (down && !touchDown[b]) touchLatch[b] = true;
   touchDown[b] = down;
 }

@@ -1,3 +1,4 @@
+import { LEGACY_MS, FIGHT_STEPS, advanceTicks } from "./combatTime";
 // Port of Game.bas: game state, one tick of simulation and one render.
 import * as R from "./renderer";
 import { SCREEN_W } from "./renderer";
@@ -49,6 +50,12 @@ export function profiledFight(): boolean {
 
 let mPaused = false, mPauseSel = 0;
 
+// Keep the source move tables in 50 ms units. The fight simulation samples
+// controls and resolves collisions three times per source tick.
+export const fastFight = () => G.GameState === GS_FIGHT && !mPaused && G.GameMode !== MODE_VSCPU && profiledFight();
+export const stepMs = () => LEGACY_MS / (fastFight() ? FIGHT_STEPS : 1);
+let framePhase = 0;
+
 export function gameInit(): void {
   FX.init();
   startMatch(0);                       // build fighters so the menu can show them
@@ -66,7 +73,7 @@ export function startMatch(seed = 0): void {
   Combat.init();
   Projectile.init();
   FX.init();
-  mPaused = false;
+  mPaused = false; framePhase = 0;
   Cpu.init(G.CpuLevel, seed);
   const rounds = G.GameMode === MODE_VSCPU || G.GameMode === MODE_ARCADE || G.GameMode === MODE_TAG;
   Match.beginMatch(rounds || G.StoryFight, G.GameMode === MODE_TRAINING, G.StoryFight ? 1 : 2);
@@ -87,8 +94,9 @@ export function isCpu(i: number): boolean {
 
 export const paused = () => mPaused;
 
-export function gameTick(): void {
-  K.poll();
+export function gameTick(deadline = Infinity): void {
+  const steps = fastFight() ? FIGHT_STEPS : 1;
+  K.poll(steps > 1, deadline);
   if (Online.active()) Online.pump();
   if (G.GameState === GS_ONLINE) { Online.lobbyTick(); return; }
   if (G.GameState === GS_STORY) { Story.tick(); return; }
@@ -113,30 +121,35 @@ export function gameTick(): void {
   }
   if (G.GameState >= GS_LADDER && G.GameState <= GS_ENDING) { Arcade.screenTick(); return; }
 
+  framePhase = (framePhase + 1) % steps;
+  const pulse = framePhase === 0;
   for (let i = 0; i <= 1; i++) {
     if (!Match.inputAllowed()) Fighter.feedInput(i, 5, 0, 0);
     else if (netFight) { if (i === 0) Lockstep.feedFrame(); }
     else if (G.Multi) Fighter.feedHuman(i, 1 + i);
-    else if (isCpu(i)) { Cpu.observe(i); Cpu.think(i); }
+    else if (isCpu(i)) { if (pulse) { Cpu.observe(i); Cpu.think(i); }
+      else Fighter.feedInput(i, Fighter.F[i].inDir, 0, Fighter.F[i].inHeld); }
     else if (i === Fighter.controlled()) Fighter.feedHuman(i);
-    else Fighter.feedDummy(i);
+    else Fighter.feedDummy(i, pulse);
   }
 
-  Combat.tickTimers();
-  if (C.SuperFreeze > 0) C.SuperFreeze--;
-  else if (C.HitStop > 0) C.HitStop--;
-  else if (C.SlowMo % 2 === 1) C.SlowMo--;
+  if (pulse) Combat.tickTimers();
+  if (C.SuperFreeze > 0) C.SuperFreeze = advanceTicks(C.SuperFreeze, steps, -1);
+  else if (C.HitStop > 0) C.HitStop = advanceTicks(C.HitStop, steps, -1);
+  else if (Math.ceil(C.SlowMo) % 2 === 1) C.SlowMo = advanceTicks(C.SlowMo, steps, -1);
   else {
-    if (C.SlowMo > 0) C.SlowMo--;
-    Tag.inputs(Match.inputAllowed());
-    Tag.tick();
-    Fighter.update();
-    Projectile.update();
-    Combat.resolve();
+    if (C.SlowMo > 0) C.SlowMo = advanceTicks(C.SlowMo, steps, -1);
+    Tag.inputs(Match.inputAllowed(), pulse);
+    Tag.tick(steps);
+    Fighter.update(steps, pulse);
+    Projectile.update(steps);
+    Combat.resolve(steps);
   }
-  FX.update();
-  Hud.update();
-  Match.tick(C.SuperFreeze > 0 || C.HitStop > 0);
+  if (pulse) {
+    if (steps > 1) Fighter.advanceDrawClock();
+    FX.update(); Hud.update();
+  }
+  Match.tick(C.SuperFreeze > 0 || C.HitStop > 0, steps, pulse);
   if (netFight) { Lockstep.endFrame(); Online.afterFrame(); }
 }
 

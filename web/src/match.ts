@@ -1,3 +1,4 @@
+import { advanceTicks } from "./combatTime";
 // Port of Match.bas: rounds, timer, best of 3, training refills, round banners.
 import { F, resetRound as fighterResetRound, setPose, METER_MAX, NAEGONG_MAX, ST_HIT, ST_DOWN, ST_THROWN, ST_GUARD, ST_ATTACK, hashMix } from "./fighter";
 import * as Tag from "./tag";
@@ -55,20 +56,20 @@ export function hashPart(): number {
   return clng(h);
 }
 
-export function tick(frozen: boolean): void {
-  mT++;
+export function tick(frozen: boolean, steps = 1, pulse = true): void {
+  if (pulse) mT++;
   switch (mPhase) {
     case MP_INTRO:
-      if (mT === 30) { setPose(0, ""); setPose(1, ""); }
+      if (pulse && mT === 30) { setPose(0, ""); setPose(1, ""); }
       if (mT >= INTRO_TICKS) { mPhase = MP_FIGHT; mT = 0; }
       break;
     case MP_FIGHT:
       if (Combat.isKO()) { mPhase = MP_KO; mT = 0; }
       else if (mRounds && !frozen) {
-        mTime--;
+        mTime = advanceTicks(mTime, steps, -1);
         if (mTime <= 0) { mTime = 0; mPhase = MP_TIMEUP; mT = 0; }
       }
-      if (mTraining) trainingRefill();
+      if (mTraining && pulse) trainingRefill();
       break;
     case MP_KO:
       if (Combat.C.KoFinished) {
@@ -126,7 +127,7 @@ function trainingRefill(): void {
 export function draw(): void {
   const cx = Math.trunc(SCREEN_W / 2);
   if (mRounds) {
-    const secs = Math.trunc((mTime + 19) / 20);
+    const secs = Math.ceil(mTime / 20);
     const c = secs <= 10 && Math.trunc(mT / 5) % 2 === 0 && mPhase === MP_FIGHT ? RGB(255, 90, 70) : RGB(255, 236, 190);
     Font.drawBig(("0" + secs).slice(-2), cx, 1, c, 1);
     for (let k = 0; k < WIN_ROUNDS; k++) {

@@ -1,3 +1,4 @@
+import { advanceTicks } from "./combatTime";
 // Port of Projectile.bas: one projectile slot per fighter (wind palms, fans, fire pillars, demon bursts).
 import { D, MT_PROJ_BOOM, MT_SUPER_FIRE, MT_SUPER_PROJ, animId, hasAnim, animFrame } from "./data";
 import * as R from "./renderer";
@@ -10,7 +11,7 @@ import { RGB, clng, vint } from "./util";
 const BOOM_OUT = 14, FIRE_DELAY = 4;
 const mOn = [false, false], mX = [0, 0], mY = [0, 0], mVX = [0, 0], mMv = [0, 0], mHits = [0, 0], mCD = [0, 0];
 const mAge = [0, 0], mStall = [0, 0], mBack = [false, false], mType = [0, 0], mAnimOwn = [-1, -1], mLinger = [0, 0];
-let mAnimSmall = 0, mAnimBig = 0;
+let mAnimSmall = 0, mAnimBig = 0, clashCooldown = 0;
 
 function ownAnim(owner: number): number {
   const n = "fx.proj_" + F[owner].prefix;
@@ -18,6 +19,7 @@ function ownAnim(owner: number): number {
 }
 
 export function init(): void {
+  clashCooldown = 0;
   mOn[0] = mOn[1] = false;
   mLinger[0] = mLinger[1] = 0;
   mAnimSmall = animId("fx.wind");
@@ -56,14 +58,14 @@ export function incomingDistance(target: number): number {
   return Math.abs(F[target].x - mX[o]);
 }
 
-export function update(): void {
+export function update(steps = 1): void {
   for (let k = 0; k <= 1; k++) {
-    if (mLinger[k] > 0) { mLinger[k]--; mAge[k]++; }
+    if (mLinger[k] > 0) { mLinger[k] = advanceTicks(mLinger[k], steps, -1); mAge[k] = advanceTicks(mAge[k], steps, 1); }
     if (!mOn[k]) continue;
-    if (mStall[k] > 0) mStall[k]--;
-    else mX[k] += mVX[k];
-    mAge[k]++;
-    if (mCD[k] > 0) mCD[k]--;
+    if (mStall[k] > 0) mStall[k] = advanceTicks(mStall[k], steps, -1);
+    else mX[k] += mVX[k] / steps;
+    mAge[k] = advanceTicks(mAge[k], steps, 1);
+    if (mCD[k] > 0) mCD[k] = advanceTicks(mCD[k], steps, -1);
     if (mType[k] === MT_PROJ_BOOM) {
       if (!mBack[k] && mAge[k] >= BOOM_OUT) {
         mBack[k] = true; mVX[k] = -mVX[k] * 1.15; mCD[k] = 0;
@@ -73,9 +75,11 @@ export function update(): void {
     }
     if (mX[k] < -20 || mX[k] > SCREEN_W + 20) mOn[k] = false;
   }
-  if (mOn[0] && mOn[1]) {
+  if (clashCooldown > 0) clashCooldown = advanceTicks(clashCooldown, steps, -1);
+  if (!clashCooldown && mOn[0] && mOn[1]) {
     if (Math.abs(mX[0] - mX[1]) < halfW(0) + halfW(1) && Math.abs(mY[0] - mY[1]) < 10) {
       FX.spawn(vint((mX[0] + mX[1]) / 2), vint(mY[0]), FX.FX_HEAVY);
+      clashCooldown = 1;
       mHits[0]--; mHits[1]--;
       if (mHits[0] <= 0) mOn[0] = false;
       if (mHits[1] <= 0) mOn[1] = false;
@@ -120,7 +124,7 @@ export function draw(): void {
     else if (D.MvType[mMv[k]] === MT_SUPER_PROJ) a = mAnimBig;
     else if (mAnimOwn[k] >= 0) a = mAnimOwn[k];
     else a = mAnimSmall;
-    if (a >= 0) R.drawSprite(animFrame(a, mAge[k]), vint(mX[k]), vint(mY[k]), mVX[k] < 0);
+    if (a >= 0) R.drawSprite(animFrame(a, Math.floor(mAge[k])), vint(mX[k]), vint(mY[k]), mVX[k] < 0);
     if (boxesShown() && !mCD[k] && (mType[k] !== MT_SUPER_FIRE || mAge[k] >= FIRE_DELAY)) {
       const b = attackBox(k);
       R.drawRectOutline(b.x,b.y,b.w,b.h,RGB(255,40,40));
@@ -134,18 +138,19 @@ const BURST = { cheonma: [RGB(200, 40, 80), RGB(200, 30, 60), RGB(255, 110, 120)
   sd_heuksa: [RGB(120, 70, 150), RGB(70, 40, 90), RGB(150, 100, 180), RGB(220, 200, 235), RGB(40, 24, 50), RGB(20, 12, 26), RGB(60, 40, 76)] };
 
 function demonBursts(k: number): void {
+  const age = Math.floor(mAge[k]);
   const ox = [-7, 8, -3, 6], oy = [-20, -30, -12, -24];
   const P = F[k].prefix === "sd_heuksa" ? BURST.sd_heuksa : BURST.cheonma;
   const cx = vint(mX[k]), cy = GROUND_Y;
-  if (mAge[k] < FIRE_DELAY) {
+  if (age < FIRE_DELAY) {
     for (let j = 0; j <= 5; j++) {
-      const a = FIRE_DELAY - mAge[k];
+      const a = FIRE_DELAY - age;
       R.putPixel(cx + (j - 3) * (2 + a), cy - 16 + ((j % 3) - 1) * (2 + a), P[0]);
     }
     return;
   }
   for (let j = 0; j <= 3; j++) {
-    const a = mAge[k] - FIRE_DELAY - j * 3;
+    const a = age - FIRE_DELAY - j * 3;
     if (a < 0 || a >= 6) continue;
     const x = cx + ox[j], y = cy + oy[j], r = 4 + a * 2;
     if (a < 4) {
@@ -172,15 +177,16 @@ function ring(x: number, y: number, r: number, c: number): void {
 }
 
 function firePillar(k: number): void {
+  const age = Math.floor(mAge[k]);
   const x0 = vint(mX[k]);
-  if (mAge[k] < FIRE_DELAY) {
-    for (let j = -3; j <= 3; j += 2) R.putPixel(x0 + j * 2, GROUND_Y - 1 - ((mAge[k] + j) % 2 + 2) % 2, RGB(255, 160, 60));
+  if (age < FIRE_DELAY) {
+    for (let j = -3; j <= 3; j += 2) R.putPixel(x0 + j * 2, GROUND_Y - 1 - ((age + j) % 2 + 2) % 2, RGB(255, 160, 60));
     return;
   }
-  let h = D.MvHbH[mMv[k]] * (mAge[k] < FIRE_DELAY + 3 ? (mAge[k] - FIRE_DELAY + 1) / 3 : 1);
-  if (mAge[k] > 34) h = (h * (40 - mAge[k])) / 6;
+  let h = D.MvHbH[mMv[k]] * (age < FIRE_DELAY + 3 ? (age - FIRE_DELAY + 1) / 3 : 1);
+  if (age > 34) h = (h * (40 - age)) / 6;
   for (let y = 0; y <= h - 1; y++) {
-    const wob = vint(2 * Math.sin((y + mAge[k] * 3) * 0.5));
+    const wob = vint(2 * Math.sin((y + age * 3) * 0.5));
     let w = 9 - Math.trunc(y / 6);
     if (w < 2) w = 2;
     const c = y < h / 3 ? RGB(255, 240, 160) : y < (h * 2) / 3 ? RGB(255, 160, 50) : RGB(220, 60, 40);
@@ -200,5 +206,6 @@ export function hashPart(): number {
 }
 
 export function clear(): void {
+  clashCooldown = 0;
   mOn[0] = mOn[1] = false;
 }
