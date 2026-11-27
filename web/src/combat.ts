@@ -64,9 +64,17 @@ export function resolve(steps = 1): void {
   const ordinary = (i: number) => F[i].state === ST_ATTACK && D.MvType[F[i].mv] === MT_NORMAL;
   const simultaneous = profiledFight() && ordinary(0) && ordinary(1);
   const second = simultaneous ? meleeContact(1) : undefined;
-  if (first) land(first, simultaneous);
+  if (first && second) {
+    const stop0 = land(first, true);
+    const stop1 = land(second, true);
+    C.HitStop = Math.max(stop0, stop1);
+    Training.contact(0, true);
+    Training.contact(1, true);
+    return;
+  }
+  if (first) land(first);
   const other = simultaneous ? second : meleeContact(1);
-  if (other) land(other, simultaneous);
+  if (other) land(other);
 }
 
 function meleeContact(a: number) {
@@ -88,21 +96,22 @@ function meleeContact(a: number) {
   if (windows.length && !f.hasHit) f.contact = "whiff";
 }
 
-function land(hit: NonNullable<ReturnType<typeof meleeContact>>, simultaneous: boolean): void {
+function land(hit: NonNullable<ReturnType<typeof meleeContact>>, trade = false): number {
   const {a,d,mv,group,blocked,overlap} = hit, f = F[a];
   if (group !== undefined) f.struckGroups.push(group);
   f.hasHit = true;
   f.hitCount++;
   const cx = Math.trunc(overlap.x + overlap.w/2), cy = Math.trunc(overlap.y + overlap.h/2);
   const last = D.MvType[mv] !== MT_RUSH || f.hitCount >= D.MvP2[mv];
-  applyAttack(a,d,mv,cx,cy,false,last,blocked,simultaneous,hit.awake);
-  Training.contact(a);
+  const stop = applyAttack(a,d,mv,cx,cy,false,last,blocked,trade,hit.awake);
+  if (!trade) Training.contact(a);
+  return stop;
 }
 
 /** One hit of move mv from attacker a on defender d at (cx, cy). */
-export function applyAttack(a: number, d: number, mv: number, cx: number, cy: number, isProj: boolean, lastHit: boolean, blocked?: boolean, simultaneous = false, awake = demonAwake(a)): void {
-  if (mKoTimer > 0 && !simultaneous) return;
-  if (parrying(d) && D.MvLevel[mv] !== LV_UNBLOCK) { if (!isProj) F[a].contact = "parried"; counterStrike(d, a, cx, cy); return; }
+export function applyAttack(a: number, d: number, mv: number, cx: number, cy: number, isProj: boolean, lastHit: boolean, blocked?: boolean, trade = false, awake = demonAwake(a)): number {
+  if (mKoTimer > 0 && !trade) return 0;
+  if (parrying(d) && D.MvLevel[mv] !== LV_UNBLOCK) { if (!isProj) F[a].contact = "parried"; counterStrike(d, a, cx, cy); return 0; }
   const mt = D.MvType[mv];
   const special = mt !== MT_NORMAL;
   let hits = isProj || mt === MT_RUSH ? D.MvP2[mv] : 1;
@@ -118,15 +127,16 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
   if ((mt === MT_SUPER_RUSH || mt === MT_SUPER_TELE || mt === MT_SUPER_RIFT) && !blocks(d, level)) {
     FX.spawn(cx, cy, FX.FX_SLASH);
     startSuperSlash(a, d);
-    return;
+    return 0;
   }
+  let stop: number;
   if (blocked ?? blocks(d, level)) {
     if (!isProj) F[a].contact = "guard";
     applyBlock(d, D.MvBlockstun[mv], push * 0.8);
     if (special) dealDamage(d, Math.trunc(D.MvDamage[mv] / (4 * hits)));
     addMeter(a, 15); addMeter(d, 10);
     FX.spawn(cx, cy, FX.FX_BLOCK);
-    C.HitStop = 2;
+    stop = 2;
   } else {
     const fd = F[d];
     const counter = !isProj && inStartup(d);
@@ -150,15 +160,17 @@ export function applyAttack(a: number, d: number, mv: number, cx: number, cy: nu
     addMeter(a, isProj ? 30 : 50);
     addMeter(d, 25);
     FX.spawnHit(cx, cy, heavy || counter, F[a].prefix);
-    C.HitStop = heavy || counter ? 4 : 3;
-    if (heavy && !isProj && F[a].prefix === "cheolsan") C.HitStop += 2;
+    stop = heavy || counter ? 4 : 3;
+    if (heavy && !isProj && F[a].prefix === "cheolsan") stop += 2;
     if (counter) showText("COUNTER", 20, a);
     if (mCombo[a] >= 2) { mComboShown[a] = mCombo[a]; mComboShow[a] = 40; }
-    if (D.MvLevel[mv] === LV_UNBLOCK) { C.HitStop = 8; C.ImpactDark = 8; C.SlowMo = 24; }
-    else if (level === LV_UNBLOCK) C.HitStop = 6;
-    if (ko) C.HitStop = 10;
+    if (D.MvLevel[mv] === LV_UNBLOCK) { stop = 8; C.ImpactDark = 8; C.SlowMo = 24; }
+    else if (level === LV_UNBLOCK) stop = 6;
+    if (ko) stop = 10;
   }
   if (!isProj && atWall(d)) F[a].slide = -F[a].facing * push * 1.2;
+  if (!trade) C.HitStop = stop;
+  return stop;
 }
 
 export function blocks(d: number, level: number): boolean {

@@ -1,0 +1,434 @@
+[
+  {
+    "heavy": null,
+    "control": 0,
+    "face": 1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 1
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 7,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 7,
+        "lost": 30
+      }
+    ],
+    "freeze": 9,
+    "jump": [
+      35,
+      35
+    ],
+    "displayed": 0,
+    "actual": 0
+  },
+  {
+    "heavy": null,
+    "control": 0,
+    "face": -1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 1
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 7,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 7,
+        "lost": 30
+      }
+    ],
+    "freeze": 9,
+    "jump": [
+      35,
+      35
+    ],
+    "displayed": 0,
+    "actual": 0
+  },
+  {
+    "heavy": null,
+    "control": 1,
+    "face": 1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 1
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 7,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 7,
+        "lost": 30
+      }
+    ],
+    "freeze": 9,
+    "jump": [
+      35,
+      35
+    ],
+    "displayed": 0,
+    "actual": 0
+  },
+  {
+    "heavy": null,
+    "control": 1,
+    "face": -1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 1
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 7,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 7,
+        "lost": 30
+      }
+    ],
+    "freeze": 9,
+    "jump": [
+      35,
+      35
+    ],
+    "displayed": 0,
+    "actual": 0
+  },
+  {
+    "heavy": 0,
+    "control": 0,
+    "face": 1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 100
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      44,
+      59
+    ],
+    "displayed": 15,
+    "actual": 15
+  },
+  {
+    "heavy": 0,
+    "control": 0,
+    "face": -1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 100
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      44,
+      59
+    ],
+    "displayed": 15,
+    "actual": 15
+  },
+  {
+    "heavy": 0,
+    "control": 1,
+    "face": 1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 100
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      44,
+      59
+    ],
+    "displayed": -15,
+    "actual": -15
+  },
+  {
+    "heavy": 0,
+    "control": 1,
+    "face": -1,
+    "inputs": [
+      {
+        "side": 0,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 1,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 30
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 100
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      44,
+      59
+    ],
+    "displayed": -15,
+    "actual": -15
+  },
+  {
+    "heavy": 1,
+    "control": 0,
+    "face": 1,
+    "inputs": [
+      {
+        "side": 1,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 100
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 30
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      59,
+      44
+    ],
+    "displayed": -15,
+    "actual": -15
+  },
+  {
+    "heavy": 1,
+    "control": 0,
+    "face": -1,
+    "inputs": [
+      {
+        "side": 1,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 100
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 30
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      59,
+      44
+    ],
+    "displayed": -15,
+    "actual": -15
+  },
+  {
+    "heavy": 1,
+    "control": 1,
+    "face": 1,
+    "inputs": [
+      {
+        "side": 1,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 100
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 30
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      59,
+      44
+    ],
+    "displayed": 15,
+    "actual": 15
+  },
+  {
+    "heavy": 1,
+    "control": 1,
+    "face": -1,
+    "inputs": [
+      {
+        "side": 1,
+        "move": "hk",
+        "frame": 1
+      },
+      {
+        "side": 0,
+        "move": "lp",
+        "frame": 7
+      }
+    ],
+    "hits": [
+      {
+        "side": 0,
+        "frame": 13,
+        "lost": 100
+      },
+      {
+        "side": 1,
+        "frame": 13,
+        "lost": 30
+      }
+    ],
+    "freeze": 12,
+    "jump": [
+      59,
+      44
+    ],
+    "displayed": 15,
+    "actual": 15
+  }
+]

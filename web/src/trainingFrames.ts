@@ -48,14 +48,19 @@ export function observeWakeup(): void {
   }
 }
 
-export function contact(side: number): void {
+export function contact(side: number, trade = false): void {
   const r = latest;
   if (!live || !r || r.side !== side || r.contactFrame !== undefined) return;
   const a = F[side], d = F[1-side];
   r.result = a.contact;
   r.contactFrame = clock - r.inputAt + 1;
   r.distance = Math.abs(a.x - d.x);
-  if (d.state === ST_HIT || d.state === ST_GUARD) {
+  if (trade) {
+    // Both moves have been interrupted. After the shared freeze each side
+    // can act on the frame following its own last frame of hitstun.
+    if (a.state === ST_HIT && d.state === ST_HIT) r.advantage = Math.round((d.stun - a.stun) * FIGHT_STEPS);
+    else if (a.health > 0 && d.health > 0) r.wakeup = true;
+  } else if (d.state === ST_HIT || d.state === ST_GUARD) {
     // Both players wait through the same hitstop and can start their next
     // ordinary action one frame after the last frame of recovery or stun.
     const last = r.timing.startup + r.timing.active + r.timing.recovery;
